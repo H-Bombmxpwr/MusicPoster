@@ -2,6 +2,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import os
 from dotenv import load_dotenv
+import datetime
 
 #pull api keys
 load_dotenv(dotenv_path = 'keys.env')
@@ -31,7 +32,7 @@ class Album:
             self.album_name = album['albums']['items'][0]['name']
             self.found = True
         if self.found:
-            print(self.album_name + " by " + self.artist_name)
+            print(self.album_name + " by " + self.artist_name + " was found!")
         else:
             print("NOT FOUND")
 
@@ -54,7 +55,36 @@ class Album:
         return label
 
     def getReleaseDate(self):
-        date = self.sp.album(self.album_id)['release_date']
+        date = str(self.sp.album(self.album_id)['release_date'])
+        if len(date.split("-")) == 3:
+            date = date.split("-")
+            date = datetime.datetime(int(date[0]),int(date[1]),int(date[2]))
+            date = date.strftime("%B %d, %Y")
         return date
+    
+    def getReleaseYear(self):
+        date = str(self.sp.album(self.album_id)['release_date'])
+        date = date.split("-")
+        return date[0]
+    
+    def getNumTracks(self):
+        num_tracks = int(self.sp.album(self.album_id)['total_tracks'])
+        return num_tracks
 
-
+    def getRuntime(self):
+        track_return = self.sp.album_tracks(self.album_id)['items']
+        time = 0
+        for i in range(0,len(track_return)):
+           time += track_return[i]['duration_ms']
+       
+        #calculate the seconds and add leading zero if 1 digit
+        seconds=str(int((time/1000)%60))
+        if len(seconds) == 1:
+            seconds = "0" + str(seconds)
+        
+        #calculate the minutes and add any hours if they exist
+        minutes=int((time/(1000*60))%60)
+        hours=int((time/(1000*60*60))%24)
+        if hours > 0:
+            minutes = int((hours*60) + minutes)
+        return str(minutes) + ":" + seconds
