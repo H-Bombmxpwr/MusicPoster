@@ -10,7 +10,8 @@ import scipy
 import scipy.misc
 import scipy.cluster
 
-import binascii
+import base64
+import io
 
 
 class Utility:
@@ -149,6 +150,14 @@ class Utility:
             colors.append(tuple(dominant_color))
 
         return colors
+
+    def encodeImage(self,image):
+        data = io.BytesIO()
+        image.save(data, "PNG")
+        encoded_img_data = base64.b64encode(data.getvalue())
+        decoded_img=encoded_img_data.decode('utf-8')
+        img_data = f"data:image/png;base64,{decoded_img}"
+        return img_data
 
 
 

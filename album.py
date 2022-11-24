@@ -20,10 +20,6 @@ class Album:
         album = self.sp.search(q= 'artist:' + artist + ' ' +'album:' + title, type='album', limit=1)
         #checking if the album was found
         if not album['albums']['items']:
-            self.artist_id = None
-            self.artist_name = artist
-            self.album_id = None
-            self.album_name = title
             self.found = False
         else:
             self.artist_id = album['albums']['items'][0]['artists'][0]['id']
