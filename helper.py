@@ -40,11 +40,11 @@ class Utility:
         #artist name text
         artist_name = self.album.artist_name.upper()
         artist_font = ImageFont.truetype('static\Oswald-Medium.ttf', 35)
-
         #dimensions of artist text
         ascent, descent = artist_font.getmetrics()
         (w, baseline), (offset_x, offset_y) = artist_font.font.getsize(artist_name)
-
+        
+        #box = self.scaleDown(artist_name,width - margin - 200,below_pic_h,width - margin,below_pic_h + 30,artist_font,30)
         draw.text((width - w - margin, below_pic_h + 30), artist_name, font=artist_font, fill=text_color)
 
 
@@ -55,6 +55,7 @@ class Utility:
         #dimenstions of album text
         ascent, descent = album_font.getmetrics()
         (w, baseline), (offset_x, offset_y) = album_font.font.getsize(album_name)
+
 
         draw.text((width - w - margin, below_pic_h + (offset_y) + (ascent - offset_y) + descent), album_name, font=album_font, fill=text_color)
 
@@ -83,7 +84,6 @@ class Utility:
         
 
         #release date text
-
         date_string = self.album.getReleaseDate() 
         date_font = ImageFont.truetype('static\Oswald-Medium.ttf', 30)
 
@@ -158,6 +158,24 @@ class Utility:
         decoded_img=encoded_img_data.decode('utf-8')
         img_data = f"data:image/png;base64,{decoded_img}"
         return img_data
+
+
+    def scaleDown(self,text,x1,y1,x2,y2,font,font_size):
+        im = Image.new("RGB", (x2-x1, y2-y1), "#fff")
+        box = ((x1, y1, x2, y2))
+        print(box)
+        draw = ImageDraw.Draw(im)
+        draw.rectangle(box, outline="#000")
+        font_size = 40
+        size = None
+        while (size is None or size[0] > box[2] - box[0] or size[1] > box[3] - box[1]) and font_size > 0:
+            font = ImageFont.truetype('static\Oswald-Medium.ttf', font_size)
+            size = font.getsize_multiline(text)
+            font_size -= 1
+        draw.multiline_text((box[0], box[1]), text, "#000", font)
+        im.show()
+        
+
 
 
 
