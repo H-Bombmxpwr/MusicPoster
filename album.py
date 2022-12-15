@@ -11,7 +11,7 @@ SPOTIPY_CLIENT_SECRET = os.getenv('SPOTIPY_CLIENT_SECRET')
 
 
 class Album:
-    def __init__(self,artist,title):
+    def __init__(self,artist = "steely dan",title = "aja"):
         #setup a spotfy client
         client_credentials_manager = SpotifyClientCredentials(SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET)
         self.sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
@@ -36,7 +36,7 @@ class Album:
         self.background = background_color
         self.text_color = text_color
     
-    
+
     #get the track of an album object, optional parameter limit to limit the tracks returned
     def getTracks(self,limit = 50):
         track_return = self.sp.album_tracks(self.album_id, limit)['items']
