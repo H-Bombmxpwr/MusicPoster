@@ -1,8 +1,8 @@
 from album import Album
 from helper import Utility
 
-artist = "anderson paak"
-album = "oxnard"
+album = "my beautiful dark twisted fantasy"
+artist = "kanye west"
 
 dan = Album(artist,album)
 dan.setColors("white",(0,0,0))

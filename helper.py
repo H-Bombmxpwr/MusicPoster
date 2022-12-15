@@ -56,10 +56,13 @@ class Utility:
 
         #dimenstions of album text
         ascent, descent = album_font.getmetrics()
-        (w, baseline), (offset_x, offset_y) = album_font.font.getsize(album_name)
 
-
-        draw.text((width - w - margin, below_pic_h + (offset_y) + (ascent - offset_y) + descent), album_name, font=album_font, fill=text_color)
+        album_list = textwrap.wrap(album_name, width=20)
+        g = 0
+        for string in album_list:
+            (w, baseline), (offset_x, offset_y) = album_font.font.getsize(string)
+            draw.text((width - w - margin, below_pic_h + (offset_y) + (ascent - offset_y) + descent + g),  string, font=album_font, fill=text_color)
+            g+=45
 
         #tracks text
         tracks = self.album.getTracks().values()
@@ -77,6 +80,7 @@ class Utility:
         tracknum = 1
         space = '  '
         for value in tracks:
+            value = (value[:20] + '..') if len(value) > 20 else value
             draw.text((margin, 710 + offset), str(tracknum) + space + value.upper(), font=track_font, fill=text_color)
             offset = offset + increment
             tracknum = tracknum + 1
@@ -93,8 +97,17 @@ class Utility:
         ascent, descent = date_font.getmetrics()
         (w, baseline), (offset_x, offset_y) = date_font.font.getsize(date_string)
 
-        draw.text((width - w - margin, below_pic_h + 200),  date_string, font=date_font, fill=text_color)
+        draw.text((width - w - margin, below_pic_h + 240),  date_string, font=date_font, fill=text_color)
 
+        #Display runtime with release year
+        runtime_string = self.album.getRuntime()
+        runtime_font = ImageFont.truetype('static\Oswald-Medium.ttf', 30)
+
+        #get dimensions of runtime font
+        ascent, descent = runtime_font.getmetrics()
+        (w, baseline), (offset_x, offset_y) = runtime_font.font.getsize(runtime_string)
+
+        draw.text((width - w - margin, below_pic_h + 280),  runtime_string, font=runtime_font, fill=text_color)
 
         #label text
         label_string = "Released by " + self.album.getLabel() 
@@ -104,22 +117,14 @@ class Utility:
         ascent, descent = label_font.getmetrics()
         (w, baseline), (offset_x, offset_y) = label_font.font.getsize(label_string)
 
-        #offset = below_pic_h + 240
-        #for line in textwrap.wrap(label_string, width=40):
-         #   draw.text((width - margin - 300,offset), line, font=label_font, fill=text_color)
-          #  offset += 35
+        label_list = textwrap.wrap(label_string, width=20)
+        g = 0
+        for string in label_list:
+            (w, baseline), (offset_x, offset_y) = label_font.font.getsize(string)
+            draw.text((width - w - margin, below_pic_h + 320 + g),  string, font=label_font, fill=text_color)
+            g+=30
 
-        draw.text((width - w - margin, below_pic_h + 240),  label_string, font=label_font, fill=text_color)
-
-        #Display runtime with release year
-        runtime_string = self.album.getRuntime() + " / " + str(self.album.getReleaseYear())
-        runtime_font = ImageFont.truetype('static\Oswald-Medium.ttf', 30)
-
-        #get dimensions of runtime font
-        ascent, descent = runtime_font.getmetrics()
-        (w, baseline), (offset_x, offset_y) = runtime_font.font.getsize(runtime_string)
-
-        draw.text((width - w - margin, below_pic_h + 280),  runtime_string, font=runtime_font, fill=text_color)
+        
 
 
         #get color squares using helper function to get most vibrant colors of image
@@ -133,6 +138,8 @@ class Utility:
 
         return poster
         
+
+
 
     def get_colors(self,image, numcolors=6, resize=150):
     # Resize image to speed up processing
