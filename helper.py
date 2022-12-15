@@ -18,12 +18,14 @@ class Utility:
     def __init__(self,album):
         self.album = album
 
-    def buildPoster(self,text_color = (255,255,255),background = "black"):
+    def buildPoster(self):
         #create a blank canvas
         width = 740
         height = 1200 
         below_pic_h = 710
         margin = 50
+        background = self.album.background
+        text_color = self.album.text_color
         poster = Image.new(mode="RGBA", size=(width, height),color = background)
         
         #add the album cover to the top

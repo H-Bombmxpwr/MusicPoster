@@ -2,9 +2,9 @@ from album import Album
 from helper import Utility
 
 artist = "the weeknd"
-album = "starboy"
+album = "after hours"
+color = "white"
 
-dan = Album(artist,album)
+dan = Album(artist,album,color)
 poster = Utility(dan).buildPoster()
 poster.show()
-#TESTING THE PUSHING

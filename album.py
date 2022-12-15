@@ -11,7 +11,7 @@ SPOTIPY_CLIENT_SECRET = os.getenv('SPOTIPY_CLIENT_SECRET')
 
 
 class Album:
-    def __init__(self,artist,title):
+    def __init__(self,artist,title,background):
         #setup a spotfy client
         client_credentials_manager = SpotifyClientCredentials(SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET)
         self.sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
@@ -19,18 +19,22 @@ class Album:
         #search based on the query and make an album object
         album = self.sp.search(q= 'artist:' + artist + ' ' +'album:' + title, type='album', limit=1)
         #checking if the album was found
+        if background.lower().startswith("b"):
+            self.background = "black"
+            self.text_color = (255,255,255)
+        else:
+            self.background = "white"
+            self.text_color = (0,0,0)
+
+        
         if not album['albums']['items']:
-            self.found = False
+            raise ValueError('Was not able to find this album, check your spelling and try again')
         else:
             self.artist_id = album['albums']['items'][0]['artists'][0]['id']
             self.artist_name = album['albums']['items'][0]['artists'][0]['name']
             self.album_id = album['albums']['items'][0]['id']
             self.album_name = album['albums']['items'][0]['name']
-            self.found = True
-        if self.found:
             print(self.album_name + " by " + self.artist_name + " was found!")
-        else:
-            print("NOT FOUND")
 
 
     #get the track of an album object, optional parameter limit to limit the tracks returned
