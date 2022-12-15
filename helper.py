@@ -41,7 +41,7 @@ class Utility:
 
         #artist name text
         artist_name = self.album.artist_name.upper()
-        artist_font = ImageFont.truetype('static\Oswald-Medium.ttf', 35)
+        artist_font = ImageFont.truetype('static\Oswald-Medium.ttf', 30)
         #dimensions of artist text
         ascent, descent = artist_font.getmetrics()
         (w, baseline), (offset_x, offset_y) = artist_font.font.getsize(artist_name)
@@ -57,11 +57,11 @@ class Utility:
         #dimenstions of album text
         ascent, descent = album_font.getmetrics()
 
-        album_list = textwrap.wrap(album_name, width=20)
+        album_list = textwrap.wrap(album_name, width=18)
         g = 0
         for string in album_list:
             (w, baseline), (offset_x, offset_y) = album_font.font.getsize(string)
-            draw.text((width - w - margin, below_pic_h + (offset_y) + (ascent - offset_y) + descent + g),  string, font=album_font, fill=text_color)
+            draw.text((width - w - margin, below_pic_h + (offset_y) + (ascent - offset_y) + descent + g + 15),  string, font=album_font, fill=text_color)
             g+=45
 
         #tracks text
