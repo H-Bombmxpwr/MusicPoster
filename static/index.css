@@ -1,5 +1,24 @@
-body {
-    background-color: #000000;
-    color: white
-    }
 
+@import url('https://fonts.googleapis.com/css2?family=Rubik&display=swap');
+
+body {
+    font-family: "Rubik", sans-serif;
+    font-size: 30px;
+    color: #ffffff;
+    text-shadow: 3px 3px 3px #000000;
+    background-color: #8d909b;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    }
+.button {
+        border: solid black 1px;
+        width: fit-content;
+        padding: 1em;
+        font-size: 15px;
+        font-family: sans-serif;
+        border-radius: .5em;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 200px;
+    }

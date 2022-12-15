@@ -1,30 +1,38 @@
 <html lang="en">
+
 <head>
     <title> Music Poster </title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename= 'index.css') }}">
-    <link rel="icon" href="https://www.clipartmax.com/png/middle/90-900108_music-icon-music-png.png">
+    <link rel="icon" href="static/images/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik&display=swap">
+    <link rel="stylesheet" href="index.css">
+    <script defer src="code.js"></script>
 </head>
 
+
+
 <body>
-    <h1 class = "title"> Music Poster </h1>
+    <h1 class="title"> Music Poster </h1>
 
+    <div class="container">
 
-        <form class = "grid" action = "/result" method = "POST">
-            <center>
-                
-                <img src="{{ img_data }}" >
-                   
-            </center>
+        <form action="/result" method="POST">
 
-            <label for = "song"> Enter an Artist </label>
-            <input type="text" name="artist" id = "artist">
-            <label for = "song"> Enter an album </label>
-            <input type="text" name="album" id = "album">
-
-            <center><input type = "Submit"></center>
-            
+            <img id="poster" src="{{ img_data }}">
+            <label for="song"> Enter an Artist </label>
+            <input type="text" name="artist" id="artist">
+            <label for="song"> Enter an album </label>
+            <input type="text" name="album" id="album">
+            <input type="Submit">
+            <div class="button"> Change background color</div>
+            <div class="button"> Change background color back</div>
         </form>
+    </div>
+
 </body>
+
 </html>
