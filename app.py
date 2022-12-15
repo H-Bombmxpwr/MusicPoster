@@ -14,10 +14,13 @@ def home():
 @app.route("/result", methods = ['POST','GET'])
 def result():
     output = request.form.to_dict()
+    print(output)
     artist = output["artist"]
     album = output["album"]
-    color = output["color"]
-    album = Album(artist,album,color)
+    bcolor = output["background"]
+    tcolor = output["text"]
+    album = Album(artist,album)
+    album.setColors(bcolor,tcolor)
     poster = Utility(album).buildPoster()
     img_data = Utility(album).encodeImage(poster)
     return render_template("index.html", img_data=img_data)

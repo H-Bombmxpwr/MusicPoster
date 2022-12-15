@@ -123,18 +123,18 @@ class Utility:
 
 
         #get color squares using helper function to get most vibrant colors of image
-        colors = self.get_colors(poster,5,250)
+        colors = self.get_colors(poster,6,250)
         
         offset = 0
         spacing = 30
-        for color in colors:
+        for color in colors[1:]:
             draw.rectangle([(width - margin - offset, below_pic_h), (width - margin - offset - 30, below_pic_h + 30)],fill=color, outline = color)
             offset += spacing
 
         return poster
         
 
-    def get_colors(self,image, numcolors=5, resize=150):
+    def get_colors(self,image, numcolors=6, resize=150):
     # Resize image to speed up processing
         img = image.copy()
         img.thumbnail((resize, resize))
