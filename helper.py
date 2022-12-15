@@ -18,10 +18,10 @@ class Utility:
     def __init__(self,album):
         self.album = album
 
-    def buildPoster(self,text_color = (0,0,0),background = "white"):
+    def buildPoster(self,text_color = (255,255,255),background = "black"):
         #create a blank canvas
         width = 740
-        height = 1200
+        height = 1200 
         below_pic_h = 710
         margin = 50
         poster = Image.new(mode="RGBA", size=(width, height),color = background)
@@ -124,7 +124,7 @@ class Utility:
         colors = self.get_colors(poster,5,250)
         
         offset = 0
-        spacing = 60
+        spacing = 30
         for color in colors:
             draw.rectangle([(width - margin - offset, below_pic_h), (width - margin - offset - 30, below_pic_h + 30)],fill=color, outline = color)
             offset += spacing
