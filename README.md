@@ -7,4 +7,4 @@ Create a keys.env file in the main directory and set these two variables there.
 
 Once this is done you can run app.py to get a localhosted site, or run test.py to make a poster without hosting a wesbite. 
 
-For some examples see examples.md
+For some examples see [EXAMPLES.md](EXAMPLES.md)
