@@ -22,4 +22,10 @@
 # Free Nationals by Free Nationals
 ![image](https://user-images.githubusercontent.com/97134010/208538140-2ce1ed9d-aa7c-4b72-a743-86944c197c0b.png)
 
+# Apollo XXI by Steve Lacy
+![image](https://user-images.githubusercontent.com/97134010/208539645-c1697df9-fa6f-4b83-b1f0-6a4085ab536c.png)
+
+# CASE STUDY 01 by Daniel Caesar
+![image](https://user-images.githubusercontent.com/97134010/208540149-6503ca6d-7aa2-458b-a4f5-bb65ddf39a23.png)
+
 
