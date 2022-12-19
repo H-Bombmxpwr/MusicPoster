@@ -7,7 +7,7 @@
 # Kick by INXS
 ![image](https://user-images.githubusercontent.com/97134010/208537386-b899f14c-54fb-40b8-9a6b-e12f88ae7ce2.png)
 
-# -Ugh, Those feels again by Snoh Aalegra
+# -Ugh, those feels again by Snoh Aalegra
 ![image](https://user-images.githubusercontent.com/97134010/208537434-8a012c92-d810-43d8-8673-60a9b03039ce.png)
 
 # The Score by Fugees
