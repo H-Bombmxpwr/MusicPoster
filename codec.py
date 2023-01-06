@@ -24,6 +24,6 @@ def return_banner(album_id):
 
     banner = album_img.crop((0,640,640,800))
 
-    banner = banner.resize((250,75))
+    banner = banner.resize((300,75))
 
     return banner

@@ -40,7 +40,7 @@ class Utility:
         poster.paste(album_img, (margin, margin), album_img)
 
         #overlay the code banner
-        poster.paste(code_banner,(490,1125,740,1200), code_banner)
+        poster.paste(code_banner,(440,1125,740,1200), code_banner)
         
 
         #draw object creation
