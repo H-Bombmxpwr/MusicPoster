@@ -1,34 +1,34 @@
 # Aja by Steely Dan
-![image](https://user-images.githubusercontent.com/97134010/208538213-f1e6d470-ce49-4d14-91f1-3c9494c5f384.png)
+![image](https://user-images.githubusercontent.com/97134010/211099406-5efbc1bb-6f9e-4c6b-95ad-9694b6cced53.png)
 
 # My Beautiful Dark Twisted Fantasy by Kanye West
-![image](https://user-images.githubusercontent.com/97134010/208538310-706c87e5-343b-47b7-821d-8109aab92e79.png)
+![image](https://user-images.githubusercontent.com/97134010/211099548-e6cf722d-a234-485b-9a50-20241429af00.png)
 
 # Kick by INXS
-![image](https://user-images.githubusercontent.com/97134010/208537386-b899f14c-54fb-40b8-9a6b-e12f88ae7ce2.png)
+![image](https://user-images.githubusercontent.com/97134010/211099718-7fbc8574-c044-4fda-809a-2daf4275bd67.png)
 
 # -Ugh, those feels again by Snoh Aalegra
-![image](https://user-images.githubusercontent.com/97134010/208537434-8a012c92-d810-43d8-8673-60a9b03039ce.png)
+![image](https://user-images.githubusercontent.com/97134010/211099807-5c1bf3a0-bc1e-4bba-afbd-71fdf23450e3.png)
 
 # Back in Black by AC/DC
-![image](https://user-images.githubusercontent.com/97134010/208555260-b4f75d1b-c697-4be6-9f62-af4945f13bd1.png)
+![image](https://user-images.githubusercontent.com/97134010/211100014-2c190717-58c6-4e13-bf17-6bf614e5a57c.png)
 
 # The Score by Fugees
-![image](https://user-images.githubusercontent.com/97134010/208537467-9643b67f-8768-42b1-b13e-995fef51b5ac.png)
+![image](https://user-images.githubusercontent.com/97134010/211100151-ba854265-af56-4cc6-b9bd-51cf0f199564.png)
 
 # Blonde by Frank Ocean
-![image](https://user-images.githubusercontent.com/97134010/208537488-915022f3-6d08-41c5-b0cc-2005900c7acc.png)
+![image](https://user-images.githubusercontent.com/97134010/211100394-572abf8c-39ea-4785-8f99-517947029c43.png)
 
 # Oxnard by Anderson .Paak
-![image](https://user-images.githubusercontent.com/97134010/208537539-a396537a-33c0-463b-8e3d-1f6b0932d2c3.png)
+![image](https://user-images.githubusercontent.com/97134010/211100487-9c21fc91-e019-4a95-925f-cbf07a9ce117.png)
 
 # Free Nationals by Free Nationals
-![image](https://user-images.githubusercontent.com/97134010/208538140-2ce1ed9d-aa7c-4b72-a743-86944c197c0b.png)
+![image](https://user-images.githubusercontent.com/97134010/211100634-9f432f8d-f172-46bc-b528-29b4944295a0.png)
 
 # Apollo XXI by Steve Lacy
-![image](https://user-images.githubusercontent.com/97134010/208539645-c1697df9-fa6f-4b83-b1f0-6a4085ab536c.png)
+![image](https://user-images.githubusercontent.com/97134010/211100710-845b1f0c-2905-4093-b832-edf643c96f32.png)
 
 # CASE STUDY 01 by Daniel Caesar
-![image](https://user-images.githubusercontent.com/97134010/208540149-6503ca6d-7aa2-458b-a4f5-bb65ddf39a23.png)
+![image](https://user-images.githubusercontent.com/97134010/211100793-51729e1a-22e9-4a15-88c2-11456d53bc41.png)
 
 
