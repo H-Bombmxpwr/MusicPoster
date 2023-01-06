@@ -4,6 +4,8 @@ import requests
 from io import BytesIO
 import textwrap
 from collections import Counter
+from codec import return_banner
+import os
 
 import numpy as np
 import scipy
@@ -28,13 +30,18 @@ class Utility:
         text_color = self.album.text_color
         poster = Image.new(mode="RGBA", size=(width, height),color = background)
         
+        code_banner = return_banner(self.album.album_id)
         #add the album cover to the top
         album_image_url = self.album.getCoverArt()[0]['url']
         response = requests.get(album_image_url)
         album_img = Image.open(BytesIO(response.content)).convert("RGBA")
-
+        
         #overlay the album cover
         poster.paste(album_img, (margin, margin), album_img)
+
+        #overlay the code banner
+        poster.paste(code_banner,(490,1125,740,1200), code_banner)
+        
 
         #draw object creation
         draw = ImageDraw.Draw(poster)
@@ -97,7 +104,7 @@ class Utility:
         ascent, descent = date_font.getmetrics()
         (w, baseline), (offset_x, offset_y) = date_font.font.getsize(date_string)
 
-        draw.text((width - w - margin, below_pic_h + 240),  date_string, font=date_font, fill=text_color)
+        draw.text((width - w - margin, below_pic_h + 190),  date_string, font=date_font, fill=text_color)
 
         #Display runtime with release year
         runtime_string = self.album.getRuntime()
@@ -107,7 +114,7 @@ class Utility:
         ascent, descent = runtime_font.getmetrics()
         (w, baseline), (offset_x, offset_y) = runtime_font.font.getsize(runtime_string)
 
-        draw.text((width - w - margin, below_pic_h + 280),  runtime_string, font=runtime_font, fill=text_color)
+        draw.text((width - w - margin, below_pic_h + 230),  runtime_string, font=runtime_font, fill=text_color)
 
         #label text
         label_string = "Released by " + self.album.getLabel() 
@@ -121,11 +128,8 @@ class Utility:
         g = 0
         for string in label_list:
             (w, baseline), (offset_x, offset_y) = label_font.font.getsize(string)
-            draw.text((width - w - margin, below_pic_h + 320 + g),  string, font=label_font, fill=text_color)
+            draw.text((width - w - margin, below_pic_h + 270 + g),  string, font=label_font, fill=text_color)
             g+=30
-
-        
-
 
         #get color squares using helper function to get most vibrant colors of image
         colors = self.get_colors(poster,6,250)

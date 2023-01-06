@@ -32,6 +32,7 @@ class Album:
             print(self.album_name + " by " + self.artist_name + " was found!")
 
 
+    # set the colors of the album poster
     def setColors(self,background_color,text_color):
         self.background = background_color
         self.text_color = text_color
