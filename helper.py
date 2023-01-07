@@ -30,7 +30,7 @@ class Utility:
         text_color = self.album.text_color
         poster = Image.new(mode="RGBA", size=(width, height),color = background)
         
-        code_banner = return_banner(self.album.album_id)
+        code_banner = return_banner(self.album.album_id,background,text_color)
         #add the album cover to the top
         album_image_url = self.album.getCoverArt()[0]['url']
         response = requests.get(album_image_url)
