@@ -1,3 +1,4 @@
+import spotifycodegen
 from spotifycodegen.main import SpotifyCodeGen
 import spotipy
 from dotenv import load_dotenv
