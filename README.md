@@ -23,3 +23,7 @@ Here is one example:
 HAN by Berhana
 ![image](https://user-images.githubusercontent.com/97134010/211364264-d18a2fe4-d9d9-4139-b03b-7541a69f2566.png)
 
+
+# In the future
+Trying to add it to a website. Also want to improve the color changing algorithm to remove some of the blurriness from the scannable spotify codes. 
+
