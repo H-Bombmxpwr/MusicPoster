@@ -1,10 +1,10 @@
 from album import Album
 from helper import Utility
 
-artist = "beck"
-album = "guero"
+artist = "berhana"
+album = "han"
 
-dan = Album(artist,album)
-dan.setColors("#FFFFFF","#000000")
-poster = Utility(dan).buildPoster()
+album = Album(artist,album)
+album.setColors("#FFFFFF","#000000")
+poster = Utility(album).buildPoster()
 poster.show()
