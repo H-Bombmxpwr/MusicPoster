@@ -20,6 +20,10 @@ All that is required is to send in an artist and album(with close enough spellin
 # Examples
 If you don't want to do this all yourself it will be published to a website soon, but in the mean time you can see some examples in [EXAMPLES.md](EXAMPLES.md)
 Here is one example:
--Ugh, those feels again by Snoh Aalegra
-![image](https://user-images.githubusercontent.com/97134010/211361904-a8627a8a-c92a-4e1e-ad85-7cac39548dd0.png)
+HAN by Berhana
+![image](https://user-images.githubusercontent.com/97134010/211364264-d18a2fe4-d9d9-4139-b03b-7541a69f2566.png)
+
+
+# In the future
+Trying to add it to a website. Also want to improve the color changing algorithm to remove some of the blurriness from the scannable spotify codes. 
 
