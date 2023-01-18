@@ -1,5 +1,5 @@
-from album import Album
-from helper import Utility
+from src.album import Album
+from src.helper import Utility
 from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request 
 
 app = Flask(__name__)
@@ -8,7 +8,7 @@ app = Flask(__name__)
 @app.route("/")
 @app.route("/home")
 def home():
-    return render_template("index.html")
+    return render_template("poster/index.html")
 
 
 @app.route("/result", methods = ['POST','GET'])
@@ -22,7 +22,7 @@ def result():
     album.setColors(bcolor,tcolor)
     poster = Utility(album).buildPoster()
     img_data = Utility(album).encodeImage(poster)
-    return render_template("index.html", img_data=img_data)
+    return render_template("poster/index.html", img_data=img_data)
     
 
 
