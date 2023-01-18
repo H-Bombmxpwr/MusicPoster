@@ -94,7 +94,6 @@ class Utility:
             if tracknum == 10:
                 space = ' '
 
-        
 
         #release date text
         date_string = self.album.getReleaseDate() 
