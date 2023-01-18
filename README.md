@@ -21,7 +21,7 @@ All that is required is to send in an artist and album(with close enough spellin
 If you don't want to do this all yourself it will be published to a website soon, but in the mean time you can see some examples in [EXAMPLES.md](EXAMPLES.md)
 Here is one example:
 HAN by Berhana
-![image](https://user-images.githubusercontent.com/97134010/211364264-d18a2fe4-d9d9-4139-b03b-7541a69f2566.png)
+![image](https://user-images.githubusercontent.com/97134010/213099523-be8b207b-3bec-4e89-abad-ea35648f0bdf.png)
 
 
 # In the future
