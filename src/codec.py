@@ -1,13 +1,6 @@
-import spotifycodegen
-from spotifycodegen.main import SpotifyCodeGen
-import spotipy
-from dotenv import load_dotenv
-import os
-from spotipy.oauth2 import SpotifyClientCredentials
-from PIL import Image, ImageFilter
+from PIL import Image
 from urllib.request import urlopen
 import numpy as np
-import cv2
 
 def return_banner(album_id,background_color,text_color):
     
@@ -20,7 +13,6 @@ def return_banner(album_id,background_color,text_color):
         cover_color = "white"
     cover_size = 1200
     url = f"https://www.spotifycodes.com/downloadCode.php?uri=png%2F{background_color[1:]}%2F{cover_color}%2F{cover_size}%2F{uri_call}" # noqa
-    print(url)
     banner = Image.open(urlopen(url)).convert("RGBA")# noqa:S310
 
     #making the spotify code itself the same color as the text

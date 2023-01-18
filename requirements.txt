@@ -5,4 +5,3 @@ python-dotenv==0.21.0
 requests==2.28.1
 scipy==1.10.0
 spotipy==2.22.0
-spotify-codegen==0.3.1

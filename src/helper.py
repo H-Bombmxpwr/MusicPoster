@@ -1,13 +1,10 @@
 from src.album import Album
-from PIL import Image, ImageDraw, ImageFont, ImageColor
+from PIL import Image, ImageDraw, ImageFont
 import requests
 from io import BytesIO
 import textwrap
-from collections import Counter
 from src.codec import return_banner
-import os
 
-import numpy as np
 import scipy
 import scipy.misc
 import scipy.cluster
