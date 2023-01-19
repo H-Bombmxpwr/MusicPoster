@@ -8,7 +8,7 @@ app = Flask(__name__)
 @app.route("/")
 @app.route("/home")
 def home():
-    return render_template("poster/index.html")
+    return render_template("home/index.html")
 
 
 @app.route("/result", methods = ['POST','GET'])
@@ -22,9 +22,11 @@ def result():
     album.setColors(bcolor,tcolor)
     poster = Utility(album).buildPoster()
     img_data = Utility(album).encodeImage(poster)
-    return render_template("poster/index.html", img_data=img_data)
+    return render_template("poster/result.html", img_data=img_data)
     
-
+@app.route("/about")
+def about():
+    return render_template("about/about.html")
 
 if __name__ == '__main__':
     app.run(debug = True, host = "0.0.0.0",port = 80)
