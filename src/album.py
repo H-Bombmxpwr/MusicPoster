@@ -3,6 +3,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import os
 from dotenv import load_dotenv
 import datetime
+import re
 
 #pull api keys
 load_dotenv(dotenv_path = 'keys.env')
@@ -28,7 +29,7 @@ class Album:
             self.artist_id = album['albums']['items'][0]['artists'][0]['id']
             self.artist_name = album['albums']['items'][0]['artists'][0]['name']
             self.album_id = album['albums']['items'][0]['id']
-            self.album_name = album['albums']['items'][0]['name']
+            self.album_name = re.sub("[\(\[].*?[\)\]]", "", album['albums']['items'][0]['name'])
             print(self.album_name + " by " + self.artist_name + " was found!")
 
 
@@ -43,7 +44,7 @@ class Album:
         track_return = self.sp.album_tracks(self.album_id, limit)['items']
         tracks = {}
         for i in range(0,len(track_return)):
-            tracks[track_return[i]['id']] = track_return[i]['name']
+            tracks[track_return[i]['id']] = re.sub("[\(\[].*?[\)\]]", "",track_return[i]['name'])
         return tracks
 
 
