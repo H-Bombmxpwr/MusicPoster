@@ -2,16 +2,16 @@
 
 body {
     font-family: "Rubik", sans-serif;
-    font-size: 30px;
-    color: #000000;
-    background-color: #8d909b;
-    margin-left: auto;
-    margin-right: auto;
+    font-size: 35pt;
+    color: #727785;
+    background-color: #202124;
+    margin-left: 0;
+    margin-right: 0;
     text-align: center;
 }
 
-header {
-    font-size: 100px;
+h1 {
+    font-size: 40pt;
     color: #ffffff;
     text-shadow: 10px 10px 10px #000000;
     text-align: center;
@@ -19,66 +19,19 @@ header {
     margin-bottom: 50px;
 }
 
-.two {
-    font-size: 100px;
-    color: #ffffff;
-    text-shadow: 3px 3px 3px #000000;
-    text-align: center;
-    background-color: transparent;
-    text-decoration: none;
-}
-
-.title {
-    font-size: 100px;
-    color: #ffffff;
-    text-shadow: 3px 3px 3px #000000;
-    text-align: center;
-    background-color: transparent;
-    text-decoration: none;
-}
-
-.poster {
-    padding-top: 5%;
-}
-
-.artist {
-    padding-top: 57%;
-}
-
-.song {
-    padding-top: 2%;
-}
-
-.color {
-    padding-top: 2%;
-}
-
-.submit {
-    padding-top: 2%;
-}
-
-.container {
-    padding: 5%;
-}
-
-.footer {
-    position: absolute;
-    bottom: 0;
-    padding-bottom: 1%;
-    width: 100%;
-    font-size: small;
-}
-
-.three {
-    font-size: 100px;
-    color: #ffffff;
-    text-shadow: 3px 3px 3px #000000;
-    text-align: center;
-    background-color: transparent;
-    text-decoration: none;
-}
-
 a {
     text-decoration: none;
     color: inherit;
+}
+
+#grad1 {
+    height: 15vh;
+    background-image: linear-gradient(#202124, #000000);
+}
+
+footer {
+    text-align: center;
+    padding: 3px;
+    background-color: #000000;
+    color: white;
 }
