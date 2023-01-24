@@ -127,12 +127,12 @@ class Utility:
             draw.text((width - w - margin, below_pic_h + 270 + g),  string, font=label_font, fill=text_color)
             g+=30
 
-        #get color squares using helper function to get most vibrant colors of image
-        colors = self.get_colors(poster,6,250)
+        #get color squares using helper function to get most vibrant colors of album image
+        colors = self.get_colors(album_img,5,250)
         
         offset = 0
         spacing = 30
-        for color in colors[1:]:
+        for color in colors:
             draw.rectangle([(width - margin - offset, below_pic_h), (width - margin - offset - 30, below_pic_h + 30)],fill=color, outline = color)
             offset += spacing
 
