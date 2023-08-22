@@ -84,7 +84,8 @@ class Utility:
         tracknum = 1
         space = '  '
         for value in tracks:
-            value = (value[:20] + '..') if len(value) > 20 else value
+            if len(tracks) <= 15:
+                value = (value[:23] + '..') if len(value) > 25 else value
             draw.text((margin, 710 + offset), str(tracknum) + space + value.upper(), font=track_font, fill=text_color)
             offset = offset + increment
             tracknum = tracknum + 1
@@ -100,7 +101,7 @@ class Utility:
         ascent, descent = date_font.getmetrics()
         (w, baseline), (offset_x, offset_y) = date_font.font.getsize(date_string)
 
-        draw.text((width - w - margin, below_pic_h + 190),  date_string, font=date_font, fill=text_color)
+        draw.text((width - w - margin, below_pic_h + 230),  date_string, font=date_font, fill=text_color)
 
         #Display runtime with release year
         runtime_string = self.album.getRuntime()
@@ -110,10 +111,10 @@ class Utility:
         ascent, descent = runtime_font.getmetrics()
         (w, baseline), (offset_x, offset_y) = runtime_font.font.getsize(runtime_string)
 
-        draw.text((width - w - margin, below_pic_h + 230),  runtime_string, font=runtime_font, fill=text_color)
+        draw.text((width - w - margin, below_pic_h + 270),  runtime_string, font=runtime_font, fill=text_color)
 
         #label text
-        label_string = "Released by " + self.album.getLabel() 
+        label_string = "Released by " + self.album.getLabel().split(',')[0] #plit and take everything before first comma
         label_font = ImageFont.truetype('static\Oswald-Medium.ttf', 30)
 
         #get dimensions of label_font
@@ -124,7 +125,7 @@ class Utility:
         g = 0
         for string in label_list:
             (w, baseline), (offset_x, offset_y) = label_font.font.getsize(string)
-            draw.text((width - w - margin, below_pic_h + 270 + g),  string, font=label_font, fill=text_color)
+            draw.text((width - w - margin, below_pic_h + 310 + g),  string, font=label_font, fill=text_color)
             g+=30
 
         #get color squares using helper function to get most vibrant colors of album image
