@@ -5,8 +5,11 @@ body {
     font-size: 35pt;
     color: #727785;
     background-color: #202124;
+    background-image: url("/static/images/gif8.png");
+    background-size: cover; 
     margin-left: 0;
     margin-right: 0;
+    margin-bottom: 0;
     text-align: center;
 }
 
@@ -24,9 +27,20 @@ a {
     color: inherit;
 }
 
-#space {
+
+.container {
+    width: 80vw;
     height: 76vh;
+    margin-left: 0;
+    margin-right: 0;
 }
+
+#trev {
+    width: 24vw;
+    position: relative;
+   
+}
+
 
 #grad1 {
     height: 15vh;
@@ -35,7 +49,7 @@ a {
 
 footer {
     text-align: center;
-    padding: 3px;
+    padding: 9vh;
     background-color: #000000;
     color: white;
 }
