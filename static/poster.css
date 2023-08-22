@@ -4,16 +4,19 @@ body {
     font-family: "Rubik", sans-serif;
     font-size: 35pt;
     color: #727785;
-    background-color: #202124;
+    background-color: #B859A2;
+    background-image: url("/static/images/gif3.png");
+    background-size: cover; 
     margin-left: 0;
     margin-right: 0;
+    margin-bottom: 0;
     text-align: center;
 }
 
 h1 {
     font-size: 40pt;
-    color: #ffffff;
-    text-shadow: 10px 10px 10px #000000;
+    color: #d2d0b7;
+    text-shadow: 7px 7px 7px #912165;
     text-align: center;
     margin-top: 50px;
     margin-bottom: 50px;
@@ -26,12 +29,12 @@ a {
 
 #grad1 {
     height: 15vh;
-    background-image: linear-gradient(#202124, #000000);
+    background-image: linear-gradient(#B859A2, #912165);
 }
 
 footer {
     text-align: center;
-    padding: 3px;
-    background-color: #000000;
+    padding: 9vh;
+    background-color: #912165;
     color: white;
 }

@@ -3,22 +3,26 @@
 body {
     font-family: "Rubik", sans-serif;
     font-size: 35pt;
-    color: #727785;
-    background-color: #202124;
+    color: #ffffff;
+    text-shadow: 3px 3px 3px #0098d3;
+    background-image: url("/static/images/gifFile.gif");
+    background-size: cover; 
+
     margin-left: 0;
     margin-right: 0;
     margin-bottom: 0;
-    text-align: center;
+    text-align: center;   
+
 }
 
 h1 {
-    font-size: 60pt;
-    color: #ffffff;
-    text-shadow: 10px 10px 10px #000000;
-    text-align: center;
-    margin-top: 50px;
-    margin-bottom: 50px;
-}
+        font-size: 40pt;
+        color: #ffffff;
+        text-shadow: 7px 7px 7px #0098d3;
+        text-align: center;
+        margin-top: 50px;
+        margin-bottom: 50px;
+    }
 
 a {
     text-decoration: none;
@@ -76,12 +80,12 @@ input.search {
 
 #grad1 {
     height: 15vh;
-    background-image: linear-gradient(#202124, #000000);
+    background-image: linear-gradient(#BCD4E0, #0098d3);
 }
 
 footer {
     text-align: center;
     padding: 9vh;
-    background-color: #000000;
+    background-color: #0098d3;
     color: white;
 }
