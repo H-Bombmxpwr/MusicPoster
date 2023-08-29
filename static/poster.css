@@ -4,9 +4,9 @@ body {
     font-family: "Rubik", sans-serif;
     font-size: 35pt;
     color: #727785;
-    background-color: #B859A2;
-    background-image: url("/static/images/gif3.png");
-    background-size: cover; 
+    background-color: #202124;
+    /*background-image: url("/static/images/notes.png");*/
+    background-size: cover;
     margin-left: 0;
     margin-right: 0;
     margin-bottom: 0;
@@ -15,8 +15,8 @@ body {
 
 h1 {
     font-size: 40pt;
-    color: #d2d0b7;
-    text-shadow: 7px 7px 7px #912165;
+    color: #e0e0e0;
+    text-shadow: 7px 7px 7px #000000;
     text-align: center;
     margin-top: 50px;
     margin-bottom: 50px;
@@ -27,14 +27,28 @@ a {
     color: inherit;
 }
 
+.container {
+    height:24vw;
+}
+
+
+#notes {
+    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
 #grad1 {
     height: 15vh;
-    background-image: linear-gradient(#B859A2, #912165);
+    background-image: linear-gradient(#202124, #000000);
+    margin-bottom: 0;
 }
 
 footer {
     text-align: center;
     padding: 9vh;
-    background-color: #912165;
+    background-color: #000000;
     color: white;
+    margin-bottom: 0;
 }
