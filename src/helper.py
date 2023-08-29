@@ -14,69 +14,73 @@ import io
 
 
 class Utility:
-    def __init__(self,album):
+    def __init__(self, album):
         self.album = album
 
     def buildPoster(self):
-        #create a blank canvas
+        # create a blank canvas
         width = 740
-        height = 1200 
+        height = 1200
         below_pic_h = 710
         margin = 50
         background = self.album.background
         text_color = self.album.text_color
-        poster = Image.new(mode="RGBA", size=(width, height),color = background)
-        
-        code_banner = return_banner(self.album.album_id,background,text_color)
-        #add the album cover to the top
+        poster = Image.new(mode="RGBA", size=(width, height), color=background)
+
+        code_banner = return_banner(
+            self.album.album_id, background, text_color)
+        # add the album cover to the top
         album_image_url = self.album.getCoverArt()[0]['url']
         response = requests.get(album_image_url)
         album_img = Image.open(BytesIO(response.content)).convert("RGBA")
-        
-        #overlay the album cover
+
+        # overlay the album cover
         poster.paste(album_img, (margin, margin), album_img)
 
-        #overlay the code banner
-        poster.paste(code_banner,(440 - margin + 15,1125,740 - margin + 15,1200), code_banner)
-        
+        # overlay the code banner
+        poster.paste(code_banner, (440 - margin + 15, 1125,
+                     740 - margin + 15, 1200), code_banner)
 
-        #draw object creation
+        # draw object creation
         draw = ImageDraw.Draw(poster)
 
-        #artist name text
+        # artist name text
         artist_name = self.album.artist_name.upper()
         artist_font = ImageFont.truetype('static\Oswald-Medium.ttf', 30)
-        #dimensions of artist text
+        # dimensions of artist text
         ascent, descent = artist_font.getmetrics()
         (w, baseline), (offset_x, offset_y) = artist_font.font.getsize(artist_name)
-        
-        #box = self.scaleDown(artist_name,width - margin - 200,below_pic_h,width - margin,below_pic_h + 30,artist_font,30)
-        draw.text((width - w - margin, below_pic_h + 30), artist_name, font=artist_font, fill=text_color)
 
+        # box = self.scaleDown(artist_name,width - margin - 200,below_pic_h,width - margin,below_pic_h + 30,artist_font,30)
+        draw.text((width - w - margin, below_pic_h + 30),
+                  artist_name, font=artist_font, fill=text_color)
 
-        #album name text
+        # album name text
         album_name = self.album.album_name.upper()
         album_font = ImageFont.truetype('static\Oswald-Medium.ttf', 40)
 
-        #dimenstions of album text
+        # dimenstions of album text
         ascent, descent = album_font.getmetrics()
 
         album_list = textwrap.wrap(album_name, width=18)
         g = 0
         for string in album_list:
             (w, baseline), (offset_x, offset_y) = album_font.font.getsize(string)
-            draw.text((width - w - margin, below_pic_h + (offset_y) + (ascent - offset_y) + descent + g + 15),  string, font=album_font, fill=text_color)
-            g+=45
+            draw.text((width - w - margin, below_pic_h + (offset_y) + (ascent -
+                      offset_y) + descent + g + 15),  string, font=album_font, fill=text_color)
+            g += 45
 
-        #tracks text
+        # tracks text
         tracks = self.album.getTracks().values()
-        
-        if(height - 50 - below_pic_h) > 35 * self.album.getNumTracks():
+
+        if (height - 50 - below_pic_h) > 35 * self.album.getNumTracks():
             increment = 35
             font = 30
         else:
-            increment = (height - 50 - below_pic_h)/self.album.getNumTracks()  #taking the height, subtracting 50 for margin and then 710 for the starting height
-            font = int((height - 50 - below_pic_h)/self.album.getNumTracks()) - 5
+            # taking the height, subtracting 50 for margin and then 710 for the starting height
+            increment = (height - 50 - below_pic_h)/self.album.getNumTracks()
+            font = int((height - 50 - below_pic_h) /
+                       self.album.getNumTracks()) - 5
 
         track_font = ImageFont.truetype('static\Oswald-Medium.ttf', font)
 
@@ -84,40 +88,43 @@ class Utility:
         tracknum = 1
         space = '  '
         for value in tracks:
-            if len(tracks) <= 15:
+            if len(tracks) <= 15:  # if the tracks are too long then ignore, otherwise truncate them
                 value = (value[:23] + '..') if len(value) > 25 else value
-            draw.text((margin, 710 + offset), str(tracknum) + space + value.upper(), font=track_font, fill=text_color)
+            draw.text((margin, 710 + offset), str(tracknum) + space +
+                      value.upper(), font=track_font, fill=text_color)
             offset = offset + increment
             tracknum = tracknum + 1
             if tracknum == 10:
                 space = ' '
 
-
-        #release date text
-        date_string = self.album.getReleaseDate() 
+        # release date text
+        date_string = self.album.getReleaseDate()
         date_font = ImageFont.truetype('static\Oswald-Medium.ttf', 30)
 
-        #get dimensions of date_font
+        # get dimensions of date_font
         ascent, descent = date_font.getmetrics()
         (w, baseline), (offset_x, offset_y) = date_font.font.getsize(date_string)
 
-        draw.text((width - w - margin, below_pic_h + 230),  date_string, font=date_font, fill=text_color)
+        draw.text((width - w - margin, below_pic_h + 230),
+                  date_string, font=date_font, fill=text_color)
 
-        #Display runtime with release year
+        # Display runtime with release year
         runtime_string = self.album.getRuntime()
         runtime_font = ImageFont.truetype('static\Oswald-Medium.ttf', 30)
 
-        #get dimensions of runtime font
+        # get dimensions of runtime font
         ascent, descent = runtime_font.getmetrics()
         (w, baseline), (offset_x, offset_y) = runtime_font.font.getsize(runtime_string)
 
-        draw.text((width - w - margin, below_pic_h + 270),  runtime_string, font=runtime_font, fill=text_color)
+        draw.text((width - w - margin, below_pic_h + 270),
+                  runtime_string, font=runtime_font, fill=text_color)
 
-        #label text
-        label_string = "Released by " + self.album.getLabel().split(',')[0] #plit and take everything before first comma
+        # label text
+        # plit and take everything before first comma
+        label_string = "Released by " + self.album.getLabel().split(',')[0]
         label_font = ImageFont.truetype('static\Oswald-Medium.ttf', 30)
 
-        #get dimensions of label_font
+        # get dimensions of label_font
         ascent, descent = label_font.getmetrics()
         (w, baseline), (offset_x, offset_y) = label_font.font.getsize(label_string)
 
@@ -125,25 +132,24 @@ class Utility:
         g = 0
         for string in label_list:
             (w, baseline), (offset_x, offset_y) = label_font.font.getsize(string)
-            draw.text((width - w - margin, below_pic_h + 310 + g),  string, font=label_font, fill=text_color)
-            g+=30
+            draw.text((width - w - margin, below_pic_h + 310 + g),
+                      string, font=label_font, fill=text_color)
+            g += 30
 
-        #get color squares using helper function to get most vibrant colors of album image
-        colors = self.get_colors(album_img,5,250)
-        
+        # get color squares using helper function to get most vibrant colors of album image
+        colors = self.get_colors(album_img, 5, 250)
+
         offset = 0
         spacing = 30
         for color in colors:
-            draw.rectangle([(width - margin - offset, below_pic_h), (width - margin - offset - 30, below_pic_h + 30)],fill=color, outline = color)
+            draw.rectangle([(width - margin - offset, below_pic_h), (width -
+                           margin - offset - 30, below_pic_h + 30)], fill=color, outline=color)
             offset += spacing
 
         return poster
-        
 
-
-
-    def get_colors(self,image, numcolors=6, resize=150):
-    # Resize image to speed up processing
+    def get_colors(self, image, numcolors=6, resize=150):
+        # Resize image to speed up processing
         img = image.copy()
         img.thumbnail((resize, resize))
 
@@ -161,16 +167,15 @@ class Utility:
 
         return colors
 
-    def encodeImage(self,image):
+    def encodeImage(self, image):
         data = io.BytesIO()
         image.save(data, "PNG")
         encoded_img_data = base64.b64encode(data.getvalue())
-        decoded_img=encoded_img_data.decode('utf-8')
+        decoded_img = encoded_img_data.decode('utf-8')
         img_data = f"data:image/png;base64,{decoded_img}"
         return img_data
 
-
-    def scaleDown(self,text,x1,y1,x2,y2,font,font_size):
+    def scaleDown(self, text, x1, y1, x2, y2, font, font_size):
         im = Image.new("RGB", (x2-x1, y2-y1), "#fff")
         box = ((x1, y1, x2, y2))
         print(box)
@@ -184,11 +189,3 @@ class Utility:
             font_size -= 1
         draw.multiline_text((box[0], box[1]), text, "#000", font)
         im.show()
-        
-
-
-
-
-
-
-    
