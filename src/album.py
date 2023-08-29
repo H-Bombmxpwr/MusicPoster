@@ -18,16 +18,17 @@ class Album:
             SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET)
         self.sp = spotipy.Spotify(
             client_credentials_manager=client_credentials_manager)
-
-        # search based on the query and make an album object
+        
+        #set a defualt if the user does not enter anything
         if artist == "" and title == "":
             artist = "steely dan"
             title = "aja"
+            
+
+        # search based on the query and make an album object
         album = self.sp.search(q='artist:' + artist +
                                ' ' + 'album:' + title, type='album', limit=1)
-        # checking if the album was found
-        self.background = "white"
-        self.text_color = (0, 0, 0)
+        
 
         if not album['albums']['items']:
             raise ValueError(
