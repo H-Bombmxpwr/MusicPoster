@@ -21,6 +21,7 @@ class Utility:
         self.margin = 50
         self.text_color = self.album.text_color
         self.background = self.album.background
+        self.full_page_track_count = 12
 
     def buildPoster(self):
         poster = self.create_poster(self.width, self.height, self.album.background)
@@ -80,32 +81,69 @@ class Utility:
             g += 45
 
 
-    def draw_tracks(self, draw): #put the tracks on the poster
-        tracks = self.album.getTracks().values()
+    # def draw_tracks(self, draw): #put the tracks on the poster
+    #     tracks = self.album.getTracks().values()
 
-        if (self.height - 50 - self.below_pic_h) > 35 * self.album.getNumTracks():
-            increment = 35
-            font = 30
-        else:
-            # taking the height, subtracting 50 for margin and then 710 for the starting height
-            increment = (self.height - 50 - self.below_pic_h)/self.album.getNumTracks()
-            font = int((self.height - 50 - self.below_pic_h) /
-                       self.album.getNumTracks()) - 5
+    #     if (self.height - 50 - self.below_pic_h) > 35 * self.album.getNumTracks():
+    #         increment = 35
+    #         font = 30
+    #     else:
+    #         # taking the height, subtracting 50 for margin and then 710 for the starting height
+    #         increment = (self.height - 50 - self.below_pic_h)/self.album.getNumTracks()
+    #         font = int((self.height - 50 - self.below_pic_h) /
+    #                    self.album.getNumTracks()) - 5
 
-        track_font = ImageFont.truetype('static\Oswald-Medium.ttf', font)
+    #     track_font = ImageFont.truetype('static\Oswald-Medium.ttf', font)
 
-        offset = 0
-        tracknum = 1
-        space = '  '
-        for value in tracks:
-            if len(tracks) <= 15:  # if the tracks are too long then ignore, otherwise truncate them
-                value = (value[:23] + '..') if len(value) > 25 else value
-            draw.text((self.margin, 710 + offset), str(tracknum) + space +
-                      value.upper(), font=track_font, fill=self.text_color)
-            offset = offset + increment
-            tracknum = tracknum + 1
-            if tracknum == 10:
-                space = ' '
+    #     offset = 0
+    #     tracknum = 1
+    #     space = '  '
+    #     for value in tracks:
+    #         if len(tracks) <= 15:  # if the tracks are too long then ignore, otherwise truncate them
+    #             value = (value[:23] + '..') if len(value) > 25 else value
+    #         draw.text((self.margin, 710 + offset), str(tracknum) + space +
+    #                   value.upper(), font=track_font, fill=self.text_color)
+    #         offset = offset + increment
+    #         tracknum = tracknum + 1
+    #         if tracknum == 10:
+    #             space = ' '
+            
+
+    def draw_tracks(self, draw):
+        tracks = list(self.album.getTracks().values())  # Convert to list for indexing
+        num_tracks = self.album.getNumTracks()
+
+        # Calculate the maximum height for each track listing based on the number of tracks
+        max_track_height = (self.height - 50 - self.below_pic_h) / max(num_tracks, self.full_page_track_count)
+        font_size = int(max_track_height) - 5  # Leave some space between track listings
+        font_size = min(font_size, 30)  # Limit the font size to a maximum of 30 if necessary
+
+        # Load the font with the calculated size
+        track_font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
+
+        # Calculate the available width for text, which is half the poster width minus margins
+        available_text_width = (self.width / 2) - (2 * self.margin)
+
+        # Initial vertical offset position
+        offset = 710  # Starting height for the first track
+
+        # Iterate through tracks and draw them
+        for tracknum, value in enumerate(tracks, 1):
+            # Measure the rendered width of the track name
+            track_name_width, _ = draw.textsize(f"{tracknum}  {value.upper()}", font=track_font)
+
+            # If the track name is too wide, truncate and add ellipsis
+            while track_name_width > available_text_width and len(value) > 0:
+                value = value[:-1]  # Remove one character at a time
+                track_name_width, _ = draw.textsize(f"{tracknum}  {value}..", font=track_font)
+
+            text = f"{tracknum}  {value.upper()}"  # Format the track number and name
+            if len(value) < len(tracks[tracknum - 1]):
+                text += '..'  # Add ellipsis if the name was truncated
+
+            draw.text((self.margin, offset), text, font=track_font, fill=self.text_color)
+            offset += max_track_height  # Update the offset for the next track
+
 
 
     def draw_release_date(self, draw): #put the release date on the poster
