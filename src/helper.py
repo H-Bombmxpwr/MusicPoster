@@ -11,6 +11,7 @@ import scipy.cluster
 
 import base64
 import io
+import re
 
 class Utility:
     def __init__(self, album):
@@ -55,94 +56,70 @@ class Utility:
         poster.paste(code_banner, (440 - self.margin + 15, 1125,
                      740 - self.margin + 15, 1200), code_banner)
 
-    def draw_artist_name(self, draw): #draw the artists name on the poster
+    def draw_artist_name(self, draw):
         artist_name = self.album.artist_name.upper()
-        artist_font = ImageFont.truetype('static\Oswald-Medium.ttf', 30)
-        # dimensions of artist text
-        ascent, descent = artist_font.getmetrics()
-        (w, baseline), (offset_x, offset_y) = artist_font.font.getsize(artist_name)
-        # box = self.scaleDown(artist_name,width - margin - 200,below_pic_h,width - margin,below_pic_h + 30,artist_font,30)
-        draw.text((self.width - w - self.margin, self.below_pic_h + 30),
-                  artist_name, font=artist_font, fill=self.text_color)
+        artist_font = ImageFont.truetype('static/Oswald-Medium.ttf', 30)
 
-    def draw_album_name(self, draw): #draw the name of the album on the poster
+        artist_name_wrapped = textwrap.wrap(artist_name, width=20)  # You might adjust this width
+        y_offset = self.below_pic_h + 30  # Starting y-coordinate
+
+        for line in artist_name_wrapped:
+            text_width, _ = draw.textsize(line, font=artist_font)
+            # Calculate x-coordinate to start drawing from the right margin
+            x_coordinate = self.width - text_width - self.margin
+            draw.text((x_coordinate, y_offset), line, font=artist_font, fill=self.text_color)
+            y_offset += artist_font.getsize(line)[1] + 5  # Adjust for the next line
+        self.y_offset = y_offset
+        self.x_artist = x_coordinate
+
+    def draw_album_name(self, draw):
         album_name = self.album.album_name.upper()
-        album_font = ImageFont.truetype('static\Oswald-Medium.ttf', 40)
+        album_font = ImageFont.truetype('static/Oswald-Medium.ttf', 40)
 
-        # dimenstions of album text
-        ascent, descent = album_font.getmetrics()
+        album_name_wrapped = textwrap.wrap(album_name, width=18)  # You might adjust this width
+        y_offset = self.y_offset   # Starting y-coordinate from the artist name
 
-        album_list = textwrap.wrap(album_name, width=18)
-        g = 0
-        for string in album_list:
-            (w, baseline), (offset_x, offset_y) = album_font.font.getsize(string)
-            draw.text((self.width - w - self.margin, self.below_pic_h + (offset_y) + (ascent -
-                      offset_y) + descent + g + 15),  string, font=album_font, fill=self.text_color)
-            g += 45
+        for line in album_name_wrapped:
+            text_width, _ = draw.textsize(line, font=album_font)
+            # Calculate x-coordinate to start drawing from the right margin
+            x_coordinate = self.width - text_width - self.margin
+            draw.text((x_coordinate, y_offset), line, font=album_font, fill=self.text_color)
+            y_offset += album_font.getsize(line)[1] + 5  # Adjust for the next line
 
-
-    # def draw_tracks(self, draw): #put the tracks on the poster
-    #     tracks = self.album.getTracks().values()
-
-    #     if (self.height - 50 - self.below_pic_h) > 35 * self.album.getNumTracks():
-    #         increment = 35
-    #         font = 30
-    #     else:
-    #         # taking the height, subtracting 50 for margin and then 710 for the starting height
-    #         increment = (self.height - 50 - self.below_pic_h)/self.album.getNumTracks()
-    #         font = int((self.height - 50 - self.below_pic_h) /
-    #                    self.album.getNumTracks()) - 5
-
-    #     track_font = ImageFont.truetype('static\Oswald-Medium.ttf', font)
-
-    #     offset = 0
-    #     tracknum = 1
-    #     space = '  '
-    #     for value in tracks:
-    #         if len(tracks) <= 15:  # if the tracks are too long then ignore, otherwise truncate them
-    #             value = (value[:23] + '..') if len(value) > 25 else value
-    #         draw.text((self.margin, 710 + offset), str(tracknum) + space +
-    #                   value.upper(), font=track_font, fill=self.text_color)
-    #         offset = offset + increment
-    #         tracknum = tracknum + 1
-    #         if tracknum == 10:
-    #             space = ' '
-            
+        self.x_album = x_coordinate
+        self.start_date = y_offset #where to start the
 
     def draw_tracks(self, draw):
-        tracks = list(self.album.getTracks().values())  # Convert to list for indexing
+        tracks = list(self.album.getTracks().values())
         num_tracks = self.album.getNumTracks()
 
-        # Calculate the maximum height for each track listing based on the number of tracks
         max_track_height = (self.height - 50 - self.below_pic_h) / max(num_tracks, self.full_page_track_count)
-        font_size = int(max_track_height) - 5  # Leave some space between track listings
-        font_size = min(font_size, 30)  # Limit the font size to a maximum of 30 if necessary
+        font_size = int(max_track_height) - 5
+        font_size = min(font_size, 30)
 
-        # Load the font with the calculated size
         track_font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
+        available_text_width = min(self.x_artist, self.x_album) - (2 * self.margin)
+        offset = 710
 
-        # Calculate the available width for text, which is half the poster width minus margins
-        available_text_width = (self.width / 2) - (2 * self.margin)
-
-        # Initial vertical offset position
-        offset = 710  # Starting height for the first track
-
-        # Iterate through tracks and draw them
         for tracknum, value in enumerate(tracks, 1):
-            # Measure the rendered width of the track name
-            track_name_width, _ = draw.textsize(f"{tracknum}  {value.upper()}", font=track_font)
+            # Remove parentheses
+            value = re.sub(r'\(.*?\)', '', value)
+            # Truncate anything after 'feat.'
+            value = re.split(r' feat\.', value, flags=re.IGNORECASE)[0]
+            value = f"{tracknum}  {value.upper()}"
+            track_name_width, _ = draw.textsize(value, font=track_font)
 
-            # If the track name is too wide, truncate and add ellipsis
-            while track_name_width > available_text_width and len(value) > 0:
-                value = value[:-1]  # Remove one character at a time
-                track_name_width, _ = draw.textsize(f"{tracknum}  {value}..", font=track_font)
+            # Truncate at the last space within the available width
+            while track_name_width > available_text_width:
+                space_index = value.rfind(' ', 0, len(value) - 1)
+                if space_index == -1:
+                    value = value[:-4] + '...'  # Preserve space for ellipsis
+                else:
+                    value = value[:space_index] + '...'  # Truncate at the last space
+                track_name_width, _ = draw.textsize(value, font=track_font)
 
-            text = f"{tracknum}  {value.upper()}"  # Format the track number and name
-            if len(value) < len(tracks[tracknum - 1]):
-                text += '..'  # Add ellipsis if the name was truncated
-
-            draw.text((self.margin, offset), text, font=track_font, fill=self.text_color)
-            offset += max_track_height  # Update the offset for the next track
+            draw.text((self.margin, offset), value, font=track_font, fill=self.text_color)
+            offset += max_track_height
 
 
 
@@ -170,11 +147,30 @@ class Utility:
         draw.text((self.width - w - self.margin, self.below_pic_h + 270),
                   runtime_string, font=runtime_font, fill=self.text_color)
 
+    # def draw_label(self, draw):
+    #     # label text
+    #     # plit and take everything before first comma
+    #     label_string = "Released by " + self.album.getLabel().split(',')[0]
+    #     label_font = ImageFont.truetype('static\Oswald-Medium.ttf', 30)
+
+    #     # get dimensions of label_font
+    #     ascent, descent = label_font.getmetrics()
+    #     (w, baseline), (offset_x, offset_y) = label_font.font.getsize(label_string)
+
+    #     label_list = textwrap.wrap(label_string, width=20)
+    #     g = 0
+    #     for string in label_list:
+    #         (w, baseline), (offset_x, offset_y) = label_font.font.getsize(string)
+    #         draw.text((self.width - w - self.margin, self.below_pic_h + 310 + g),
+    #                   string, font=label_font, fill=self.text_color)
+    #         g += 30
+        
+
     def draw_label(self, draw):
         # label text
-        # plit and take everything before first comma
+        # split and take everything before the first comma
         label_string = "Released by " + self.album.getLabel().split(',')[0]
-        label_font = ImageFont.truetype('static\Oswald-Medium.ttf', 30)
+        label_font = ImageFont.truetype('static/Oswald-Medium.ttf', 30)
 
         # get dimensions of label_font
         ascent, descent = label_font.getmetrics()
@@ -182,11 +178,18 @@ class Utility:
 
         label_list = textwrap.wrap(label_string, width=20)
         g = 0
+        max_y = self.height - 90  # Ensure label is above banner
+        current_y = self.below_pic_h + 310  # Starting y-coordinate for the label
+
         for string in label_list:
-            (w, baseline), (offset_x, offset_y) = label_font.font.getsize(string)
-            draw.text((self.width - w - self.margin, self.below_pic_h + 310 + g),
-                      string, font=label_font, fill=self.text_color)
-            g += 30
+            # Only draw the label if there's enough space above the banner
+            if current_y + g <= max_y:
+                (w, baseline), (offset_x, offset_y) = label_font.font.getsize(string)
+                draw.text((self.width - w - self.margin, current_y + g),
+                        string, font=label_font, fill=self.text_color)
+                g += ascent + descent + 5  # Line spacing
+            else:
+                break  # Stop drawing more lines if we've reached the banner
 
     def draw_color_squares(self, draw, album_img): #put the most common square colros on the poster
         colors = self.get_colors(album_img, 5, 250)
