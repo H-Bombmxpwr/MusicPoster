@@ -55,7 +55,7 @@ class Album:
 
         if not album['albums']['items']: #check if the album was found 
             self.album_found = False
-            self.message = 'Album not found. Please check your spelling and try again.'
+            self.message = 'Album not found. Literal skill issue'
             print(self.message)
         else:
             self.album_found = True
