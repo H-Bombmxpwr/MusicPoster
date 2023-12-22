@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import datetime
 import re
 
+
 # pull api keys
 load_dotenv(dotenv_path='keys.env')
 SPOTIPY_CLIENT_ID = os.getenv('SPOTIPY_CLIENT_ID')
@@ -97,3 +98,5 @@ class Album:
         if hours > 0:
             minutes = int((hours*60) + minutes)
         return str(minutes) + ":" + seconds
+
+
