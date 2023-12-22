@@ -18,7 +18,7 @@ class Album:
         self.sp = spotipy.Spotify(
             client_credentials_manager=client_credentials_manager)
         
-        #set a defualt if the user does not enter anything, its steely dan
+        #set a defualt if the user does not enter anything
         # Get the current month
         month = datetime.now().month
 

@@ -19,7 +19,7 @@
     </a>
 
 
-    <form class="grid" action="/result" method="POST">
+    <form class="grid" action="/result" method="POST" autocomplete="off">
         <center>
 
             <img src="{{ img_data }}">
@@ -28,18 +28,22 @@
 
         <div class="one">
             <div class="label">
-                <label for="song"> enter an artist </label>
+                <label for="artist">Enter an artist:</label>
             </div>
             <div class="box">
-                <input type="text" style="font-size:40pt;" name="artist" id="artist" size="10" placeholder = "artist">
+                <input type="text" list="artist-suggestions" style="font-size:40pt;" name="artist" id="artist" size="10" placeholder="artist">
+                <datalist id="artist-suggestions"></datalist>
             </div>
         </div>
+        
+        <!-- Album input field -->
         <div class="two">
             <div class="label">
-                <label for="song"> enter an album </label>
+                <label for="album">Enter an album:</label>
             </div>
             <div class="box">
-                <input type="text" style="font-size:40pt;" name="album" id="album" size="10" placeholder = "album">
+                <input type="text" list="album-suggestions" style="font-size:40pt;" name="album" id="album" size="10" placeholder="album">
+                <datalist id="album-suggestions"></datalist>
             </div>
         </div>
         <div class="three">
@@ -73,6 +77,7 @@
         <a href="{{ url_for('about') }}">about page</a>
 
     </footer>
+    <script src="{{ url_for('static', filename='auto.js') }}"></script>
 </body>
 
 </html>
