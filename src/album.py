@@ -30,7 +30,7 @@ class Album:
                                ' ' + 'album:' + title, type='album', limit=1)
         
 
-        if not album['albums']['items']:
+        if not album['albums']['items']: #check if the album was found 
             self.album_found = False
             self.message = 'Album not found. Please check your spelling and try again.'
             print(self.message)
@@ -48,7 +48,7 @@ class Album:
         self.text_color = text_color
 
     # get the track of an album object, optional parameter limit to limit the tracks returned
-    def getTracks(self, limit=50):
+    def getTracks(self, limit=30):
         track_return = self.sp.album_tracks(self.album_id, limit)['items']
         tracks = {}
         for i in range(0, len(track_return)):
