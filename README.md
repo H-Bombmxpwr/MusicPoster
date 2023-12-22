@@ -2,7 +2,7 @@
 Makes a Music Poster given an album and an artist
 
 # About
-This project takes in the name of an artist and album and using the spotify API returns a lot of information about the album and proesents it in a modern looking poster. You can choose the text color and background color in [test.py](src/test.py) or within the local hosted website as well using the HTML color picker. The poster will also output the spotify code of the album which can be scanned by any phone with the spotify app, and it will bring your straight to that album. 
+This project takes in the name of an artist and album and using the spotify API returns a lot of information about the album and proesents it in a modern looking poster. You can choose the text color and background color in [local.py](local.py) or within the local hosted website as well using the HTML color picker. The poster will also output the spotify code of the album which can be scanned by any phone with the spotify app, and it will bring your straight to that album. 
 
 # Usage
 To generate the poster clone the code. You will need a `SPOTIPY_CLIENT_ID` and `SPOTIPY_CLIENT_SECRET` which are the same as the spotify ones which you can get from spotify for developers [here](https://developer.spotify.com/documentation/general/guides/authorization/). 
@@ -13,7 +13,7 @@ There is also a `requirements.txt` file to install the right dependencies using
 pip install -r requirements.txt
 ```
 
-Once this is done you can run [app.py](app.py) to get a localhosted site, or run [test.py](src/test.py) to make a poster without hosting a wesbite. You can change the album and artist in [test.py](src/test.py) as well. 
+Once this is done you can run [app.py](app.py) to get a localhosted site, or run [local.py](local.py) to make a poster without hosting a wesbite. You can change the album and artist in [local.py](local.py) as well. 
 
 All that is required is to send in an artist and album(with close enough spelling) and the program will do the rest
 

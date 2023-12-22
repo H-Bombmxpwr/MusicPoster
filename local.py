@@ -1,5 +1,5 @@
-from album import Album
-from helper import Utility
+from src.album import Album
+from src.helper import Utility
 
 artist = "berhana"
 album = "han"
