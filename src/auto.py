@@ -4,6 +4,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import os
 from dotenv import load_dotenv
 
+#this is to support the autofill feature
 class AutoFill:
     def __init__(self):
         # Load your credentials from the .env file
