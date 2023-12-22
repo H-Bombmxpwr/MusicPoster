@@ -25,5 +25,5 @@ HAN by Berhana
 
 
 # In the future
-Trying to add it to a website. Also want to improve the color changing algorithm to remove some of the blurriness from the scannable spotify codes. 
+Trying to add it to a website.
 

@@ -19,10 +19,12 @@ def result():
     bcolor = output["background"]
     tcolor = output["text"]
     album = Album(artist,album)
-    album.setColors(bcolor,tcolor)
-    poster = Utility(album).buildPoster()
-    img_data = Utility(album).encodeImage(poster)
-    return render_template("poster/result.html", img_data=img_data)
+    img_data = None
+    if album.album_found:
+        album.setColors(bcolor,tcolor)
+        poster = Utility(album).buildPoster()
+        img_data = Utility(album).encodeImage(poster)
+    return render_template("poster/result.html", img_data=img_data, found=album.album_found)
     
 @app.route("/about")
 def about():

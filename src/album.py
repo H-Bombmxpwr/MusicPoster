@@ -31,14 +31,15 @@ class Album:
         
 
         if not album['albums']['items']:
-            raise ValueError(
-                'Was not able to find this album, check your spelling and try again')
+            self.album_found = False
+            self.message = 'Album not found. Please check your spelling and try again.'
+            print(self.message)
         else:
+            self.album_found = True
             self.artist_id = album['albums']['items'][0]['artists'][0]['id']
             self.artist_name = album['albums']['items'][0]['artists'][0]['name']
             self.album_id = album['albums']['items'][0]['id']
-            self.album_name = re.sub(
-                "[\(\[].*?[\)\]]", "", album['albums']['items'][0]['name'])
+            self.album_name = re.sub("[\(\[].*?[\)\]]", "", album['albums']['items'][0]['name'])
             print(self.album_name + " by " + self.artist_name + " was found!")
 
     # set the colors of the album poster

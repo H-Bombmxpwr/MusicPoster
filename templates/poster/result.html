@@ -21,11 +21,51 @@
 
     <form class="grid" action="/result" method="POST">
         <center>
-
+            {% if found %}
             <img src="{{ img_data }}">
+            {% else %}
+            <h3 class = "error"> That album was not found, check your spelling and try again </h3>
+            {% endif %}
+
 
         </center>
+        
+        <div class="one">
+            <div class="label">
+                <label for="song"> enter an artist </label>
+            </div>
+            <div class="box">
+                <input type="text" style="font-size:40pt;" name="artist" id="artist" size="10" placeholder = "artist">
+            </div>
+        </div>
+        <div class="two">
+            <div class="label">
+                <label for="song"> enter an album </label>
+            </div>
+            <div class="box">
+                <input type="text" style="font-size:40pt;" name="album" id="album" size="10" placeholder = "album">
+            </div>
+        </div>
+        <div class="three">
+            <div class="label">
+                <label for="song"> background color </label>
+            </div>
+            <div class="box">
+                <input type="color" value=#ffffff id="back_color" name="background" class="custom">
+            </div>
+        </div>
+        <div class="four">
+            <div class="label">
+                <label for="song"> text color </label>
+            </div>
+            <div class="box">
+                <input type="color" value=#000000 id="text_color" name="text" class="custom">
+            </div>
+        </div>
 
+        <div class="button">
+            <center><input type="submit" id="search" value="generate" class="search" /></center>
+        </div>
         
     </form>
 
