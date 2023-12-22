@@ -2,9 +2,8 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import os
 from dotenv import load_dotenv
-import datetime
 import re
-
+from datetime import datetime
 # pull api keys
 load_dotenv(dotenv_path='keys.env')
 SPOTIPY_CLIENT_ID = os.getenv('SPOTIPY_CLIENT_ID')
@@ -19,11 +18,35 @@ class Album:
         self.sp = spotipy.Spotify(
             client_credentials_manager=client_credentials_manager)
         
-        #set a defualt if the user does not enter anything
+        #set a defualt if the user does not enter anything, its steely dan
+        # Get the current month
+        month = datetime.now().month
+
+        # Determine the season based on the month
+        if month in [12, 1, 2]:
+            season = 'winter'
+        elif month in [3, 4, 5]:
+            season = 'spring'
+        elif month in [6, 7, 8]:
+            season = 'summer'
+        else:
+            season = 'autumn'
+
+        # Set a default artist and album if the user does not enter anything,
+        # based on the season
         if artist == "" and title == "":
-            artist = "steely dan"
-            title = "aja"
-            
+            if season == 'winter':
+                artist = "michael buble"
+                title = "christmas"
+            elif season == 'spring':
+                artist = "fitz and the tantrums"
+                title = "more than just a dream"
+            elif season == 'summer':
+                artist = "jimmy buffet"
+                title = "songs you know by heart"
+            else:
+                artist = "steely dan"
+                title = "aja"
 
         # search based on the query and make an album object
         album = self.sp.search(q='artist:' + artist +
@@ -68,7 +91,7 @@ class Album:
         date = str(self.sp.album(self.album_id)['release_date'])
         if len(date.split("-")) == 3:
             date = date.split("-")
-            date = datetime.datetime(int(date[0]), int(date[1]), int(date[2]))
+            date = datetime(int(date[0]), int(date[1]), int(date[2]))
             date = date.strftime("%B %d, %Y")
         return date
 

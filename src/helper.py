@@ -76,7 +76,7 @@ class Utility:
         album_name = self.album.album_name.upper()
         album_font = ImageFont.truetype('static/Oswald-Medium.ttf', 40)
 
-        album_name_wrapped = textwrap.wrap(album_name, width=18)  # You might adjust this width
+        album_name_wrapped = textwrap.wrap(album_name, width=16)  # You might adjust this width
         y_offset = self.y_offset   # Starting y-coordinate from the artist name
 
         for line in album_name_wrapped:
@@ -103,9 +103,13 @@ class Utility:
 
         for tracknum, value in enumerate(tracks, 1):
             # Remove parentheses
+            value = re.sub(r'\(.*?\)-', '', value)
+            # Truncate anything after 'feat.' and "remaster"
+            value = re.split(r' feat\.', value, flags=re.IGNORECASE)[0] #remove feat
+            value = re.split(r' REMASTER', value, flags=re.IGNORECASE)[0] #remove remaster
+            value = re.split(r' \(', value, flags=re.IGNORECASE)[0] #remove parathesis
+            # value = re.split(r' \-', value, flags=re.IGNORECASE)[0] #remove -
             value = re.sub(r'\(.*?\)', '', value)
-            # Truncate anything after 'feat.'
-            value = re.split(r' feat\.', value, flags=re.IGNORECASE)[0]
             value = f"{tracknum}  {value.upper()}"
             track_name_width, _ = draw.textsize(value, font=track_font)
 
