@@ -141,3 +141,59 @@ footer {
         padding: 10px; /* Less padding on footer */
     }
 }
+
+/* Mobile responsiveness */
+@media only screen and (max-width: 600px) {
+    /* ... existing mobile styles ... */
+
+    /* Hide the poster scrolling feature on mobile devices */
+    .poster-scroll-container {
+        display: none;
+    }
+}
+
+/* Desktop styles for .poster-scroll-container and .poster-item */
+@media only screen and (min-width: 601px) {
+    .poster-scroll-container {
+        display: flex; /* Flex is used to align and space children elements */
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 1040px;
+        overflow-y: hidden;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px; /* This adds space between the scrolling posters */
+    }
+
+    .poster-item {
+        width: 148px;
+        height: 240px;
+        background-color: #727785;
+        margin: 10px 0;
+    }
+
+    .autoscroll {
+        animation: scrollPoster 20s linear infinite;
+    }
+
+    @keyframes scrollPoster {
+        0% { transform: translateY(100%); }
+        100% { transform: translateY(-100%); }
+    }
+}
+
+/* Additional media query for desktop to adjust autoscroll animation */
+/* This will only apply the animation on devices wider than 600px */
+@media only screen and (min-width: 601px) {
+    .poster-item {
+        /* Desktop sizes for .poster-item */
+        width: 148px; /* Adjust size as needed */
+        height: 240px; /* Adjust size as needed */
+    }
+
+    .autoscroll {
+        /* Adjust the duration as needed for your number of posters */
+        animation: scrollPoster 30s linear infinite;
+    }
+}
