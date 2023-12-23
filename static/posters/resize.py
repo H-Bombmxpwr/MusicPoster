@@ -27,7 +27,9 @@ for filename in os.listdir(image_directory):
         # Save the resized image in the same directory with a suffix to indicate it's resized
         
         resized_image.save(os.path.join('static\posters_resized', filename))
-        print(f"Resized and saved {new_filename}.")
+        os.remove(file_path)
+        print(f"Deleted, resized, and saved {filename}.")
+        
 
 # List the contents of the directory after resizing to confirm the operation
 os.listdir(image_directory)
