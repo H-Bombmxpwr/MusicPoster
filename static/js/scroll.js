@@ -1,4 +1,4 @@
-// JavaScript
+// JavaScript for creating the scroll function on the posters, change the step variable to change the speed of the scroll
 document.addEventListener('DOMContentLoaded', function () {
     var scrollContainers = document.querySelectorAll('.poster-scroll-container');
 
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function startScrolling(container, scrollHeight) {
-    var step = 1; // Change step to adjust scroll speed
+    var step = 0.25; // Change step to adjust scroll speed
     function scroll() {
         if (container.scrollTop < scrollHeight * 2 - container.clientHeight) {
             container.scrollTop += step;

@@ -18,21 +18,11 @@
         <h1 class="title"> music poster</h1>
     </a>
 
-    <!-- Left side scroll container for past posters -->
     <div class="poster-scroll-container" style="left: 10px;">
-        <!-- Replace 'poster1.png', 'poster2.png', etc., with actual paths to your poster images -->
-        <div class="poster-item autoscroll"><img src="static/posters_resized/3_feet_high.png" alt="Poster 1"></div>
-        <div class="poster-item autoscroll"><img src="static/posters_resized/american_teen.png" alt="Poster 2"></div>
-        <div class="poster-item autoscroll"><img src="static/posters_resized/aja.png" alt="Poster 2"></div>
-        <div class="poster-item autoscroll"><img src="static/posters_resized/an_evening_with_silk_sonic.png" alt="Poster 2"></div>
-        <div class="poster-item autoscroll"><img src="static/posters_resized/apolloxxI.png" alt="Poster 2"></div>
-        <div class="poster-item autoscroll"><img src="static/posters_resized/back_in_black.png" alt="Poster 2"></div>
-        <div class="poster-item autoscroll"><img src="static/posters_resized/blonde.png" alt="Poster 2"></div>
-        <div class="poster-item autoscroll"><img src="static/posters_resized/case_study_01.png" alt="Poster 2"></div>
-        <div class="poster-item autoscroll"><img src="static/posters_resized/free_your_mind.png" alt="Poster 2"></div>
-        <div class="poster-item autoscroll"><img src="static/posters_resized/thitvs.png" alt="Poster 4"></div>
-        <!-- Repeat for as many posters as you have -->
+        <!-- JavaScript will dynamically add poster items here -->
     </div>
+
+    
     
 
     <!-- input form -->
@@ -88,20 +78,10 @@
     </form>
 
         <!-- Right side scroll container for past posters -->
-    <div class="poster-scroll-container" style="right: 10px;">
-        <!-- Make sure to use the same images or equivalent placeholders -->
-        <div class="poster-item autoscroll"><img src="static/posters_resized/han.png" alt="Poster 3"></div>
-        <div class="poster-item autoscroll"><img src="static/posters_resized/vampires_of_city.png" alt="Poster 4"></div>
-        <div class="poster-item autoscroll"><img src="static/posters_resized/channel_orange.png" alt="Poster 4"></div>
-        <div class="poster-item autoscroll"><img src="static/posters_resized/kick.png" alt="Poster 4"></div>
-        <div class="poster-item autoscroll"><img src="static/posters_resized/mbdtf.png" alt="Poster 4"></div>
-        <div class="poster-item autoscroll"><img src="static/posters_resized/minute_by_minute.png" alt="Poster 4"></div>
-        <div class="poster-item autoscroll"><img src="static/posters_resized/off_the_wall.png" alt="Poster 4"></div>
-        <div class="poster-item autoscroll"><img src="static/posters_resized/oxnard.png" alt="Poster 4"></div>
-        <div class="poster-item autoscroll"><img src="static/posters_resized/system_of_a_down.png" alt="Poster 4"></div>
-        <div class="poster-item autoscroll"><img src="static/posters_resized/the_score.png" alt="Poster 4"></div>
-        <!-- Repeat for as many posters as you have -->
-    </div>
+    
+        <div class="poster-scroll-container" style="right: 10px;">
+            <!-- JavaScript will dynamically add poster items here -->
+        </div>
 
     <div id="grad1"></div>
 
@@ -112,6 +92,7 @@
     </footer>
     <script src="{{ url_for('static', filename='js/auto.js') }}"></script>
     <script src="{{ url_for('static', filename='js/scroll.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/random.js') }}"></script>
 </body>
 
 </html>

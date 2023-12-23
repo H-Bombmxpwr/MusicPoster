@@ -1,6 +1,8 @@
 from PIL import Image
 import os
 
+#file for resizing the images that are given from the program itself
+
 # Directory where the images are located (assuming the current working directory)
 image_directory = '\static\posters'
 
