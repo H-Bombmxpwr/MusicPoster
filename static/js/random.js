@@ -20,7 +20,9 @@ document.addEventListener('DOMContentLoaded', function () {
         "off_the_wall.png",
         "oxnard.png",
         "system_of_a_down.png",
-        "the_score.png"
+        "the_score.png",
+        "new_eyes.png",
+        "starboy.png"
     ];
 
     // Function to shuffle an array

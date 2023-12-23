@@ -4,7 +4,7 @@ import os
 #file for resizing the images that are given from the program itself
 
 # Directory where the images are located (assuming the current working directory)
-image_directory = '\static\posters'
+image_directory = 'MusicPoster\static\posters'
 
 # The target dimensions
 target_width = 740 // 5
@@ -26,7 +26,7 @@ for filename in os.listdir(image_directory):
         resized_image = image.resize((target_width, target_height), Image.ANTIALIAS)
         # Save the resized image in the same directory with a suffix to indicate it's resized
         
-        resized_image.save(os.path.join('static\posters_resized', filename))
+        resized_image.save(os.path.join('MusicPoster\static\posters_resized', filename))
         os.remove(file_path)
         print(f"Deleted, resized, and saved {filename}.")
         
