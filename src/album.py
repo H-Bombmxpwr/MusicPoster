@@ -21,7 +21,6 @@ class Album:
         #set a defualt if the user does not enter anything
         # Get the current month
         month = datetime.now().month
-
         # Determine the season based on the month
         if month in [12, 1, 2]:
             season = 'winter'

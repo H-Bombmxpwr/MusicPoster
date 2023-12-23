@@ -24,7 +24,7 @@ function fetchSuggestions(inputId, endpoint, suggestionsId) {
                     suggestions.innerHTML += '<option value="' + item + '"></option>';
                 });
             });
-    }, 1000));
+    }, 250));
 }
 
 // Call fetchSuggestions for artists and albums

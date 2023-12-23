@@ -104,3 +104,40 @@ footer {
 .suggestions div:hover {
     background-color: #e0e0e0;
 }
+
+
+/* Mobile responsiveness */
+@media only screen and (max-width: 600px) {
+    body {
+        font-size: 16pt; /* Adjust the base font size for mobile */
+    }
+
+    h1 {
+        font-size: 24pt; /* Smaller font size for the title */
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .label, .box {
+        padding: 5%; /* Increase padding for touch targets */
+    }
+
+    input[type="text"], input[type="color"].custom, input.search {
+        font-size: 18pt; /* Larger font size for inputs and buttons */
+    }
+
+    .button {
+        padding-top: 5%;
+        padding-bottom: 10%;
+    }
+
+    .button input[type="submit"] {
+        width: 80%; /* Wider button for easier clicking */
+        padding: 10px;
+        font-size: 18pt; /* Larger font size for readability */
+    }
+
+    footer {
+        padding: 10px; /* Less padding on footer */
+    }
+}

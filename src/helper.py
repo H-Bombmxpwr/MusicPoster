@@ -130,7 +130,7 @@ class Utility:
     def draw_release_date(self, draw): #put the release date on the poster
         # release date text
         date_string = self.album.getReleaseDate()
-        date_font = ImageFont.truetype('static\Oswald-Medium.ttf', 30)
+        date_font = ImageFont.truetype('static/Oswald-Medium.ttf', 30)
 
         # get dimensions of date_font
         ascent, descent = date_font.getmetrics()
@@ -142,7 +142,7 @@ class Utility:
     def draw_runtime(self, draw): #put the total runtime on the poster
          # Display runtime with release year
         runtime_string = self.album.getRuntime()
-        runtime_font = ImageFont.truetype('static\Oswald-Medium.ttf', 30)
+        runtime_font = ImageFont.truetype('static/Oswald-Medium.ttf', 30)
 
         # get dimensions of runtime font
         ascent, descent = runtime_font.getmetrics()
@@ -245,7 +245,7 @@ class Utility:
         font_size = 40
         size = None
         while (size is None or size[0] > box[2] - box[0] or size[1] > box[3] - box[1]) and font_size > 0:
-            font = ImageFont.truetype('static\Oswald-Medium.ttf', font_size)
+            font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
             size = font.getsize_multiline(text)
             font_size -= 1
         draw.multiline_text((box[0], box[1]), text, "#000", font)

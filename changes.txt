@@ -1,0 +1,5 @@
+This is changes that are in the live version versus the local host
+
+index.html and result.html: change the routing for the form post and about page to add music poster
+
+auto.js change the routing at the bottom to have music poster
