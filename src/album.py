@@ -11,7 +11,7 @@ SPOTIPY_CLIENT_SECRET = os.getenv('SPOTIPY_CLIENT_SECRET')
 
 
 class Album:
-    def __init__(self, artist, title, uri=None):
+    def __init__(self, artist, title, url=None):
         # Setup a Spotify client
         client_credentials_manager = SpotifyClientCredentials(
             SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET)
@@ -19,18 +19,21 @@ class Album:
             client_credentials_manager=client_credentials_manager)
 
         # Check if URI is provided
-        if uri:
-            self.fetch_album_by_uri(uri)
+        if url:
+            self.fetch_album_by_url(url)
         else:
             self.fetch_album_by_artist_and_title(artist, title)
 
-    def fetch_album_by_uri(self, uri):
+    def fetch_album_by_url(self, url):
         try:
-            album = self.sp.album(uri)
+            # Extract album ID from the URL
+            album_id = url.split('/')[-1].split('?')[0]
+            print(album_id)
+            album = self.sp.album(album_id)
             self.set_album_data(album)
         except spotipy.exceptions.SpotifyException as e:
             self.album_found = False
-            self.message = f'Error fetching album by URI: {e}'
+            self.message = f'Error fetching album by URL: {e}'
             print(self.message)
 
     def fetch_album_by_artist_and_title(self, artist, title):
