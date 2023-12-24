@@ -1,5 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik&display=swap');
+
 body {
     background-color: rgb(32, 33, 36);
+    font-family: "Rubik", sans-serif;
+    font-size: 35pt;
+    color: #727785;
+    background-color: #202124;
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: 0;
+    text-align: center;
 }
 
 .mosaic-container {
