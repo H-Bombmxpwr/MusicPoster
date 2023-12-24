@@ -57,6 +57,20 @@ a {
     flex: 1;
 }
 
+.header-container {
+    text-align: center;
+    margin-bottom: 20px; 
+}
+.main-title {
+    font-size: 3em; 
+    margin: 0;
+}
+.sub-title {
+    font-size: 1em; 
+    margin: 0;
+}
+
+
 input[type="color"].custom {
     padding: 0;
     border: none;

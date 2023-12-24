@@ -20,8 +20,7 @@ def result():
     tcolor = output["text"]
     artist = output["artist"]
     album = output["album"]
-    url = output["album_url"]
-    album = Album(artist,album,url)
+    album = Album(artist,album)
     img_data = None
     if album.album_found: #only build the poster if the album was found, otherwise just pass the error message
         album.setColors(bcolor,tcolor)

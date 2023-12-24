@@ -11,24 +11,24 @@ SPOTIPY_CLIENT_SECRET = os.getenv('SPOTIPY_CLIENT_SECRET')
 
 
 class Album:
-    def __init__(self, artist, title, url=None):
+    def __init__(self, artist, title):
         # Setup a Spotify client
         client_credentials_manager = SpotifyClientCredentials(
             SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET)
         self.sp = spotipy.Spotify(
             client_credentials_manager=client_credentials_manager)
-
-        # Check if URL is provided
-        if url:
-            self.fetch_album_by_url(url)
+        
+        if self.is_spotify_url(title):
+            self.fetch_album_by_url(title)
         else:
             self.fetch_album_by_artist_and_title(artist, title)
 
+    def is_spotify_url(self, title):
+        return re.match(r'https?://open\.spotify\.com/album/[A-Za-z0-9]+', title)
+
     def fetch_album_by_url(self, url):
         try:
-            # Extract album ID from the URL
             album_id = url.split('/')[-1].split('?')[0]
-            print(album_id)
             album = self.sp.album(album_id)
             self.set_album_data(album)
         except spotipy.exceptions.SpotifyException as e:
