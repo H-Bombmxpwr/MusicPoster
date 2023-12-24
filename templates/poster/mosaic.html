@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>music poster</title>
+    <link rel="icon" href="static/images/icon.png">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mosaic.css') }}">
+</head>
+<body>
+    <div class="mosaic-container">
+        <!-- Posters will be inserted here by Flask -->
+        {% for poster in posters %}
+        <div class="poster">
+            <img src="{{ url_for('static', filename='posters_resized/' ~ poster) }}" alt="Poster">
+        </div>
+        {% endfor %}
+    </div>
+
+    <footer class="footer">
+        <p>Images are in lower quality to save space</p>
+        <a href="{{ url_for('home') }}">Back to Home</a>
+    </footer>
+
+
+</body>
+</html>

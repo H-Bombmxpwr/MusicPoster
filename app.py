@@ -2,6 +2,7 @@ from src.album import Album
 from src.helper import Utility
 from src.auto import AutoFill
 from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request,jsonify
+import os
 
 app = Flask(__name__)
 
@@ -47,6 +48,11 @@ def album_suggestions():
     autofill = AutoFill()
     albums = autofill.search_albums(query,artist_name)
     return jsonify(albums)
+
+@app.route("/mosaic")
+def mosaic():
+    posters = os.listdir('static/posters_resized')
+    return render_template('poster/mosaic.html', posters=posters)
 
 if __name__ == '__main__':
     app.run(debug = True, host = "0.0.0.0",port = 80)
