@@ -21,7 +21,7 @@ Once this is done you can run [app.py](app.py) to get a localhosted site, or run
 All that is required is to send in an artist and album(with close enough spelling) and the program will do the rest
 
 # Examples
-Someexamples are in [EXAMPLES.md](EXAMPLES.md). A more extensive list of examples can be found [here](https://trevorg73.web.illinois.edu/musicposter/mosaic). 
+Some examples are in [EXAMPLES.md](EXAMPLES.md). A more extensive list of examples can be found [here](https://trevorg73.web.illinois.edu/musicposter/mosaic). 
 
 
 # Printing
