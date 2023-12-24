@@ -1,8 +1,10 @@
 This is changes that are in the live version versus the local host
 
 index.html and result.html: change the routing for the form post and about page to add music poster
+result.html: remvove the input boxes
 
-auto.js change the routing at the bottom to have music poster
+auto.js: change the routing at the bottom to have music poster
+        change the routing inside of the album function as well
 
 
 comment out: # if __name__ == '__main__':
