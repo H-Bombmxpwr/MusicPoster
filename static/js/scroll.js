@@ -1,36 +1,41 @@
-// JavaScript for creating the scroll function on the posters, change the step variable to change the speed of the scroll
 document.addEventListener('DOMContentLoaded', function () {
-    var scrollContainers = document.querySelectorAll('.poster-scroll-container');
+    const leftContainer = document.querySelector('.poster-scroll-container[style="left: 10px;"]');
+    const rightContainer = document.querySelector('.poster-scroll-container[style="right: 10px;"]');
 
-    scrollContainers.forEach(function(container) {
-        var items = container.querySelectorAll('.poster-item');
-        var scrollHeight = container.scrollHeight;
-        var cloneContainer = document.createElement('div');
+    // Function to start scrolling
+    function startScrolling(container) {
+        let scrollHeight = container.scrollHeight;
+        let currentScroll = 0;
+        let step = 0.2; // Scroll speed
 
-        // Clone and append items to create an infinite effect
-        items.forEach(function(item) {
-            var clone = item.cloneNode(true);
-            cloneContainer.appendChild(clone);
-        });
-
-        // Append the clone container after the original items
-        container.appendChild(cloneContainer);
-
-        // Start the scrolling animation
-        startScrolling(container, scrollHeight);
-    });
-});
-
-function startScrolling(container, scrollHeight) {
-    var step = 0.25; // Change step to adjust scroll speed
-    function scroll() {
-        if (container.scrollTop < scrollHeight * 2 - container.clientHeight) {
-            container.scrollTop += step;
-        } else {
-            // Reset scrollTop position to the start of the cloned items when the end is reached
-            container.scrollTop = scrollHeight - container.clientHeight;
+        function scroll() {
+            currentScroll += step;
+            if (currentScroll >= scrollHeight) {
+                // Reset scroll position to start of the cloned posters
+                currentScroll = 0;
+                container.scrollTop = 0;
+            } else {
+                container.scrollTop = currentScroll;
+            }
+            requestAnimationFrame(scroll);
         }
+
         requestAnimationFrame(scroll);
     }
-    requestAnimationFrame(scroll);
-}
+
+    // Function to clone and append posters for continuous scrolling
+    function cloneAndAppendPosters(container) {
+        const posters = container.querySelectorAll('.poster-item');
+        posters.forEach(poster => {
+            const clone = poster.cloneNode(true);
+            container.appendChild(clone);
+        });
+    }
+
+    // Clone and append posters, then start scrolling
+    cloneAndAppendPosters(leftContainer);
+    cloneAndAppendPosters(rightContainer);
+
+    startScrolling(leftContainer);
+    startScrolling(rightContainer);
+});

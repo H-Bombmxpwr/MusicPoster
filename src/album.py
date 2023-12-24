@@ -11,15 +11,30 @@ SPOTIPY_CLIENT_SECRET = os.getenv('SPOTIPY_CLIENT_SECRET')
 
 
 class Album:
-    def __init__(self, artist, title):
-        # setup a spotfy client
+    def __init__(self, artist, title, uri=None):
+        # Setup a Spotify client
         client_credentials_manager = SpotifyClientCredentials(
             SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET)
         self.sp = spotipy.Spotify(
             client_credentials_manager=client_credentials_manager)
-        
-        #set a defualt if the user does not enter anything
-        # Get the current month
+
+        # Check if URI is provided
+        if uri:
+            self.fetch_album_by_uri(uri)
+        else:
+            self.fetch_album_by_artist_and_title(artist, title)
+
+    def fetch_album_by_uri(self, uri):
+        try:
+            album = self.sp.album(uri)
+            self.set_album_data(album)
+        except spotipy.exceptions.SpotifyException as e:
+            self.album_found = False
+            self.message = f'Error fetching album by URI: {e}'
+            print(self.message)
+
+    def fetch_album_by_artist_and_title(self, artist, title):
+        # Set a default if the user does not enter anything
         month = datetime.now().month
         # Determine the season based on the month
         if month in [12, 1, 2]:
@@ -30,7 +45,6 @@ class Album:
             season = 'summer'
         else:
             season = 'autumn'
-
         # Set a default artist and album if the user does not enter anything,
         # based on the season
         if artist == "" and title == "":
@@ -47,23 +61,24 @@ class Album:
                 artist = "steely dan"
                 title = "aja"
 
-        # search based on the query and make an album object
-        album = self.sp.search(q='artist:' + artist +
-                               ' ' + 'album:' + title, type='album', limit=1)
-        
-
-        if not album['albums']['items']: #check if the album was found 
+        album_search_result = self.sp.search(q='artist:' + artist + ' ' + 'album:' + title, type='album', limit=1)
+        if not album_search_result['albums']['items']:
             self.album_found = False
             self.message = 'Album not found. Literal skill issue'
             print(self.message)
         else:
-            self.album_found = True
-            self.artist_id = album['albums']['items'][0]['artists'][0]['id']
-            self.artist_name = album['albums']['items'][0]['artists'][0]['name']
-            self.album_id = album['albums']['items'][0]['id']
-            self.album_name = re.sub("[\(\[].*?[\)\]]", "", album['albums']['items'][0]['name'])
-            print(self.album_name + " by " + self.artist_name + " was found!")
+            album = album_search_result['albums']['items'][0]
+            self.set_album_data(album)
 
+    def set_album_data(self, album_data):
+        self.album_found = True
+        self.artist_id = album_data['artists'][0]['id']
+        self.artist_name = album_data['artists'][0]['name']
+        self.album_id = album_data['id']
+        self.album_name = re.sub("[\(\[].*?[\)\]]", "", album_data['name'])
+        print(self.album_name + " by " + self.artist_name + " was found!")
+
+    
     # set the colors of the album poster
     def setColors(self, background_color, text_color):
         self.background = background_color

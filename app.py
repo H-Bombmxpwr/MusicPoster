@@ -15,11 +15,12 @@ def home():
 @app.route("/result", methods = ['POST','GET'])
 def result():
     output = request.form.to_dict()
-    artist = output["artist"]
-    album = output["album"]
     bcolor = output["background"]
     tcolor = output["text"]
-    album = Album(artist,album)
+    artist = output["artist"]
+    album = output["album"]
+    uri = output["album_uri"]
+    album = Album(artist,album,uri)
     img_data = None
     if album.album_found: #only build the poster if the album was found, otherwise just pass the error message
         album.setColors(bcolor,tcolor)

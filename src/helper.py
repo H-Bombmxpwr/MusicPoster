@@ -90,8 +90,8 @@ class Utility:
         self.start_date = y_offset #where to start the
 
     def draw_tracks(self, draw):
-        tracks = list(self.album.getTracks().values())
-        num_tracks = self.album.getNumTracks()
+        tracks = list(self.album.getTracks().values())[:30]  # Limit the number of tracks to the first 30
+        num_tracks = min(self.album.getNumTracks(), 30)  # Limit to a maximum of 30 tracks
 
         max_track_height = (self.height - 50 - self.below_pic_h) / max(num_tracks, self.full_page_track_count)
         font_size = int(max_track_height) - 5
@@ -105,10 +105,10 @@ class Utility:
             # Remove parentheses
             value = re.sub(r'\(.*?\)-', '', value)
             # Truncate anything after 'feat.' and "remaster"
-            value = re.split(r' feat\.', value, flags=re.IGNORECASE)[0] #remove feat
-            value = re.split(r' REMASTER', value, flags=re.IGNORECASE)[0] #remove remaster
-            value = re.split(r' \(', value, flags=re.IGNORECASE)[0] #remove parathesis
-            # value = re.split(r' \-', value, flags=re.IGNORECASE)[0] #remove -
+            value = re.split(r' feat\.', value, flags=re.IGNORECASE)[0]  # remove feat
+            value = re.split(r' REMASTER', value, flags=re.IGNORECASE)[0]  # remove remaster
+            value = re.split(r' \(', value, flags=re.IGNORECASE)[0]  # remove parenthesis
+            # value = re.split(r' \-', value, flags=re.IGNORECASE)[0] # remove -
             value = re.sub(r'\(.*?\)', '', value)
             value = f"{tracknum}  {value.upper()}"
             track_name_width, _ = draw.textsize(value, font=track_font)
@@ -228,9 +228,10 @@ class Utility:
 
         return colors
 
-    def encodeImage(self, image): #encode the image to be sent to htrml to be displayed
+    def encodeImage(self, image):
         data = io.BytesIO()
-        image.save(data, "PNG")
+        # Save with DPI information
+        image.save(data, "PNG", dpi=(300, 300))
         encoded_img_data = base64.b64encode(data.getvalue())
         decoded_img = encoded_img_data.decode('utf-8')
         img_data = f"data:image/png;base64,{decoded_img}"
