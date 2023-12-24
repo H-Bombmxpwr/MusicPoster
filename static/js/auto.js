@@ -1,5 +1,3 @@
-// static/js/script.js
-
 function debounce(func, delay) {
     let inDebounce;
     return function() {
@@ -10,13 +8,22 @@ function debounce(func, delay) {
     };
 }
 
-function fetchSuggestions(inputId, endpoint, suggestionsId) {
+function fetchSuggestions(inputId, endpoint, suggestionsId, dependentInputId = null) {
     const input = document.getElementById(inputId);
     const suggestions = document.getElementById(suggestionsId);
 
     input.addEventListener('input', debounce(function() {
-        const query = this.value;
-        fetch(endpoint + '?q=' + encodeURIComponent(query))
+        let query = endpoint + '?q=' + encodeURIComponent(this.value);
+
+        // If dependent input is provided and it's for album suggestions
+        if (dependentInputId && endpoint === '/album-suggestions') {
+            const dependentInputValue = document.getElementById(dependentInputId).value;
+            if (dependentInputValue) {
+                query += '&artist=' + encodeURIComponent(dependentInputValue);
+            }
+        }
+
+        fetch(query)
             .then(response => response.json())
             .then(data => {
                 suggestions.innerHTML = '';  // Clear existing suggestions
@@ -24,9 +31,9 @@ function fetchSuggestions(inputId, endpoint, suggestionsId) {
                     suggestions.innerHTML += '<option value="' + item + '"></option>';
                 });
             });
-    }, 250));
+    }, 100));
 }
 
 // Call fetchSuggestions for artists and albums
 fetchSuggestions('artist', '/artist-suggestions', 'artist-suggestions');
-fetchSuggestions('album', '/album-suggestions', 'album-suggestions');
+fetchSuggestions('album', '/album-suggestions', 'album-suggestions', 'artist');

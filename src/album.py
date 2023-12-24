@@ -18,7 +18,7 @@ class Album:
         self.sp = spotipy.Spotify(
             client_credentials_manager=client_credentials_manager)
 
-        # Check if URI is provided
+        # Check if URL is provided
         if url:
             self.fetch_album_by_url(url)
         else:
@@ -64,7 +64,8 @@ class Album:
                 artist = "steely dan"
                 title = "aja"
 
-        album_search_result = self.sp.search(q='artist:' + artist + ' ' + 'album:' + title, type='album', limit=1)
+
+        album_search_result = self.sp.search(q=self.format_search_query(artist, title), type='album', limit=1)
         if not album_search_result['albums']['items']:
             self.album_found = False
             self.message = 'Album not found. Literal skill issue'
@@ -72,6 +73,17 @@ class Album:
         else:
             album = album_search_result['albums']['items'][0]
             self.set_album_data(album)
+
+    def format_search_query(self,artist, title):
+        query = ""
+        if artist:
+            query += f'artist:"{artist}"'  # Enclose in quotes for exact match
+        if title:
+            if query:
+                query += " "  # Add space if the artist part is also there
+            query += f'album:"{title}"'  # Enclose in quotes for exact match
+        return query
+
 
     def set_album_data(self, album_data):
         self.album_found = True

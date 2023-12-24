@@ -45,7 +45,7 @@ def album_suggestions():
     artist_name = request.args.get('artist', '')
     query = request.args.get('q', '')
     autofill = AutoFill()
-    albums = autofill.search_albums(query)
+    albums = autofill.search_albums(query,artist_name)
     return jsonify(albums)
 
 if __name__ == '__main__':
