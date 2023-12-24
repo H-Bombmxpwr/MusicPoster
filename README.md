@@ -5,7 +5,7 @@ Makes a Music Poster given an album and an artist
 This project takes in the name of an artist and album and using the spotify API returns a lot of information about the album and proesents it in a modern looking poster. You can choose the text color and background color in [local.py](local.py) or within the local hosted website as well using the HTML color picker. The poster will also output the spotify code of the album which can be scanned by any phone with the spotify app, and it will bring your straight to that album. 
 
 # Website
-You can make your own posters at the webiste [here](https://trevorg73.web.illinois.edu/musicposter/home). 
+You can make your own posters at the webiste [here](https://trevorg73.web.illinois.edu/musicposter/home). It will prompt for an artist and album. Suggestions will autofill based on what you have already entered. If you cannot get the search to work, pasting the Spotify album link into the box will work as well. A plethora of examples can be seen (here)[https://trevorg73.web.illinois.edu/musicposter/mosaic]. Note the examples are of lower quality to save space. 
 
 # Local Usage
 To generate the poster clone the code. You will need a `SPOTIPY_CLIENT_ID` and `SPOTIPY_CLIENT_SECRET` which are the same as the spotify ones which you can get from spotify for developers [here](https://developer.spotify.com/documentation/general/guides/authorization/). 
