@@ -32,7 +32,7 @@
         <div class="color-controls">
             <!-- Background Colors Section -->
             <div class="color-picker-container">
-                <div>Background Colors:</div>
+                <div>Background Color:</div>
                 <div id="backgroundColors">
                     {% for color in background_colors %}
                     <div class="color-square" onclick="updatePosterColor('{{ color }}', true)" style="background-color: {{ color }};"></div>
@@ -43,7 +43,7 @@
     
             <!-- Text Colors Section -->
             <div class="color-picker-container">
-                <div>Text Colors:</div>
+                <div>Text Color:</div>
                 <div id="textColors">
                     {% for color in text_colors %}
                     <div class="color-square" onclick="updatePosterColor('{{ color }}', false)" style="background-color: {{ color }};"></div>

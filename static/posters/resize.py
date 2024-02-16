@@ -4,11 +4,13 @@ from PIL import Image
 import os
 import re
 import json
+from datetime import datetime
 
 # Paths to directories and files
-image_directory = 'MusicPoster\static\posters'
-resized_directory = 'MusicPoster\static\posters_resized'
-js_file_path = 'MusicPoster\\static\\js\\random.js'
+image_directory = 'MusicPoster/static/posters'
+resized_directory = 'MusicPoster/static/posters_resized'
+js_file_path = 'MusicPoster/static/js/random.js'
+log_file_path = 'MusicPoster/static/posters/log.txt'
 
 # Ensure the resized directory exists
 if not os.path.exists(resized_directory):
@@ -20,6 +22,18 @@ target_height = 1200 // 5
 
 # List to hold the names of newly resized images
 new_image_names = []
+
+# Function to log the resize action
+def log_resize_action(log_path, image_names):
+    # Get the current date and time
+    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open(log_path, 'a') as log_file:
+        # Write the date and time to the log file
+        log_file.write(f"Resize action performed on {current_datetime}:\n")
+        # Write the list of resized image names to the log file
+        for name in image_names:
+            log_file.write(f" - {name}\n")
+        log_file.write("\n")  # Add a newline for spacing between entries
 
 # Resize and save the image
 def resize_and_save(image, filename, format=None):
@@ -81,3 +95,4 @@ def append_to_js(js_path, new_images):
 # Call the function to append to the JavaScript array if there are new images
 if new_image_names:
     append_to_js(js_file_path, new_image_names)
+    log_resize_action(log_file_path, new_image_names)

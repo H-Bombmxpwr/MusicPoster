@@ -28,10 +28,11 @@ def result():
         poster = utility.buildPoster()
         img_data = Utility(album).encodeImage(poster)
         album_img = utility.fetch_album_cover(album.getCoverArt()[0]['url'])
-        colors = utility.get_colors(album_img, 6)  # Adjust number of colors as needed
+        colors = utility.get_colors(album_img, 5)  # Adjust number of colors as needed
         # For simplicity, using the same colors for both. Adjust based on your requirements
     # Discard the first color and convert the rest to hex
-    text_colors = ['#' + ''.join(['{:02x}'.format(int(c)) for c in color]) for color in colors[1:]]
+    text_colors = ['#' + ''.join(['{:02x}'.format(int(c)) for c in color]) for color in reversed(colors)]
+
 
     return render_template("poster/result.html", 
                            img_data=img_data, 
