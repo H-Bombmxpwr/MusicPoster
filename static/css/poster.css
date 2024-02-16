@@ -59,3 +59,75 @@ footer {
     width: 30px;
     cursor: pointer;
 }
+
+.download-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.download-container a button {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #000000;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.download-container a button:hover {
+    background-color: #12173b;
+}
+
+.content-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+}
+
+.poster-container {
+    flex-shrink: 0; /* Prevent the image from shrinking */
+    text-align: center; /* Center the poster image */
+}
+
+.color-controls {
+    display: flex;
+    flex-direction: column;
+    margin-left: 20px; /* Space between poster and controls */
+}
+
+.color-picker-container {
+    margin-bottom: 10px; /* Space between color sections */
+}
+
+.color-square {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    margin: 5px 5px 5px 0; /* Space between squares */
+}
+
+/* Larger color picker input */
+input[type="color"] {
+    width: 40px; /* Larger width for the color picker */
+    height: 40px; /* Larger height for the color picker */
+    border: none; /* Remove border */
+    cursor: pointer;
+    margin-top: 10px; /* Space above the color picker */
+}
+
+@media (max-width: 768px) {
+    .content-container {
+        flex-direction: column;
+    }
+
+    .color-controls {
+        margin-left: 0;
+        order: 1; /* Reorder to show controls above the poster on smaller screens */
+    }
+
+    .poster-container {
+        order: 2; /* Reorder to show the poster below the controls on smaller screens */
+    }
+}

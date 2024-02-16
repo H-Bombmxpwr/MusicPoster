@@ -19,47 +19,54 @@
     </a>
 
 
-    <form class="grid" action="/result" method="POST" autocomplete="off"></form>
-        <center>
-            {% if found %}
-            <img src="{{ img_data }}" id="poster-img">
-            {% else %}
-            <h3 class = "error"> That album was not found, check your spelling and try again </h3>
-            {% endif %}
+    <div class="content-container">
+        <div class="poster-container">
+            <center>
+                {% if found %}
+                <img src="{{ img_data }}" id="poster-img">
+                {% else %}
+                <h3 class="error">That album was not found, check your spelling and try again</h3>
+                {% endif %}
+            </center>
+        </div>
+        <div class="color-controls">
+            <!-- Background Colors Section -->
+            <div class="color-picker-container">
+                <div>Background Colors:</div>
+                <div id="backgroundColors">
+                    {% for color in background_colors %}
+                    <div class="color-square" onclick="updatePosterColor('{{ color }}', true)" style="background-color: {{ color }};"></div>
+                    {% endfor %}
+                </div>
+                <input type="color" onchange="updatePosterColor(this.value, true)" value="{{ background_color }}" style="width: 40px; height: 40px;">
+            </div>
+    
+            <!-- Text Colors Section -->
+            <div class="color-picker-container">
+                <div>Text Colors:</div>
+                <div id="textColors">
+                    {% for color in text_colors %}
+                    <div class="color-square" onclick="updatePosterColor('{{ color }}', false)" style="background-color: {{ color }};"></div>
+                    {% endfor %}
+                </div>
+                <input type="color" onchange="updatePosterColor(this.value, false)" value="{{ text_color }}" style="width: 40px; height: 40px;">
+            </div>
 
-
-        </center>
-        
-        
-    </form>
+            <div class="download-container">
+                <a href="#" id="download-link" download="{{ album_name.replace(' ', '_') }}.png">
+                    <button type="button">Download Poster</button>
+                </a>
+            </div>
+        </div>
+    </div>
+    
     <input type="hidden" id="current-artist" value="{{ artist_name }}">
     <input type="hidden" id="current-album" value="{{ album_name }}">
     <input type="hidden" id="current-background-color" value="{{ background_color }}">
     <input type="hidden" id="current-text-color" value="{{ text_color }}">
-    <!-- Color Squares for Background -->
-    <div>Background Colors:</div>
-    <div id="backgroundColors">
-        {% for color in background_colors %}
-        <div class="color-square" onclick="updatePosterColor('{{ color }}', true)" style="background-color: {{ color }};"></div> <!-- for background colors -->
-        
-        {% endfor %}
-        
-    </div>
-    <input type="color" onchange="updatePosterColor(this.value, true)" value="{{ color }}">
 
-    <!-- Color Squares for Text -->
-    <div>Text Colors:</div>
-    <div id="textColors">
-        {% for color in text_colors %}
-        <div class="color-square" onclick="updatePosterColor('{{ color }}', false)" style="background-color: {{ color }};"></div> <!-- for text colors -->
-        
-        {% endfor %}
-        
-    </div>
-    <input type="color" onchange="updatePosterColor(this.value, false)" value="{{ color }}">
 
     <div id="grad1"></div>
-
     <footer>
         <a href="{{ url_for('home') }}">make another | </a>
         

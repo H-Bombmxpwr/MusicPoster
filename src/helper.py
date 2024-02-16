@@ -209,7 +209,7 @@ class Utility:
 
             offset += spacing
 
-    def get_colors(self, image, numcolors=6, resize=150): #helper function to return the dominate colors in an image.
+    def get_colors(self, image, numcolors=6, resize=150):
         # Resize image to speed up processing
         img = image.copy()
         img.thumbnail((resize, resize))
@@ -220,13 +220,18 @@ class Utility:
         # Find dominant colors
         palette = paletted.getpalette()
         color_counts = sorted(paletted.getcolors(), reverse=True)
-        colors = list()
-        for i in range(numcolors):
+        colors = []
+
+        # Ensure we don't exceed the length of color_counts
+        num_colors_to_return = min(numcolors, len(color_counts))
+        
+        for i in range(num_colors_to_return):
             palette_index = color_counts[i][1]
             dominant_color = palette[palette_index*3:palette_index*3+3]
             colors.append(tuple(dominant_color))
 
         return colors
+
 
     def encodeImage(self, image):
         data = io.BytesIO()
