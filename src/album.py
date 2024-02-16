@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 import re
 from datetime import datetime
+import random
 # pull api keys
 load_dotenv(dotenv_path='keys.env')
 SPOTIPY_CLIENT_ID = os.getenv('SPOTIPY_CLIENT_ID')
@@ -37,42 +38,28 @@ class Album:
             print(self.message)
 
     def fetch_album_by_artist_and_title(self, artist, title):
-        # Set a default if the user does not enter anything
-        month = datetime.now().month
-        # Determine the season based on the month
-        if month in [12, 1, 2]:
-            season = 'winter'
-        elif month in [3, 4, 5]:
-            season = 'spring'
-        elif month in [6, 7, 8]:
-            season = 'summer'
-        else:
-            season = 'autumn'
-        # Set a default artist and album if the user does not enter anything,
-        # based on the season
-        if artist == "" and title == "":
-            if season == 'winter':
-                artist = "michael buble"
-                title = "christmas"
-            elif season == 'spring':
-                artist = "fitz and the tantrums"
-                title = "more than just a dream"
-            elif season == 'summer':
-                artist = "jimmy buffet"
-                title = "songs you know by heart"
+        # Check if artist and title are provided
+        if not artist and not title:
+        # Fetch 25 new releases
+            new_releases = self.sp.new_releases(limit=25)
+            if new_releases['albums']['items']:
+                # Choose a random album from the new releases
+                album = random.choice(new_releases['albums']['items'])
+                self.set_album_data(album)
             else:
-                artist = "steely dan"
-                title = "aja"
-
-
-        album_search_result = self.sp.search(q=self.format_search_query(artist, title), type='album', limit=1)
-        if not album_search_result['albums']['items']:
-            self.album_found = False
-            self.message = 'Album not found. Literal skill issue'
-            print(self.message)
+                self.album_found = False
+                self.message = 'No new releases found.'
+                print(self.message)
         else:
-            album = album_search_result['albums']['items'][0]
-            self.set_album_data(album)
+            # Existing code to search for an album by artist and title
+            album_search_result = self.sp.search(q=self.format_search_query(artist, title), type='album', limit=1)
+            if not album_search_result['albums']['items']:
+                self.album_found = False
+                self.message = 'Album not found.'
+                print(self.message)
+            else:
+                album = album_search_result['albums']['items'][0]
+                self.set_album_data(album)
 
     def format_search_query(self,artist, title):
         query = ""
