@@ -24,9 +24,24 @@ def result():
     img_data = None
     if album.album_found: #only build the poster if the album was found, otherwise just pass the error message
         album.setColors(bcolor,tcolor)
-        poster = Utility(album).buildPoster()
+        utility = Utility(album)
+        poster = utility.buildPoster()
         img_data = Utility(album).encodeImage(poster)
-    return render_template("poster/result.html", img_data=img_data, found=album.album_found)
+        album_img = utility.fetch_album_cover(album.getCoverArt()[0]['url'])
+        colors = utility.get_colors(album_img, 6)  # Adjust number of colors as needed
+        # For simplicity, using the same colors for both. Adjust based on your requirements
+    # Discard the first color and convert the rest to hex
+    text_colors = ['#' + ''.join(['{:02x}'.format(int(c)) for c in color]) for color in colors[1:]]
+
+    return render_template("poster/result.html", 
+                           img_data=img_data, 
+                           found=album.album_found, 
+                           text_colors=text_colors, 
+                           background_colors=text_colors, 
+                           artist_name=artist, 
+                           album_name=album.album_name,
+                           background_color=bcolor,
+                           text_color=tcolor)
     
 @app.route("/about")
 def about():
@@ -52,6 +67,35 @@ def album_suggestions():
 def mosaic():
     posters = os.listdir('static/posters_resized')
     return render_template('poster/mosaic.html', posters=posters)
+
+@app.route("/update-poster", methods=['POST'])
+def update_poster():
+    data = request.json
+    artist = data['artist']
+    album_data = data['album']
+    new_color = data['color']
+    is_background = data['is_background']
+    background_color = data['background']  # Provided from the AJAX call
+    text_color = data['text']  # Provided from the AJAX call
+
+    # Instantiate your Album object
+    album = Album(artist, album_data)
+
+    # Update the colors based on the provided data
+    if is_background:
+        background_color = new_color
+    else:
+        text_color = new_color
+    # Assuming setColors is a method that updates colors of the Album instance
+    album.setColors(background_color, text_color)
+
+    # Rebuild the poster with the new colors
+    utility = Utility(album)
+    poster = utility.buildPoster()
+    
+    img_data = utility.encodeImage(poster)
+    return jsonify({'img_data': img_data})
+
 
 if __name__ == '__main__':
     app.run(debug = True, host = "0.0.0.0",port = 80)
