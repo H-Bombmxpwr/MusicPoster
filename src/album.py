@@ -77,7 +77,7 @@ class Album:
         self.artist_id = album_data['artists'][0]['id']
         self.artist_name = album_data['artists'][0]['name']
         self.album_id = album_data['id']
-        self.album_name = re.sub("[\(\[].*?[\)\]]", "", album_data['name'])
+        self.album_name = re.sub("[\(\[].*?[\)\]]|['\"]", "", album_data['name'])
         print(self.album_name + " by " + self.artist_name + " was found!")
 
     

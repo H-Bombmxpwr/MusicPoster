@@ -16,33 +16,37 @@ def home():
 @app.route("/result", methods = ['POST','GET'])
 def result():
     output = request.form.to_dict()
-    bcolor = output["background"]
-    tcolor = output["text"]
-    artist = output["artist"]
-    album = output["album"]
-    album = Album(artist,album)
+    bcolor = output.get("background", None)
+    tcolor = output.get("text", None)
+    artist = output.get("artist", "")
+    album_name = output.get("album", "")
+    album = Album(artist, album_name)
     img_data = None
-    if album.album_found: #only build the poster if the album was found, otherwise just pass the error message
-        album.setColors(bcolor,tcolor)
+    text_colors = None
+    album_img = None
+    album_found = album.album_found
+
+    if album_found:  # only build the poster if the album was found, otherwise just pass the error message
+        album.setColors(bcolor, tcolor)
         utility = Utility(album)
         poster = utility.buildPoster()
-        img_data = Utility(album).encodeImage(poster)
+        img_data = utility.encodeImage(poster)
         album_img = utility.fetch_album_cover(album.getCoverArt()[0]['url'])
         colors = utility.get_colors(album_img, 5)  # Adjust number of colors as needed
-        # For simplicity, using the same colors for both. Adjust based on your requirements
-    # Discard the first color and convert the rest to hex
-    text_colors = ['#' + ''.join(['{:02x}'.format(int(c)) for c in color]) for color in reversed(colors)]
+        # Discard the first color and convert the rest to hex
+        text_colors = ['#' + ''.join(['{:02x}'.format(int(c)) for c in color]) for color in reversed(colors)]
 
-
+    # Prepare variables for rendering; if not found, these will remain None or use defaults
     return render_template("poster/result.html", 
                            img_data=img_data, 
-                           found=album.album_found, 
-                           text_colors=text_colors, 
-                           background_colors=text_colors, 
+                           found=album_found, 
+                           text_colors=text_colors or ['#000000'],  # Provide a default color if not found
+                           background_colors=text_colors or ['#FFFFFF'],  # Provide a default color if not found
                            artist_name=artist, 
-                           album_name=album.album_name,
-                           background_color=bcolor,
-                           text_color=tcolor)
+                           album_name=album_name,
+                           background_color=bcolor or '#FFFFFF',  # Provide a default background color
+                           text_color=tcolor or '#000000')  # Provide a default text color
+
     
 @app.route("/about")
 def about():
