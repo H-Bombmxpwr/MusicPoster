@@ -2,7 +2,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     const posters = [
     "Amen_.png",
-    "melopobia.png",
     "speak_now.png",
     "free_your_mind.png",
     "gunfighter_ballads.png",
