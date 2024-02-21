@@ -83,3 +83,7 @@ Resize action performed on 2024-02-20 20:26:14:
  - The_Life_Of_Pablo.png
  - women_in_music_pt_III.png
 
+Resize action performed on 2024-02-20 20:34:52:
+ - The_Eminem_Show.png
+ - The_Trinity.png
+
