@@ -11,6 +11,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik&display=swap">
+    <style>
+        .custom-color-picker-trigger {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            background: url("{{ url_for('static', filename='images/rainbow.png') }}") no-repeat center center;
+            background-size: cover;
+            display: inline-block; /* or flex, align as needed */
+        }
+    </style>
 </head>
 
 <body>
@@ -38,9 +49,10 @@
                     <div class="color-square" onclick="updatePosterColor('{{ color }}', true)" style="background-color: {{ color }};"></div>
                     {% endfor %}
                 </div>
-                <input type="color" onchange="updatePosterColor(this.value, true)" value="{{ background_color }}" style="width: 40px; height: 40px;">
+                <div class="custom-color-picker-trigger" onclick="document.getElementById('background-color-picker').click();"></div>
+                <input type="color" id="background-color-picker" onchange="updatePosterColor(this.value, true)" value="{{ background_color }}" style="width: 40px; height: 40px; opacity: 0; position: absolute; z-index: -1;">
             </div>
-    
+            
             <!-- Text Colors Section -->
             <div class="color-picker-container">
                 <div>Text Color:</div>
@@ -49,7 +61,8 @@
                     <div class="color-square" onclick="updatePosterColor('{{ color }}', false)" style="background-color: {{ color }};"></div>
                     {% endfor %}
                 </div>
-                <input type="color" onchange="updatePosterColor(this.value, false)" value="{{ text_color }}" style="width: 40px; height: 40px;">
+                <div class="custom-color-picker-trigger" onclick="document.getElementById('text-color-picker').click();"></div>
+                <input type="color" id="text-color-picker" onchange="updatePosterColor(this.value, false)" value="{{ text_color }}" style="width: 40px; height: 40px; opacity: 0; position: absolute; z-index: -1;">
             </div>
 
             <div class="download-container">

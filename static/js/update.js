@@ -36,7 +36,6 @@ function updatePosterColor(color, isBackground) {
         const posterImg = document.getElementById('poster-img');
         const downloadLink = document.getElementById('download-link');
         if (posterImg) {
-            // Assuming data.img_data is the base64 encoded image string
             posterImg.src = data.img_data;
 
             // Update the hidden input values for the colors
@@ -47,6 +46,13 @@ function updatePosterColor(color, isBackground) {
             downloadLink.href = data.img_data;
             const formattedAlbumName = album.replace(/\s/g, '_');
             downloadLink.setAttribute('download', `${formattedAlbumName}.png`);
+
+            // Update the custom color picker trigger's background color to reflect the change
+            if (isBackground) {
+                document.querySelector('.custom-color-picker-trigger').style.background = backgroundColor;
+            } else {
+                document.querySelectorAll('.custom-color-picker-trigger')[1].style.background = textColor;
+            }
         }
     })
     .catch(error => {

@@ -97,9 +97,22 @@ footer {
     margin-left: 20px; /* Space between poster and controls */
 }
 
-.color-picker-container {
-    margin-bottom: 10px; /* Space between color sections */
+.color-picker-container input[type="color"] {
+    opacity: 0;
+    position: absolute;
+    z-index: -1;
 }
+
+
+/* .custom-color-picker-trigger {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    background: url('path/to/your-color-wheel-image.png') no-repeat center center;
+    background-size: cover;
+    display: inline-block; /* or flex, align as needed */
+
 
 .color-square {
     width: 30px;

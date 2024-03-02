@@ -6,7 +6,7 @@ result.html: remvove the input boxes and chaning the form routing
 auto.js: change the routing at the bottom to have music poster
         change the routing inside of the album function as well
 
-update.js: ajax fetch routing
+update.js: ajax fetch routing "/musicposter/update-poster"
 
 
 comment out: # if __name__ == '__main__':
