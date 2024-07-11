@@ -1,6 +1,7 @@
 # Album Poster
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-blue)](https://github.com/H-Bombmxpwr/MusicPoster)
 [![Website](https://img.shields.io/badge/Website-MusicPoster-brightgreen)](https://trevorg73.web.illinois.edu/musicposter/home)
+
 Makes a poster for any queried album that displays:
 - The album coverart
 - Evbery track on the album (up to 50)
@@ -14,7 +15,7 @@ Makes a poster for any queried album that displays:
 You can change the text color, the background color, and the format of the tracks on the poster. 
 
 # Website
-You can make your own posters at the webiste [here](https://trevorg73.web.illinois.edu/musicposter/home). It will prompt for an artist and album. Suggestions will autofill based on what you have already entered. If you cannot get the search to work, pasting the Spotify album link into the box will work as well. A plethora of examples can be seen [here](https://trevorg73.web.illinois.edu/musicposter/mosaic). Note the examples are of lower quality to save space. 
+You can make your own posters at the webiste [![Website](https://img.shields.io/badge/Website-MusicPoster-brightgreen)](https://trevorg73.web.illinois.edu/musicposter/home). It will prompt for an artist and album. Suggestions will autofill based on what you have already entered. If you cannot get the search to work, pasting the Spotify album link into the box will work as well. A plethora of examples can be seen [![Website](https://img.shields.io/badge/Website-MusicPoster-brightgreen)](https://trevorg73.web.illinois.edu/musicposter/mosaic). Note the examples are of lower quality to save space. 
 
 
 # About
@@ -23,7 +24,7 @@ This project takes in the name of an artist and album and using the spotify API 
 
 
 # Local Usage and Contribution
-To generate the poster clone the code. You will need a `SPOTIPY_CLIENT_ID` and `SPOTIPY_CLIENT_SECRET` which are the same as the spotify ones which you can get from spotify for developers [here](https://developer.spotify.com/documentation/general/guides/authorization/). 
+To generate the poster clone the code. You will need a `SPOTIPY_CLIENT_ID` and `SPOTIPY_CLIENT_SECRET` which are the same as the spotify ones which you can get from spotify for developers [![Website](https://img.shields.io/badge/Website-MusicPoster-brightgreen)](https://developer.spotify.com/documentation/general/guides/authorization/). 
 Remove the `.example` from [keys.env.example](keys.env.example) and add your own keys.
 
 There is also a `requirements.txt` file to install the right dependencies using 
@@ -36,7 +37,7 @@ Once this is done you can run [app.py](app.py) to get a localhosted site, or run
 All that is required is to send in an artist and album(with close enough spelling) and the program will do the rest
 
 # Examples
-Some examples are in [EXAMPLES.md](EXAMPLES.md). A more extensive list of examples can be found [here](https://trevorg73.web.illinois.edu/musicposter/mosaic). 
+Some examples are in [EXAMPLES.md](EXAMPLES.md). A more extensive list of examples can be found [![Website](https://img.shields.io/badge/Website-MusicPoster-brightgreen)](https://trevorg73.web.illinois.edu/musicposter/mosaic). 
 
 
 # Printing
