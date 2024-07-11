@@ -51,7 +51,8 @@ function updatePosterColor(color=NaN, isBackground=false, isText=false, tabulate
             // Update the custom color picker trigger's background color to reflect the change
             if (isBackground) {
                 document.querySelector('.custom-color-picker-trigger').style.background = backgroundColor;
-            } else {
+            }
+            if (isText) {
                 document.querySelectorAll('.custom-color-picker-trigger')[1].style.background = textColor;
             }
         }
