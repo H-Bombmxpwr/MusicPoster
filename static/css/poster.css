@@ -106,11 +106,12 @@ footer {
 .color-controls, .tracklist-controls{
     display: flex;
     flex-direction: column;
+    margin-bottom: 10px; /* vertical spacing between controls */
 }
 
 .tabulated-container, .dotted-container {
     display: flex;
-
+    justify-content: center;
 }
 
 /* .custom-color-picker-trigger {
@@ -137,6 +138,11 @@ input[type="color"] {
     border: none; /* Remove border */
     cursor: pointer;
     margin-top: 10px; /* Space above the color picker */
+}
+
+input[type="checkbox"] {
+    transform: scale(1.5);
+    margin-right: 15px; /* Space between checkbox and text */
 }
 
 @media (max-width: 768px) {
