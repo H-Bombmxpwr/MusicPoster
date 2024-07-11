@@ -65,6 +65,6 @@ function updatePosterColor(color=NaN, isBackground=false, isText=false, tabulate
 document.addEventListener('DOMContentLoaded', function() {
     const downloadLink = document.getElementById('download-link');
     downloadLink.addEventListener('click', function(event) {
-        // You could also perform any necessary actions here before the download
+        // perform any actions here before the download
     });
 });
