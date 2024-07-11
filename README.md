@@ -35,7 +35,7 @@ There is also a `requirements.txt` file to install the right dependencies using
 pip install -r requirements.txt
 ```
 
-Once this is done you can run [app.py](app.py) to get a localhosted site, or run [local.py](local.py) to make a poster without hosting a wesbite. You can change the album and artist in [local.py](local.py) as well. 
+Once this is done you can run [app.py](app.py) to get a localhosted site, or run [local.py](local.py) to make a poster without hosting a website. You can change the album and artist in [local.py](local.py) as well. 
 
 All that is required is to send in an artist and album(with close enough spelling) and the program will do the rest
 
