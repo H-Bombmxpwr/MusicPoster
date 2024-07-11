@@ -24,7 +24,7 @@ function updatePosterColor(color=NaN, isBackground=false, isText=false, tabulate
     };
 
     // Send the AJAX POST request to the Flask server
-    fetch('/update-poster', {
+    fetch('update-poster', {
         method: 'POST',
         body: JSON.stringify(postData),
         headers: {
