@@ -91,7 +91,7 @@ footer {
     text-align: center; /* Center the poster image */
 }
 
-.color-controls {
+.controls {
     display: flex;
     flex-direction: column;
     margin-left: 20px; /* Space between poster and controls */
@@ -103,6 +103,15 @@ footer {
     z-index: -1;
 }
 
+.color-controls, .tracklist-controls{
+    display: flex;
+    flex-direction: column;
+}
+
+.tabulated-container, .dotted-container {
+    display: flex;
+
+}
 
 /* .custom-color-picker-trigger {
     width: 40px;
@@ -135,7 +144,7 @@ input[type="color"] {
         flex-direction: column;
     }
 
-    .color-controls {
+    .controls {
         margin-left: 0;
         order: 1; /* Reorder to show controls above the poster on smaller screens */
     }

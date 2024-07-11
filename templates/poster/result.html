@@ -40,31 +40,43 @@
                 {% endif %}
             </center>
         </div>
-        <div class="color-controls">
+        <div class="controls">
             <!-- Background Colors Section -->
-            <div class="color-picker-container">
-                <div>Background Color:</div>
-                <div id="backgroundColors">
-                    {% for color in background_colors %}
-                    <div class="color-square" onclick="updatePosterColor('{{ color }}', true)" style="background-color: {{ color }};"></div>
-                    {% endfor %}
+            <div class="color-controls">
+                <div class="color-picker-container">
+                    <div>Background Color:</div>
+                    <div id="backgroundColors">
+                        {% for color in background_colors %}
+                        <div class="color-square" onclick="updatePosterColor('{{ color }}', true, false, tabulated.checked, dotted.checked)" style="background-color: {{ color }};"></div>
+                        {% endfor %}
+                    </div>
+                    <div class="custom-color-picker-trigger" onclick="document.getElementById('background-color-picker').click();"></div>
+                    <input type="color" id="background-color-picker" onchange="updatePosterColor(this.value, true, false, tabulated.checked, dotted.checked)" value="{{ background_color }}" style="width: 40px; height: 40px; opacity: 0; position: absolute; z-index: -1;">
                 </div>
-                <div class="custom-color-picker-trigger" onclick="document.getElementById('background-color-picker').click();"></div>
-                <input type="color" id="background-color-picker" onchange="updatePosterColor(this.value, true)" value="{{ background_color }}" style="width: 40px; height: 40px; opacity: 0; position: absolute; z-index: -1;">
-            </div>
-            
-            <!-- Text Colors Section -->
-            <div class="color-picker-container">
-                <div>Text Color:</div>
-                <div id="textColors">
-                    {% for color in text_colors %}
-                    <div class="color-square" onclick="updatePosterColor('{{ color }}', false)" style="background-color: {{ color }};"></div>
-                    {% endfor %}
+                
+                <!-- Text Colors Section -->
+                <div class="color-picker-container">
+                    <div>Text Color:</div>
+                    <div id="textColors">
+                        {% for color in text_colors %}
+                        <div class="color-square" onclick="updatePosterColor('{{ color }}', false, true, tabulated.checked, dotted.checked)" style="background-color: {{ color }};"></div>
+                        {% endfor %}
+                    </div>
+                    <div class="custom-color-picker-trigger" onclick="document.getElementById('text-color-picker').click();"></div>
+                    <input type="color" id="text-color-picker" onchange="updatePosterColor(this.value, false, true, tabulated.checked, dotted.checked)" value="{{ text_color }}" style="width: 40px; height: 40px; opacity: 0; position: absolute; z-index: -1;">
                 </div>
-                <div class="custom-color-picker-trigger" onclick="document.getElementById('text-color-picker').click();"></div>
-                <input type="color" id="text-color-picker" onchange="updatePosterColor(this.value, false)" value="{{ text_color }}" style="width: 40px; height: 40px; opacity: 0; position: absolute; z-index: -1;">
             </div>
-
+            <!-- Tracklist name Section -->
+            <div class="tracklist-controls">
+                <div class="tabulated-container">
+                    <input type="checkbox" id="tabulated" onchange="updatePosterColor(NaN, false, false, this.checked, dotted.checked)" value="{{ text_color }}" style=float:left>
+                    <label for="tabulated">Tabulated</label>
+                </div>
+                <div class="dotted-container">
+                    <input type="checkbox" id="dotted" onchange="updatePosterColor(NaN, false, false, tabulated.checked, this.checked)" value="{{ text_color }}" style=float:left>
+                    <label for="dotted">Dotted</label>
+                </div>
+            </div>
             <div class="download-container">
                 <a href="#" id="download-link" download="{{ album_name.replace(' ', '_') }}.png">
                     <button type="button">Download Poster</button>
