@@ -1,4 +1,4 @@
-function updatePosterColor(color, isBackground) {
+function updatePosterColor(color=NaN, isBackground=false, isText=false, tabulated=false, dotted=false) {
     // Get the current values for artist, album, and current colors from hidden inputs
     const artist = document.getElementById('current-artist').value;
     const album = document.getElementById('current-album').value;
@@ -8,7 +8,8 @@ function updatePosterColor(color, isBackground) {
     // Determine the new background and text colors
     if (isBackground) {
         backgroundColor = color; // Update background color
-    } else {
+    }
+    if (isText) {
         textColor = color; // Update text color
     }
 
@@ -16,10 +17,10 @@ function updatePosterColor(color, isBackground) {
     const postData = {
         artist: artist,
         album: album,
-        color: color,
-        is_background: isBackground,
         background: backgroundColor,
-        text: textColor
+        text: textColor,
+        tabulated: tabulated,
+        dotted: dotted
     };
 
     // Send the AJAX POST request to the Flask server

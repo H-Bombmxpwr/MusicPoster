@@ -23,6 +23,8 @@ class Utility:
         self.text_color = self.album.text_color
         self.background = self.album.background
         self.full_page_track_count = 12
+        self.tabulated = self.album.tabulated
+        self.dotted = self.album.dotted
 
     def buildPoster(self):
         poster = self.create_poster(self.width, self.height, self.album.background)
@@ -110,7 +112,7 @@ class Utility:
             value = re.split(r' \(', value, flags=re.IGNORECASE)[0]  # remove parenthesis
             # value = re.split(r' \-', value, flags=re.IGNORECASE)[0] # remove -
             value = re.sub(r'\(.*?\)', '', value)
-            value = f"{tracknum}  {value.upper()}"
+            value = f"{value.upper()}"
             track_name_width, _ = draw.textsize(value, font=track_font)
 
             # Truncate at the last space within the available width
@@ -121,8 +123,22 @@ class Utility:
                 else:
                     value = value[:space_index] + '...'  # Truncate at the last space
                 track_name_width, _ = draw.textsize(value, font=track_font)
-
-            draw.text((self.margin, offset), value, font=track_font, fill=self.text_color)
+            
+            # If the flag 'tabulated' is set, add spaces to align the track numbers
+            space = "     "
+            # If the flag is 'dotted', add a dot after the track number
+            if self.dotted:
+                tracknum = f"{tracknum}."
+                space += " "
+            
+            # Draw the track number and name
+            if self.tabulated:
+                if num_tracks >= 10:
+                    space += " "
+                draw.text((self.margin, offset), f"{tracknum}", font=track_font, fill=self.text_color)
+                draw.text((self.margin, offset), f"{space}{value}", font=track_font, fill=self.text_color)
+            else:
+                draw.text((self.margin, offset), f"{tracknum}  {value}", font=track_font, fill=self.text_color)
             offset += max_track_height
 
 

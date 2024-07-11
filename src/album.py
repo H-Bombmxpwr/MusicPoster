@@ -23,6 +23,8 @@ class Album:
             self.fetch_album_by_url(title)
         else:
             self.fetch_album_by_artist_and_title(artist, title)
+        self.tabulated = False
+        self.dotted = False
 
     def is_spotify_url(self, title):
         return re.match(r'https?://open\.spotify\.com/album/[A-Za-z0-9]+', title)
@@ -85,6 +87,11 @@ class Album:
     def setColors(self, background_color, text_color):
         self.background = background_color
         self.text_color = text_color
+        
+    # set tracklist name format
+    def setTracklistFormat(self, tabulated, dotted):
+        self.tabulated = tabulated
+        self.dotted = dotted
 
     # get the track of an album object, optional parameter limit to limit the tracks returned
     def getTracks(self, limit=30):

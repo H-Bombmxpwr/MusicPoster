@@ -78,22 +78,21 @@ def update_poster():
     data = request.json
     artist = data['artist']
     album_data = data['album']
-    new_color = data['color']
-    is_background = data['is_background']
     background_color = data['background']  # Provided from the AJAX call
     text_color = data['text']  # Provided from the AJAX call
+    tabulated = data['tabulated']
+    dotted = data['dotted']
 
     # Instantiate your Album object
     album = Album(artist, album_data)
 
-    # Update the colors based on the provided data
-    if is_background:
-        background_color = new_color
-    else:
-        text_color = new_color
+
     # Assuming setColors is a method that updates colors of the Album instance
     album.setColors(background_color, text_color)
 
+    # Update the tracklist format
+    album.setTracklistFormat(tabulated, dotted)
+    
     # Rebuild the poster with the new colors
     utility = Utility(album)
     poster = utility.buildPoster()
