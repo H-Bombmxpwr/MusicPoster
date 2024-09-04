@@ -4,7 +4,7 @@
 
 Makes a poster for any queried album that displays:
 - The album coverart
-- Evbery track on the album (up to 50)
+- Every track on the album (up to 50)
 - Recording artist 
 - Name of the album
 - Release date (Month Day, Year -> April 27, 2017)
