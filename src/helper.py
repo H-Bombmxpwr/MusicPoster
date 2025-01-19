@@ -54,7 +54,7 @@ class Utility:
         poster.paste(album_img, (self.margin, self.margin), album_img)
 
     def overlay_code_banner(self, poster):
-        code_banner = return_banner(self.album.album_id, self.album.background, self.text_color)
+        code_banner = return_banner(self.album.album_id, self.album.background, self.album.text_color)
         poster.paste(code_banner, (440 - self.margin + 15, 1125,
                      740 - self.margin + 15, 1200), code_banner)
 
@@ -69,7 +69,7 @@ class Utility:
             text_width, _ = draw.textsize(line, font=artist_font)
             # Calculate x-coordinate to start drawing from the right margin
             x_coordinate = self.width - text_width - self.margin
-            draw.text((x_coordinate, y_offset), line, font=artist_font, fill=self.text_color)
+            draw.text((x_coordinate, y_offset), line, font=artist_font, fill=self.album.text_color)
             y_offset += artist_font.getsize(line)[1] + 5  # Adjust for the next line
         self.y_offset = y_offset
         self.x_artist = x_coordinate
@@ -85,7 +85,7 @@ class Utility:
             text_width, _ = draw.textsize(line, font=album_font)
             # Calculate x-coordinate to start drawing from the right margin
             x_coordinate = self.width - text_width - self.margin
-            draw.text((x_coordinate, y_offset), line, font=album_font, fill=self.text_color)
+            draw.text((x_coordinate, y_offset), line, font=album_font, fill=self.album.text_color)
             y_offset += album_font.getsize(line)[1] + 5  # Adjust for the next line
 
         self.x_album = x_coordinate
@@ -135,10 +135,10 @@ class Utility:
             if self.tabulated:
                 if num_tracks >= 10:
                     space += " "
-                draw.text((self.margin, offset), f"{tracknum}", font=track_font, fill=self.text_color)
-                draw.text((self.margin, offset), f"{space}{value}", font=track_font, fill=self.text_color)
+                draw.text((self.margin, offset), f"{tracknum}", font=track_font, fill=self.album.text_color)
+                draw.text((self.margin, offset), f"{space}{value}", font=track_font, fill=self.album.text_color)
             else:
-                draw.text((self.margin, offset), f"{tracknum}  {value}", font=track_font, fill=self.text_color)
+                draw.text((self.margin, offset), f"{tracknum}  {value}", font=track_font, fill=self.album.text_color)
             offset += max_track_height
 
 
@@ -153,7 +153,7 @@ class Utility:
         (w, baseline), (offset_x, offset_y) = date_font.font.getsize(date_string)
 
         draw.text((self.width - w - self.margin, self.below_pic_h + 230),
-                  date_string, font=date_font, fill=self.text_color)
+                  date_string, font=date_font, fill=self.album.text_color)
 
     def draw_runtime(self, draw): #put the total runtime on the poster
          # Display runtime with release year
@@ -165,7 +165,7 @@ class Utility:
         (w, baseline), (offset_x, offset_y) = runtime_font.font.getsize(runtime_string)
 
         draw.text((self.width - w - self.margin, self.below_pic_h + 270),
-                  runtime_string, font=runtime_font, fill=self.text_color)
+                  runtime_string, font=runtime_font, fill=self.album.text_color)
 
     # def draw_label(self, draw):
     #     # label text
@@ -182,7 +182,7 @@ class Utility:
     #     for string in label_list:
     #         (w, baseline), (offset_x, offset_y) = label_font.font.getsize(string)
     #         draw.text((self.width - w - self.margin, self.below_pic_h + 310 + g),
-    #                   string, font=label_font, fill=self.text_color)
+    #                   string, font=label_font, fill=self.album.text_color)
     #         g += 30
         
 
@@ -206,7 +206,7 @@ class Utility:
             if current_y + g <= max_y:
                 (w, baseline), (offset_x, offset_y) = label_font.font.getsize(string)
                 draw.text((self.width - w - self.margin, current_y + g),
-                        string, font=label_font, fill=self.text_color)
+                        string, font=label_font, fill=self.album.text_color)
                 g += ascent + descent + 5  # Line spacing
             else:
                 break  # Stop drawing more lines if we've reached the banner

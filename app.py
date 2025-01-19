@@ -1,6 +1,7 @@
 from src.album import Album
 from src.helper import Utility
 from src.auto import AutoFill
+from src.surprise import SurpriseMe
 from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request,jsonify
 import os
 
@@ -99,6 +100,29 @@ def update_poster():
     
     img_data = utility.encodeImage(poster)
     return jsonify({'img_data': img_data})
+
+
+@app.route("/surprise", methods=["GET"])
+def surprise():
+    surprise_me = SurpriseMe()
+    img_data, album_name, artist_name = surprise_me.generate_random_poster()
+
+    if img_data:
+        return render_template(
+            "poster/result.html",
+            img_data=img_data,
+            found=True,
+            artist_name=artist_name,
+            album_name=album_name,
+            background_color="#FFFFFF",  # Default background color
+            text_color="#000000",  # Default text color
+        )
+    else:
+        return render_template(
+            "poster/result.html",
+            found=False,
+            error_message="Could not generate a random poster. Please try again.",
+        )
 
 
 if __name__ == '__main__':

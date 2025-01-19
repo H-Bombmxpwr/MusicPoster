@@ -23,6 +23,8 @@ class Album:
             self.fetch_album_by_url(title)
         else:
             self.fetch_album_by_artist_and_title(artist, title)
+        self.text_color = "#000000"  # Default text color (black)
+        self.background = "#FFFFFF"  # Default background color (white)
         self.tabulated = False
         self.dotted = False
 
