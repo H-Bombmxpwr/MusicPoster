@@ -8,6 +8,7 @@ import os
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 import random
+import base64
 
 app = Flask(__name__)
 
@@ -139,13 +140,38 @@ def surprise():
         )
     
 
-from src.infinity import InfinityPoster
-
 @app.route("/api/generate-posters", methods=['GET'])
 def generate_posters_api():
     infinity = InfinityPoster()
     posters = infinity.generate_posters(limit=5)  # Generate 5 posters per API call
     return jsonify(posters)
+
+
+@app.route("/submit-poster", methods=["POST"])
+def submit_poster():
+    try:
+        img_data = request.form["img_data"]
+        artist_name = request.form["artist_name"]
+        album_name = request.form["album_name"]
+
+        # Decode the base64 image
+        img_data = img_data.split(",")[1]  # Remove "data:image/png;base64,"
+        img_bytes = base64.b64decode(img_data)
+
+        # Create directory if it doesn't exist
+        save_dir = os.path.join("static", "user_submissions")
+        os.makedirs(save_dir, exist_ok=True)
+
+        # Save the image
+        file_name = f"{artist_name}_{album_name}.png".replace(" ", "_")
+        file_path = os.path.join(save_dir, file_name)
+        with open(file_path, "wb") as img_file:
+            img_file.write(img_bytes)
+
+        return jsonify({"success": True, "message": "Poster submitted successfully!"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
 
 
 

@@ -19,7 +19,41 @@
             cursor: pointer;
             background: url("{{ url_for('static', filename='images/rainbow.png') }}") no-repeat center center;
             background-size: cover;
-            display: inline-block; /* or flex, align as needed */
+            display: inline-block;
+        }
+
+        .submission-section {
+            margin-top: 30px;
+            text-align: center;
+            padding: 20px;
+            background-color: #202124;
+            color: white;
+            border-radius: 10px;
+        }
+
+        .submission-section button {
+            font-size: 18px;
+            padding: 10px 20px;
+            background-color: #ff5733;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .submission-section button:hover {
+            background-color: #ff7043;
+        }
+
+        .submission-section button:disabled {
+            background-color: gray;
+            cursor: not-allowed;
+        }
+
+        .success-message {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #00ff00; /* Green success message */
         }
     </style>
 </head>
@@ -28,7 +62,6 @@
     <a href="{{ url_for('home') }}">
         <h1 class="title"> music poster </h1>
     </a>
-
 
     <div class="content-container">
         <div class="poster-container">
@@ -84,6 +117,19 @@
             </div>
         </div>
     </div>
+
+    <!-- Submission Section -->
+    <div class="submission-section">
+        <h3>Want your design on the site?</h3>
+        <p>If you're proud of your design and want it to be featured on the site, submit it here!</p>
+        <form id="submit-poster-form">
+            <input type="hidden" name="img_data" id="img_data" value="{{ img_data }}">
+            <input type="hidden" name="artist_name" value="{{ artist_name }}">
+            <input type="hidden" name="album_name" value="{{ album_name }}">
+            <button type="button" id="submit-button" onclick="submitPoster()">Submit for Review</button>
+        </form>
+        <div id="success-message" class="success-message" style="display: none;">Successfully submitted for review. Thank you!</div>
+    </div>
     
     <input type="hidden" id="current-artist" value="{{ artist_name }}">
     <input type="hidden" id="current-album" value="{{ album_name }}">
@@ -94,13 +140,36 @@
     <div id="grad1"></div>
     <footer>
         <a href="{{ url_for('home') }}">make another | </a>
-        
         <a href="{{ url_for('about') }}">about</a>
-
     </footer>
     <script src="{{ url_for('static', filename='js/auto.js') }}"></script>
     <script src="{{ url_for('static', filename='js/update.js') }}"></script>
-</body>
+    <script>
+        function submitPoster() {
+            const submitButton = document.getElementById('submit-button');
+            const successMessage = document.getElementById('success-message');
+            const formData = new FormData();
+            
+            formData.append('img_data', document.getElementById('img_data').value);
+            formData.append('artist_name', document.getElementsByName('artist_name')[0].value);
+            formData.append('album_name', document.getElementsByName('album_name')[0].value);
 
+            fetch('{{ url_for("submit_poster") }}', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Disable the button and show success message
+                    submitButton.disabled = true;
+                    successMessage.style.display = 'block';
+                } else {
+                    console.error('Failed to submit poster');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
 
 </html>
