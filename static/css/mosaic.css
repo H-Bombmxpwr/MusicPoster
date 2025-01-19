@@ -1,14 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Rubik&display=swap');
-
 body {
     background-color: rgb(32, 33, 36);
     font-family: "Rubik", sans-serif;
     font-size: 35pt;
     color: #727785;
-    background-color: #202124;
-    margin-left: 0;
-    margin-right: 0;
-    margin-bottom: 0;
+    margin: 0;
     text-align: center;
 }
 
@@ -16,12 +11,13 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 10px;
-    padding: 10px;
+    padding: 20px;
+    margin-bottom: 80px; /* To avoid overlapping with the back button */
 }
 
 .poster {
     border: 1px solid #ddd; /* Optional border */
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.2); /* Optional shadow */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Optional shadow */
 }
 
 .poster img {
@@ -31,21 +27,26 @@ body {
 }
 
 .footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
     text-align: center;
-    color: #fff; /* Change color as needed */
-    font-size: 0.8em; /* Smaller text */
-    margin-top: 20px; /* Add some space above the footer */
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 10px;
 }
 
-.footer p {
-    margin: 10px 0; /* Add some space around the paragraph */
+.back-button {
+    background-color: #ff5733;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
 }
 
-.footer a {
-    font-size: 60pt;
-    color: #ffffff;
-    text-shadow: 10px 10px 10px #000000;
-    text-align: center;
-    margin-top: 50px;
-    margin-bottom: 50px;
+.back-button:hover {
+    background-color: #ff7043;
 }

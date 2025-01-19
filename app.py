@@ -2,8 +2,12 @@ from src.album import Album
 from src.helper import Utility
 from src.auto import AutoFill
 from src.surprise import SurpriseMe
+from src.infinity import InfinityPoster
 from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request,jsonify
 import os
+from spotipy import Spotify
+from spotipy.oauth2 import SpotifyClientCredentials
+import random
 
 app = Flask(__name__)
 
@@ -123,6 +127,16 @@ def surprise():
             found=False,
             error_message="Could not generate a random poster. Please try again.",
         )
+    
+
+from src.infinity import InfinityPoster
+
+@app.route("/api/generate-posters", methods=['GET'])
+def generate_posters_api():
+    infinity = InfinityPoster()
+    posters = infinity.generate_posters(limit=5)  # Generate 5 posters per API call
+    return jsonify(posters)
+
 
 
 if __name__ == '__main__':

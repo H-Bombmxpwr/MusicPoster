@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 
-
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>music poster</title>
+    <title>Music Poster Mosaic</title>
     <link rel="icon" href="static/images/icon.png">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mosaic.css') }}">
+    <!-- Axios script without integrity -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.3.4/axios.min.js" crossorigin="anonymous"></script>
 </head>
+
 <body>
-    <div class="mosaic-container">
-        <!-- Posters will be inserted here by Flask -->
+    <div class="mosaic-container" id="mosaic-container">
+        <!-- Preloaded posters from Flask -->
         {% for poster in posters %}
         <div class="poster">
             <img src="{{ url_for('static', filename='posters_resized/' ~ poster) }}" alt="Poster">
@@ -20,12 +22,13 @@
         {% endfor %}
     </div>
 
-    <div id="grad1"></div>
+    <!-- Fixed Footer with Back Button -->
     <footer class="footer">
-        <p>Images are in lower quality to save space</p>
-        <a href="{{ url_for('home') }}">Back to Home</a>
+        <button id="back-button" class="back-button" onclick="window.location.href='{{ url_for('home') }}'">Back to Home</button>
     </footer>
 
-
+    <!-- Include mosaic.js -->
+    <script src="{{ url_for('static', filename='js/mosaic.js') }}"></script>
 </body>
+
 </html>
