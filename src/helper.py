@@ -273,3 +273,17 @@ class Utility:
         draw.multiline_text((box[0], box[1]), text, "#000", font)
 
 
+    def get_scaled_font(self, text, font_path, max_width, max_size):
+        """
+        Dynamically scale the font size to fit the text within the max_width.
+        """
+        font_size = max_size
+        while font_size > 10:  # Set a minimum font size
+            font = ImageFont.truetype(font_path, font_size)
+            text_width, _ = font.getsize(text)
+            if text_width <= max_width:
+                return font
+            font_size -= 1
+        return ImageFont.truetype(font_path, 10)  # Return the smallest size if no fit
+
+
