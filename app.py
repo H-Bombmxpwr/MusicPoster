@@ -112,12 +112,22 @@ def surprise():
     img_data, album_name, artist_name = surprise_me.generate_random_poster()
 
     if img_data:
+        # Recalculate dominant colors for the album art
+        album = Album(artist_name, album_name)
+        utility = Utility(album)
+        album_img = utility.fetch_album_cover(album.getCoverArt()[0]['url'])
+        colors = utility.get_colors(album_img, 5)  # Extract 5 colors from album art
+        text_colors = ['#' + ''.join(['{:02x}'.format(int(c)) for c in color]) for color in reversed(colors)]
+        background_colors = text_colors  # Use the same colors for background options
+
         return render_template(
             "poster/result.html",
             img_data=img_data,
             found=True,
             artist_name=artist_name,
             album_name=album_name,
+            background_colors=background_colors,  # Pass background colors
+            text_colors=text_colors,  # Pass text colors
             background_color="#FFFFFF",  # Default background color
             text_color="#000000",  # Default text color
         )

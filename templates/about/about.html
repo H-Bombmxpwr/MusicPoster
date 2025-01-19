@@ -37,6 +37,7 @@
                 <li>🔀 "Surprise Me" button to generate a random poster from trending albums.</li>
                 <li>📷 Download high-resolution posters to share or print.</li>
                 <li>🌐 Fully responsive and mobile-friendly interface.</li>
+                <li>♾️ Infinite scrolling on the <a href="{{ url_for('mosaic') }}">Mosaic</a> page for endless poster exploration, mixing user-submitted designs and auto-generated posters.</li>
             </ul>
         </section>
 
@@ -47,6 +48,16 @@
             </p>
             <p>
                 The posters are created dynamically using Python's Pillow library, which enables high-quality image rendering. Finally, the generated posters are displayed on the website, ready for download or sharing!
+            </p>
+        </section>
+
+        <section class="acknowledgments">
+            <h2>Acknowledgments</h2>
+            <p>
+                Special thanks to <strong>Noah Sprovieri</strong> for graphic design help and creative input that shaped the visual identity of Music Poster.
+            </p>
+            <p>
+                A heartfelt thanks to everyone who submitted a custom poster! Your contributions have enriched the <a href="{{ url_for('mosaic') }}">Mosaic</a> page, making it a vibrant showcase of creativity.
             </p>
         </section>
 
@@ -68,7 +79,6 @@
             <a href="{{ url_for('home') }}" class="back-button">Back</a>
         </p>
     </footer>
-    
 </body>
 
 </html>
