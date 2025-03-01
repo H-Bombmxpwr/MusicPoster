@@ -3,7 +3,7 @@ Here's the updated README with the requested additions:
 
 # Album Poster
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-blue)](https://github.com/H-Bombmxpwr/MusicPoster)
-[![Website](https://img.shields.io/badge/Website-AlbumPoster-brightgreen)](https://trevorg73.web.illinois.edu/musicposter/home)
+[![Website](https://img.shields.io/badge/Website-AlbumPoster-brightgreen)](https://album.hxr.life/)
 
 Creates stunning posters for any queried album that display:
 - The album cover art
@@ -29,7 +29,7 @@ Not sure where to start? Use the **Surprise Me** button on the homepage to gener
 ---
 
 # Examples
-Some examples are available in [EXAMPLES.md](EXAMPLES.md). A more extensive list can be found on the [Mosaic Page](https://trevorg73.web.illinois.edu/musicposter/mosaic). Note: The examples are of lower quality to save space.
+Some examples are available in [EXAMPLES.md](EXAMPLES.md). A more extensive list can be found on the [Mosaic Page](https://album.hxr.life/mosaic). Note: The examples are of lower quality to save space.
 
 ---
 
