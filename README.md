@@ -1,6 +1,3 @@
-Here's the updated README with the requested additions:
----
-
 # Album Poster
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-blue)](https://github.com/H-Bombmxpwr/MusicPoster)
 [![Website](https://img.shields.io/badge/Website-AlbumPoster-brightgreen)](https://album.hxr.life/)
