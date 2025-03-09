@@ -46,7 +46,7 @@ Using other versions, especially **Python 3.12+,** may cause compatibility issue
 To check your Python version:
 ```bash
 python --version
-
+```
 # Local Usage and Contribution
 To generate posters locally:
 1. Clone the repository.
