@@ -7,8 +7,8 @@ Creates stunning posters for any queried album that display:
 - Every track on the album (up to 50)
 - Recording artist 
 - Name of the album
-- Release date (Month Day, Year -> April 27, 2017)
-- Total runtime of the album (minutes:seconds -> 54:45)
+- Release date (Month Day, Year -> June 29, 1973)
+- Total runtime of the album (minutes:seconds -> 33:29)
 - Label the album was released under
 - A scannable Spotify code that links to the album
 
