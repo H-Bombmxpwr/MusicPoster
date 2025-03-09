@@ -128,7 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-
 #google stuff
 album-poster-ee299da3386a.json
 static/posters/album-poster-ee299da3386a.json
