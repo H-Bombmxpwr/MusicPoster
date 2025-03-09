@@ -17,9 +17,6 @@ You can customize the text color, the background color, and the format of the tr
 # Website
 You can make your own posters at the website [![Website](https://img.shields.io/badge/Website-AlbumPoster-brightgreen)](https://album.hxr.life/). Enter an artist and album to get started. Suggestions will autofill as you type. If you cannot get the search to work, pasting the Spotify album link into the album box will work 100% of the time. 
 
-### Infinite Scrolling Mosaic
-The website also includes a **mosaic page** with infinite scrolling! As you scroll down, a mix of custom posters submitted by users and auto-generated posters for random albums will appear endlessly. Check it out: [![Examples](https://img.shields.io/badge/Examples-brightgreen)](https://album.hxr.life/mosaic).
-
 ### Surprise Me!
 Not sure where to start? Use the **Surprise Me** button on the homepage to generate a random album poster instantly.
 
