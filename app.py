@@ -9,6 +9,7 @@ from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 import random
 import base64
+import json
 
 #google changes 
 from google.oauth2 import service_account
@@ -170,15 +171,21 @@ def generate_posters_api():
     posters = infinity.generate_posters(limit=5)  # Generate 5 posters per API call
     return jsonify(posters)
 
-
-# Path to your service account JSON key file
-SERVICE_ACCOUNT_FILE = "album-poster-ee299da3386a.json"
-
 # Authenticate using the service account
 SCOPES = ["https://www.googleapis.com/auth/drive.file"]
-credentials = service_account.Credentials.from_service_account_file(
-    SERVICE_ACCOUNT_FILE, scopes=SCOPES
-)
+# Load from environment variable
+base64_creds = os.getenv("GOOGLE_SERVICE_ACCOUNT_BASE64")
+
+if base64_creds:
+    creds_json = base64.b64decode(base64_creds).decode("utf-8")
+    creds_dict = json.loads(creds_json)  # Convert to dictionary
+
+    credentials = service_account.Credentials.from_service_account_info(
+        creds_dict, scopes=SCOPES
+    )
+else:
+    raise Exception("❌ GOOGLE_SERVICE_ACCOUNT_BASE64 environment variable not set!")
+
 drive_service = build("drive", "v3", credentials=credentials)
 
 def upload_poster_to_drive(img_data, artist_name, album_name):
