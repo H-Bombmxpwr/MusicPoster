@@ -1,16 +1,16 @@
-#function just locally to resize all images in posters directory, save to resized posters, and also update random.js accordingly
-
 from PIL import Image
 import os
-import re
 import json
 from datetime import datetime
 
+# Get the directory of the script being executed (`static/posters/`)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))  # `static/posters/`
+BASE_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))  # Move up to `MusicPoster/`
+
 # Paths to directories and files
-image_directory = 'MusicPoster/static/posters'
-resized_directory = 'MusicPoster/static/posters_resized'
-js_file_path = 'MusicPoster/static/js/random.js'
-log_file_path = 'MusicPoster/static/posters/log.txt'
+image_directory = os.path.join(BASE_DIR, 'static', 'posters')
+resized_directory = os.path.join(BASE_DIR, 'static', 'posters_resized')
+log_file_path = os.path.join(BASE_DIR, 'static', 'posters', 'log.txt')
 
 # Ensure the resized directory exists
 if not os.path.exists(resized_directory):
@@ -24,24 +24,25 @@ target_height = 1200 // 5
 new_image_names = []
 
 # Function to log the resize action
-def log_resize_action(log_path, image_names):
-    # Get the current date and time
+def log_resize_action(log_path, image_names, deleted_files):
     current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open(log_path, 'a') as log_file:
-        # Write the date and time to the log file
+    with open(log_path, 'a', encoding = 'utf-8') as log_file:
         log_file.write(f"Resize action performed on {current_datetime}:\n")
-        # Write the list of resized image names to the log file
         for name in image_names:
-            log_file.write(f" - {name}\n")
-        log_file.write("\n")  # Add a newline for spacing between entries
+            log_file.write(f"✅ Resized: {name}\n")
+        for name in deleted_files:
+            log_file.write(f"🗑️ Deleted Original: {name}\n")
+        log_file.write("\n")
 
 # Resize and save the image
 def resize_and_save(image, filename, format=None):
-    resized_image = image.resize((target_width, target_height), Image.ANTIALIAS)
+    resized_image = image.resize((target_width, target_height), Image.LANCZOS)
     save_path = os.path.join(resized_directory, filename)
     resized_image.save(save_path, format=format)
     print(f"Resized and saved {filename} in {resized_directory}.")
     new_image_names.append(filename)
+
+deleted_files = []
 
 # Iterate over the files in the directory
 for filename in os.listdir(image_directory):
@@ -60,39 +61,14 @@ for filename in os.listdir(image_directory):
         # Resize and save the image
         resize_and_save(image, new_filename, format=format)
 
-        # Delete the original file
+        # Delete the original file after resizing
         os.remove(file_path)
+        deleted_files.append(filename)
 
-# Append new image names to the JavaScript array
-def append_to_js(js_path, new_images):
-    # Read the content of the JavaScript file
-    with open(js_path, 'r') as file:
-        content = file.read()
+# Log resizing and deletion
+if new_image_names or deleted_files:
+    log_resize_action(log_file_path, new_image_names, deleted_files)
+    print(f"✅ Resize complete. {len(new_image_names)} images processed.")
 
-    # Find the array using regex and convert it to a Python list
-    array_match = re.search(r'const posters = (\[.*?\]);', content, re.DOTALL)
-    if not array_match:
-        return
-
-    posters_array_str = array_match.group(1)
-    posters_array = json.loads(posters_array_str)
-
-    # Add the new images to the list and remove duplicates
-    updated_posters = list(set(posters_array + new_images))
-
-    # Replace the old array with the new one
-    updated_content = re.sub(
-        r'const posters = \[.*?\];',
-        'const posters = ' + json.dumps(updated_posters, indent=4) + ';',
-        content,
-        flags=re.DOTALL
-    )
-
-    # Write the updated content back to the file
-    with open(js_path, 'w') as file:
-        file.write(updated_content)
-
-# Call the function to append to the JavaScript array if there are new images
-if new_image_names:
-    append_to_js(js_file_path, new_image_names)
-    log_resize_action(log_file_path, new_image_names)
+else:
+    print("⚠️ No new images to resize.")

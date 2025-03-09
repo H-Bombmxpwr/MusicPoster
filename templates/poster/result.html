@@ -60,7 +60,7 @@
 
 <body>
     <a href="{{ url_for('home') }}">
-        <h1 class="title"> music poster </h1>
+        <h1 class="title"> album poster </h1>
     </a>
 
     <div class="content-container">
@@ -128,7 +128,7 @@
             <input type="hidden" name="album_name" value="{{ album_name }}">
             <button type="button" id="submit-button" onclick="submitPoster()">Submit for Review</button>
         </form>
-        <div id="success-message" class="success-message" style="display: none;">Successfully submitted for review. Thank you!</div>
+        <div id="success-message" class="success-message" style="display: none;"></div>
     </div>
     
     <input type="hidden" id="current-artist" value="{{ artist_name }}">
@@ -144,32 +144,7 @@
     </footer>
     <script src="{{ url_for('static', filename='js/auto.js') }}"></script>
     <script src="{{ url_for('static', filename='js/update.js') }}"></script>
-    <script>
-        function submitPoster() {
-            const submitButton = document.getElementById('submit-button');
-            const successMessage = document.getElementById('success-message');
-            const formData = new FormData();
-            
-            formData.append('img_data', document.getElementById('img_data').value);
-            formData.append('artist_name', document.getElementsByName('artist_name')[0].value);
-            formData.append('album_name', document.getElementsByName('album_name')[0].value);
-
-            fetch('{{ url_for("submit_poster") }}', {
-                method: 'POST',
-                body: formData,
-            })
-            .then(response => {
-                if (response.ok) {
-                    // Disable the button and show success message
-                    submitButton.disabled = true;
-                    successMessage.style.display = 'block';
-                } else {
-                    console.error('Failed to submit poster');
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-    </script>
+    <script src="{{ url_for('static', filename='js/submit.js') }}"></script>
 </body>
 
 </html>

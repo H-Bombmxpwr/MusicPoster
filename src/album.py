@@ -36,6 +36,9 @@ class Album:
             album_id = url.split('/')[-1].split('?')[0]
             album = self.sp.album(album_id)
             self.set_album_data(album)
+            # Ensure album name is properly extracted
+            
+            self.album_name = re.sub("[\(\[].*?[\)\]]|['\"]", "", album['name']).strip()
         except spotipy.exceptions.SpotifyException as e:
             self.album_found = False
             self.message = f'Error fetching album by URL: {e}'

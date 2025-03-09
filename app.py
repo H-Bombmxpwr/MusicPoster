@@ -10,6 +10,18 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import random
 import base64
 
+#google changes 
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
+import io
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path='keys.env')
+DRIVE_FOLDER_ID = os.getenv('DRIVE_FOLDER_ID')
+
+
+
 app = Flask(__name__)
 
 #decorator for homepage 
@@ -26,7 +38,18 @@ def result():
     tcolor = output.get("text", None)
     artist = output.get("artist", "")
     album_name = output.get("album", "")
-    album = Album(artist, album_name)
+
+    #nonsense to fix the title savign as a spotify url
+    artist_query = output.get("artist", "")  # May be empty
+    album_query = output.get("album", "")  # May still be a URL
+    album = Album(artist, album_query)  # Album class fetches real name
+    if album.album_found:
+        artist = album.artist_name  # ✅ Fix: Use the artist name from Spotify API
+        album_name = album.album_name  # ✅ Fix: Use correct album name
+    else:
+        artist = artist_query  # Keep input if album fetch fails
+        album_name = album_query  # Keep input if album fetch fails
+
     img_data = None
     text_colors = None
     album_img = None
@@ -77,6 +100,7 @@ def album_suggestions():
 @app.route("/mosaic")
 def mosaic():
     posters = os.listdir('static/posters_resized')
+    random.shuffle(posters)
     return render_template('poster/mosaic.html', posters=posters)
 
 @app.route("/update-poster", methods=['POST'])
@@ -147,32 +171,79 @@ def generate_posters_api():
     return jsonify(posters)
 
 
+# Path to your service account JSON key file
+SERVICE_ACCOUNT_FILE = "album-poster-ee299da3386a.json"
+
+# Authenticate using the service account
+SCOPES = ["https://www.googleapis.com/auth/drive.file"]
+credentials = service_account.Credentials.from_service_account_file(
+    SERVICE_ACCOUNT_FILE, scopes=SCOPES
+)
+drive_service = build("drive", "v3", credentials=credentials)
+
+def upload_poster_to_drive(img_data, artist_name, album_name):
+    """ Uploads a poster image to Google Drive and returns the file link """
+    try:
+        # Decode base64 image
+        img_bytes = base64.b64decode(img_data.split(",")[1])  # Remove 'data:image/png;base64,' prefix
+        img_stream = io.BytesIO(img_bytes)
+
+        # Define file metadata
+        file_name = f"{artist_name}_{album_name}.png".replace(" ", "_")
+        file_metadata = {
+            "name": file_name,
+            "parents": [DRIVE_FOLDER_ID]
+        }
+
+        # Upload file to Google Drive
+        media = MediaIoBaseUpload(img_stream, mimetype="image/png")
+        file = drive_service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields="id"
+        ).execute()
+
+        # Get shareable link
+        file_id = file.get("id")
+        file_link = f"https://drive.google.com/file/d/{file_id}/view"
+
+        return file_link
+
+    except Exception as e:
+        print("Error uploading to Google Drive:", e)
+        return None
+
 @app.route("/submit-poster", methods=["POST"])
 def submit_poster():
     try:
-        img_data = request.form["img_data"]
-        artist_name = request.form["artist_name"]
-        album_name = request.form["album_name"]
+        img_data = request.form.get("img_data")
+        artist_name = request.form.get("artist_name")
+        album_name = request.form.get("album_name")
 
-        # Decode the base64 image
-        img_data = img_data.split(",")[1]  # Remove "data:image/png;base64,"
-        img_bytes = base64.b64decode(img_data)
+        print(f"🔍 Received Data in /submit-poster:")
+        print(f"   - img_data: {'Yes' if img_data else 'No'}")
+        print(f"   - artist_name: {artist_name}")
+        print(f"   - album_name: {album_name}")
 
-        # Create directory if it doesn't exist
-        save_dir = os.path.join("static", "user_submissions")
-        os.makedirs(save_dir, exist_ok=True)
+        if not img_data or not artist_name or not album_name:
+            print("🚨 Missing data in request")
+            return jsonify({"success": False, "message": "Missing data"}), 400
 
-        # Save the image
-        file_name = f"{artist_name}_{album_name}.png".replace(" ", "_")
-        file_path = os.path.join(save_dir, file_name)
-        with open(file_path, "wb") as img_file:
-            img_file.write(img_bytes)
+        # Upload poster to Google Drive
+        file_link = upload_poster_to_drive(img_data, artist_name, album_name)
 
-        return jsonify({"success": True, "message": "Poster submitted successfully!"})
+        if file_link:
+            return jsonify({
+                "success": True,
+                "message": "Poster uploaded successfully!"
+            })
+        else:
+            print("🚨 Google Drive upload failed")
+            return jsonify({"success": False, "message": "Upload failed"}), 500
+
     except Exception as e:
-        return jsonify({"success": False, "message": str(e)})
-
-
+        print(f"Error in /submit-poster: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
 
 
 # if __name__ == '__main__':
