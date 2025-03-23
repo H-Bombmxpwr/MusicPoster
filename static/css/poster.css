@@ -30,6 +30,9 @@ a {
 }
 
 footer {
+    display : flex;
+    flex-direction : row;
+    justify-content : center;
     text-align: center;
     padding: 3px;
     background-color: #000000;

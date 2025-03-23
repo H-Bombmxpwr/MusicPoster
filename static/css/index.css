@@ -2,7 +2,7 @@
 
 body {
     font-family: "Rubik", sans-serif;
-    font-size: 25pt;
+    font-size: 20pt;
     color: #E7EDFF;
     background-color: #202124;
     margin-left: 0;
@@ -13,7 +13,7 @@ body {
 
 h1 {
     font-size: 50pt;
-    color: #ffffff;
+    color: #E7EDFF;
     /*text-shadow: 10px 10px 10px #000000; */
     text-align: center;
     margin-top: 50px;
@@ -28,21 +28,25 @@ a {
 .one {
     height: 13vh;
     display: flex;
+    align-items : center;
 }
 
 .two {
     height: 13vh;
     display: flex;
+    align-items : center;
 }
 
 .three {
     height: 13vh;
     display: flex;
+    align-items : center;
 }
 
 .four {
     height: 13vh;
     display: flex;
+    align-items : center;
 }
 
 .label {
@@ -66,7 +70,7 @@ a {
     margin: 0;
 }
 .sub-title {
-    font-size: 1em; 
+    font-size: 17pt; 
     margin: 0;
 }
 
@@ -79,9 +83,23 @@ input[type="color"].custom {
 
 }
 
+.buttons {
+    display : flex;
+    flex-direction : row;
+    justify-content : center;
+    align-items : center;
+}
+
 .button {
-    padding-top: 2%;
-    padding-bottom: 5%;
+    
+    padding-bottom: 2%;
+    padding-left : 1%;
+    padding-right : 1%;
+}
+
+
+#submitButton {
+    height : 54pt;
 }
 
 input.search {
@@ -94,11 +112,15 @@ input.search {
 }
 
 footer {
+    display : flex;
+    flex-direction : row;
+    justify-content : space-around;
     text-align: center;
-    padding: 9vh;
+    padding: 7vh;
     background-color: #000000;
-    color: white;
+    
 }
+
 
 .suggestions {
     background-color: white;
