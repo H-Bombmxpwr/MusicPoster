@@ -2,8 +2,8 @@
 
 body {
     font-family: "Rubik", sans-serif;
-    font-size: 35pt;
-    color: #727785;
+    font-size: 25pt;
+    color: #E7EDFF;
     background-color: #202124;
     margin-left: 0;
     margin-right: 0;
@@ -12,9 +12,9 @@ body {
 }
 
 h1 {
-    font-size: 60pt;
+    font-size: 50pt;
     color: #ffffff;
-    text-shadow: 10px 10px 10px #000000;
+    /*text-shadow: 10px 10px 10px #000000; */
     text-align: center;
     margin-top: 50px;
     margin-bottom: 50px;

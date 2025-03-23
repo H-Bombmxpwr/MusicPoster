@@ -68,4 +68,5 @@ Simply provide an artist and album name (with close enough spelling), and the pr
 # Special Thanks
 A heartfelt thanks to:
 - **Noah Sprovieri** for providing graphic design support.
+- **Katie Ulinski** for providing UI support.
 - **Contributors** who have submitted custom posters or code contributions to the project. Your efforts have made this project even better!
