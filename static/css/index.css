@@ -14,7 +14,6 @@ body {
 h1 {
     font-size: 50pt;
     color: #E7EDFF;
-    /*text-shadow: 10px 10px 10px #000000; */
     text-align: center;
     margin-top: 50px;
     margin-bottom: 50px;
@@ -61,6 +60,10 @@ a {
     flex: 1;
 }
 
+#colorPicker  :hover {
+    cursor : pointer;
+}
+
 .header-container {
     text-align: center;
     margin-bottom: 20px; 
@@ -91,36 +94,48 @@ input[type="color"].custom {
 }
 
 .button {
-    
     padding-bottom: 2%;
     padding-left : 1%;
     padding-right : 1%;
 }
 
 
-#submitButton {
-    height : 54pt;
+input.search {
+    display : inline-block;
+    padding: 10px 20px;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 5px;
+    margin-top: 10px;
+    cursor : pointer;
 }
 
-input.search {
-    font-size: 20pt;
-}
 
 #grad1 {
-    height: 15vh;
+    height: 11vh;
     background-image: linear-gradient(#202124, #000000);
 }
 
 footer {
     display : flex;
     flex-direction : row;
-    justify-content : space-around;
-    text-align: center;
-    padding: 7vh;
+    align-items : center;
+    justify-content : center;
     background-color: #000000;
-    
 }
 
+#footerText1 {
+    text-align : right;
+    padding : 3vh;
+    flex : 1;
+}
+
+#footerText2 {
+    text-align : left;
+    padding : 3vh;
+    flex : 1;
+}
 
 .suggestions {
     background-color: white;
@@ -236,6 +251,7 @@ footer {
 
 
 .surprise-button {
+    
     display: inline-block;
     padding: 10px 20px;
     font-size: 20px;
@@ -243,10 +259,13 @@ footer {
     text-align: center;
     text-decoration: none;
     color: white;
-    background-color: #ff5733; /* Custom color for the button */
+    
+    background-color: #ff5733;
+
     border-radius: 5px;
     margin-top: 10px;
     cursor: pointer;
+  
 }
 
 .surprise-button:hover {

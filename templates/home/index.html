@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>album poster</title>
+    <title>Album Poster</title>
     <link rel="stylesheet" href="static/css/index.css">
     <link rel="icon" href="static/images/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -43,7 +43,7 @@
                 <label for="artist">Enter an artist:</label>
             </div>
             <div class="box">
-                <input type="text" list="artist-suggestions" style="font-size: 35pt;" name="artist" id="artist" size="10" placeholder="name">
+                <input type="text" list="artist-suggestions" style="font-size: 30pt;" name="artist" id="artist" placeholder="name">
                 <datalist id="artist-suggestions"></datalist>
             </div>
         </div>
@@ -54,30 +54,30 @@
                 <label for="album">Enter an album:</label>
             </div>
             <div class="box">
-                <input type="text" list="album-suggestions" style="font-size: 35pt;" name="album" id="album" size="10" placeholder="name or link">
+                <input type="text" list="album-suggestions" style="font-size: 30pt;" name="album" id="album"  placeholder="name or link">
                 <datalist id="album-suggestions"></datalist>
             </div>
         </div>
         <div class="three">
             <div class="label">
-                <label for="song"> Background color </label>
+                <label for="song"> Background color: </label>
             </div>
-            <div class="box">
+            <div class="box" id = "colorPicker">
                 <input type="color" value=#ffffff id="back_color" name="background" class="custom">
             </div>
         </div>
         <div class="four">
             <div class="label">
-                <label for="song"> Text color </label>
+                <label for="song"> Text color: </label>
             </div>
-            <div class="box">
+            <div class="box" id = "colorPicker">
                 <input type="color" value=#000000 id="text_color" name="text" class="custom">
             </div>
         </div>
 
         <div class = "buttons">
             <div class="button">
-                <center><input type="submit" id="search" value="generate" class="search" /></center>
+                <center><input type="submit" id="search" value="Generate" class="search" /></center>
             </div>
 
             <div class="button">
@@ -99,8 +99,8 @@
 
     <footer>
 
-        <a class = "footerText" href="{{ url_for('mosaic') }}">examples</a>
-        <a class = "footerText" href="{{ url_for('about') }}">about</a>
+        <a id = "footerText1" href="{{ url_for('mosaic') }}">Examples</a>
+        <a id = "footerText2" href="{{ url_for('about') }}">About</a>
 
     </footer>
     <script src="{{ url_for('static', filename='js/auto.js') }}"></script>
