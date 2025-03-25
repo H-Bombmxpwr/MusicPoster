@@ -37,7 +37,7 @@
             <img src="{{ img_data }}">
 
         </center>
-
+        
         <div class="one">
             <div class="label">
                 <label for="artist">Enter an artist:</label>
@@ -76,15 +76,14 @@
         </div>
 
         <div class = "buttons">
-            <div class="button">
+            <div class="button" id = "button2">
                 <center><input type="submit" id="search" value="Generate" class="search" /></center>
             </div>
 
-            <div class="button">
+            <div class="button" id = "button1">
                 <center><a href="{{ url_for('surprise') }}" class="surprise-button">Surprise Me!</a></center>
-            </div>
+            </div>   
         </div>
-       
     </form>
 
     
