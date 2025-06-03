@@ -47,3 +47,4 @@ function submitPoster() {
         successMessage.style.display = "block";
     });
 }
+

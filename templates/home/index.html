@@ -11,6 +11,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik&display=swap">
+    <script type = 'module' defer  src ="static/js/spinner.js"></script>
+
 </head>
 
 <body>
@@ -76,6 +78,11 @@
         </div>
 
         <div class = "buttons">
+            <template id = "spinner-template">
+                <div id = "loader-div">
+                <div class = "loader"></div>
+            </div>
+                </template>
             <div class="button" id = "button2">
                 <center><input type="submit" id="search" value="Generate" class="search" /></center>
             </div>
