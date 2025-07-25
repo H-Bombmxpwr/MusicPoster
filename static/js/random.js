@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
     "California_.png",
     "ChappellRoan_poster.png",
     "Chappell_Roan_The_Rise_and_Fall_of_a_Midwest_Princess.png",
+    "Charli_xcx_BRAT.png",
     "Chumbawamba_Tubthumper.png",
     "Cool_Kids_(Sped_Up).png",
     "Cool_Patrol.png",
