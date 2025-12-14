@@ -1,10 +1,13 @@
+/**
+ * Autocomplete functionality for artist and album inputs
+ * Uses debounced API calls for better performance
+ */
+
 function debounce(func, delay) {
-    let inDebounce;
-    return function() {
-        const context = this;
-        const args = arguments;
-        clearTimeout(inDebounce);
-        inDebounce = setTimeout(() => func.apply(context, args), delay);
+    let timeoutId;
+    return function(...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, args), delay);
     };
 }
 
@@ -12,28 +15,52 @@ function fetchSuggestions(inputId, endpoint, suggestionsId, dependentInputId = n
     const input = document.getElementById(inputId);
     const suggestions = document.getElementById(suggestionsId);
 
-    input.addEventListener('input', debounce(function() {
-        let query = endpoint + '?q=' + encodeURIComponent(this.value);
+    if (!input || !suggestions) return;
 
-        // If dependent input is provided and it's for album suggestions
+    const debouncedFetch = debounce(function(value) {
+        if (!value || value.length < 2) {
+            suggestions.innerHTML = '';
+            return;
+        }
+
+        let query = endpoint + '?q=' + encodeURIComponent(value);
+
+        // Add artist filter for album suggestions
         if (dependentInputId && endpoint === '/album-suggestions') {
-            const dependentInputValue = document.getElementById(dependentInputId).value;
-            if (dependentInputValue) {
-                query += '&artist=' + encodeURIComponent(dependentInputValue);
+            const dependentInput = document.getElementById(dependentInputId);
+            if (dependentInput && dependentInput.value) {
+                query += '&artist=' + encodeURIComponent(dependentInput.value);
             }
         }
 
         fetch(query)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
             .then(data => {
-                suggestions.innerHTML = '';  // Clear existing suggestions
-                data.forEach(item => {
-                    suggestions.innerHTML += '<option value="' + item + '"></option>';
-                });
+                suggestions.innerHTML = '';
+                if (Array.isArray(data)) {
+                    data.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item;
+                        suggestions.appendChild(option);
+                    });
+                }
+            })
+            .catch(error => {
+                console.warn('Suggestion fetch failed:', error);
+                suggestions.innerHTML = '';
             });
-    }, 100));
+    }, 150);
+
+    input.addEventListener('input', function() {
+        debouncedFetch(this.value);
+    });
 }
 
-// Call fetchSuggestions for artists and albums
-fetchSuggestions('artist', '/artist-suggestions', 'artist-suggestions');
-fetchSuggestions('album', '/album-suggestions', 'album-suggestions', 'artist');
+// Initialize autocomplete when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    fetchSuggestions('artist', '/artist-suggestions', 'artist-suggestions');
+    fetchSuggestions('album', '/album-suggestions', 'album-suggestions', 'artist');
+});

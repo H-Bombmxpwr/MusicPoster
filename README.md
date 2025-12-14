@@ -47,7 +47,7 @@ To generate posters locally:
 2. Obtain a `SPOTIPY_CLIENT_ID` and `SPOTIPY_CLIENT_SECRET` from [Spotify for Developers](https://developer.spotify.com/documentation/general/guides/authorization/).
 3. Remove the `.example` from [keys.env.example](keys.env.example) and add your Spotify keys.
 
-### 🐍 Set Up a Python Virtual Environment (Recommended)
+### Set Up a Python Virtual Environment (Recommended)
 To avoid dependency issues and keep your system clean, create and activate a virtual environment:
 
 ```bash

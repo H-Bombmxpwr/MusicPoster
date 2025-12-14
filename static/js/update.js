@@ -1,19 +1,29 @@
-function updatePosterColor(color=NaN, isBackground=false, isText=false, tabulated=false, dotted=false) {
-    // Get the current values for artist, album, and current colors from hidden inputs
-    const artist = document.getElementById('current-artist').value;
-    const album = document.getElementById('current-album').value;
-    let backgroundColor = document.getElementById('current-background-color').value;
-    let textColor = document.getElementById('current-text-color').value;
+/**
+ * Poster color and style update functionality
+ * Handles real-time poster customization via AJAX
+ */
 
-    // Determine the new background and text colors
-    if (isBackground) {
-        backgroundColor = color; // Update background color
-    }
-    if (isText) {
-        textColor = color; // Update text color
+function updatePosterColor(color = NaN, isBackground = false, isText = false, tabulated = false, dotted = false) {
+    // Get current state
+    const artist = document.getElementById('current-artist')?.value;
+    const album = document.getElementById('current-album')?.value;
+    let backgroundColor = document.getElementById('current-background-color')?.value;
+    let textColor = document.getElementById('current-text-color')?.value;
+
+    if (!artist || !album) {
+        console.error('Missing artist or album information');
+        return;
     }
 
-    // Prepare the data to send, including the colors
+    // Update colors based on which was changed
+    if (isBackground && color) {
+        backgroundColor = color;
+    }
+    if (isText && color) {
+        textColor = color;
+    }
+
+    // Prepare request data
     const postData = {
         artist: artist,
         album: album,
@@ -23,48 +33,65 @@ function updatePosterColor(color=NaN, isBackground=false, isText=false, tabulate
         dotted: dotted
     };
 
-    // Send the AJAX POST request to the Flask server
-    fetch('update-poster', {
+    // Show loading state
+    const posterImg = document.getElementById('poster-img');
+    if (posterImg) {
+        posterImg.style.opacity = '0.7';
+        posterImg.style.transition = 'opacity 0.2s ease';
+    }
+
+    // Send update request
+    fetch('/update-poster', {
         method: 'POST',
         body: JSON.stringify(postData),
         headers: {
             'Content-Type': 'application/json'
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+    })
     .then(data => {
-        // Update the poster image with the new image data
-        const posterImg = document.getElementById('poster-img');
-        const downloadLink = document.getElementById('download-link');
-        if (posterImg) {
+        if (posterImg && data.img_data) {
+            // Update poster image
             posterImg.src = data.img_data;
+            posterImg.style.opacity = '1';
 
-            // Update the hidden input values for the colors
+            // Update hidden state
             document.getElementById('current-background-color').value = backgroundColor;
             document.getElementById('current-text-color').value = textColor;
 
-            // Also update the download link
-            downloadLink.href = data.img_data;
-            const formattedAlbumName = album.replace(/\s/g, '_');
-            downloadLink.setAttribute('download', `${formattedAlbumName}.png`);
-
-            // Update the custom color picker trigger's background color to reflect the change
-            if (isBackground) {
-                document.querySelector('.custom-color-picker-trigger').style.background = backgroundColor;
+            // Update download link
+            const downloadLink = document.getElementById('download-link');
+            if (downloadLink) {
+                downloadLink.href = data.img_data;
+                const formattedAlbumName = album.replace(/\s+/g, '_');
+                downloadLink.setAttribute('download', `${formattedAlbumName}.png`);
             }
-            if (isText) {
-                document.querySelectorAll('.custom-color-picker-trigger')[1].style.background = textColor;
+
+            // Update hidden form data for submission
+            const imgDataInput = document.getElementById('img_data');
+            if (imgDataInput) {
+                imgDataInput.value = data.img_data;
             }
         }
     })
     .catch(error => {
-        console.error('Error updating poster color:', error);
+        console.error('Error updating poster:', error);
+        if (posterImg) {
+            posterImg.style.opacity = '1';
+        }
     });
 }
 
+// Initialize download link functionality
 document.addEventListener('DOMContentLoaded', function() {
     const downloadLink = document.getElementById('download-link');
-    downloadLink.addEventListener('click', function(event) {
-        // perform any actions here before the download
-    });
+    const posterImg = document.getElementById('poster-img');
+
+    if (downloadLink && posterImg) {
+        // Ensure download link has correct initial href
+        downloadLink.href = posterImg.src;
+    }
 });

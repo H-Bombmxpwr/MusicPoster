@@ -1,232 +1,489 @@
-@import url('https://fonts.googleapis.com/css2?family=Rubik&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap');
 
-body {
-    font-family: "Rubik", sans-serif;
-    font-size: 35pt;
-    color: #727785;
-    background-color: #202124;
-    margin-left: 0;
-    margin-right: 0;
-    margin-bottom: 0;
-    text-align: center;
+:root {
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #12121a;
+    --bg-tertiary: #1a1a25;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0b0;
+    --text-muted: #606070;
+    --accent-primary: #ff6b35;
+    --accent-secondary: #f7931e;
+    --accent-glow: rgba(255, 107, 53, 0.4);
+    --gradient-1: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ff6b35 100%);
+    --gradient-2: linear-gradient(45deg, #12121a 0%, #1a1a25 100%);
+    --card-bg: rgba(26, 26, 37, 0.6);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --shadow-glow: 0 0 60px rgba(255, 107, 53, 0.15);
 }
 
-h1 {
-    font-size: 60pt;
-    color: #ffffff;
-    text-shadow: 10px 10px 10px #000000;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: "Outfit", sans-serif;
+    font-size: 16px;
+    color: var(--text-secondary);
+    background-color: var(--bg-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Animated background */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(ellipse at 20% 20%, rgba(255, 107, 53, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(247, 147, 30, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(26, 26, 37, 0.8) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: -1;
+    animation: backgroundPulse 15s ease-in-out infinite;
+}
+
+@keyframes backgroundPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Noise texture overlay */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Header */
+.header-container {
     text-align: center;
-    margin-top: 50px;
-    margin-bottom: 50px;
+    padding: 60px 20px 40px;
+    position: relative;
+    z-index: 10;
+}
+
+.main-title {
+    font-family: "Syne", sans-serif;
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    background: var(--gradient-1);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 8s ease-in-out infinite;
+    text-shadow: none;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.sub-title {
+    font-family: "Outfit", sans-serif;
+    font-size: clamp(0.75rem, 2vw, 1rem);
+    font-weight: 400;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
+}
+
+.sub-title:hover {
+    color: var(--accent-primary);
 }
 
 a {
     text-decoration: none;
     color: inherit;
+    transition: all 0.3s ease;
 }
 
-.one {
-    height: 13vh;
-    display: flex;
+/* Main Form Grid */
+.grid {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 40px 30px;
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-subtle);
+    border-radius: 24px;
+    box-shadow: var(--shadow-glow);
+    position: relative;
+    z-index: 10;
 }
 
-.two {
-    height: 13vh;
+.one, .two, .three, .four {
     display: flex;
-}
-
-.three {
-    height: 13vh;
-    display: flex;
-}
-
-.four {
-    height: 13vh;
-    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 28px;
 }
 
 .label {
-    text-align: right;
-    padding: 3vh;
-    flex: 1;
+    text-align: left;
+    padding: 0;
+}
+
+.label label {
+    font-family: "Outfit", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
 }
 
 .box {
     text-align: left;
-    padding: 3vh;
+    padding: 0;
+}
+
+.box input[type="text"] {
+    width: 100%;
+    padding: 18px 24px;
+    font-family: "Outfit", sans-serif;
+    font-size: 1.1rem !important;
+    font-weight: 400;
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-subtle);
+    border-radius: 12px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.box input[type="text"]::placeholder {
+    color: var(--text-muted);
+}
+
+.box input[type="text"]:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 4px var(--accent-glow);
+}
+
+/* Color picker styling */
+.three, .four {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.three .label, .four .label {
     flex: 1;
 }
 
-.header-container {
-    text-align: center;
-    margin-bottom: 20px; 
+.three .box, .four .box {
+    flex: 0 0 auto;
 }
-.main-title {
-    font-size: 3em; 
-    margin: 0;
-}
-.sub-title {
-    font-size: 1em; 
-    margin: 0;
-}
-
 
 input[type="color"].custom {
-    padding: 0;
-    border: none;
-    height: 60px;
-    width: 150px;
-
+    width: 80px;
+    height: 50px;
+    padding: 4px;
+    border: 2px solid var(--border-subtle);
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
+input[type="color"].custom:hover {
+    border-color: var(--accent-primary);
+    transform: scale(1.05);
+}
+
+input[type="color"].custom::-webkit-color-swatch-wrapper {
+    padding: 2px;
+}
+
+input[type="color"].custom::-webkit-color-swatch {
+    border-radius: 6px;
+    border: none;
+}
+
+/* Buttons */
 .button {
-    padding-top: 2%;
-    padding-bottom: 5%;
+    padding: 16px 0;
+    text-align: center;
 }
 
 input.search {
-    font-size: 20pt;
+    font-family: "Syne", sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    padding: 18px 60px;
+    color: var(--text-primary);
+    background: var(--gradient-1);
+    background-size: 200% 200%;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    box-shadow: 0 4px 20px var(--accent-glow);
 }
 
+input.search:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px var(--accent-glow);
+    animation: gradientShift 2s ease-in-out infinite;
+}
+
+input.search:active {
+    transform: translateY(-1px);
+}
+
+.surprise-button {
+    display: inline-block;
+    font-family: "Syne", sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 16px 40px;
+    color: var(--accent-primary);
+    background: transparent;
+    border: 2px solid var(--accent-primary);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+}
+
+.surprise-button:hover {
+    color: var(--text-primary);
+    background: var(--accent-primary);
+    box-shadow: 0 4px 20px var(--accent-glow);
+    transform: translateY(-3px);
+}
+
+/* Examples link */
+.grid > a:last-of-type {
+    display: inline-block;
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    position: relative;
+}
+
+.grid > a:last-of-type::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent-primary);
+    transition: width 0.3s ease;
+}
+
+.grid > a:last-of-type:hover {
+    color: var(--accent-primary);
+}
+
+.grid > a:last-of-type:hover::after {
+    width: 100%;
+}
+
+/* Poster Scroll Containers */
+.poster-scroll-container {
+    position: fixed;
+    top: 0;
+    height: 100vh;
+    width: 180px;
+    overflow: hidden;
+    z-index: 1;
+    opacity: 0.6;
+    transition: opacity 0.5s ease;
+    mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+}
+
+.poster-scroll-container:hover {
+    opacity: 0.9;
+}
+
+.poster-scroll-container[style*="left"] {
+    left: 20px;
+}
+
+.poster-scroll-container[style*="right"] {
+    right: 20px;
+}
+
+.poster-item {
+    width: 160px;
+    margin: 15px auto;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    transition: transform 0.5s ease, box-shadow 0.5s ease;
+}
+
+.poster-item:hover {
+    transform: scale(1.08);
+    box-shadow: 0 12px 40px rgba(255, 107, 53, 0.2);
+}
+
+.poster-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Gradient footer */
 #grad1 {
-    height: 15vh;
-    background-image: linear-gradient(#202124, #000000);
+    height: 120px;
+    background: linear-gradient(to bottom, transparent 0%, var(--bg-primary) 100%);
+    position: relative;
+    z-index: 5;
 }
 
 footer {
     text-align: center;
-    padding: 9vh;
-    background-color: #000000;
-    color: white;
+    padding: 40px 20px;
+    background: var(--bg-primary);
+    position: relative;
+    z-index: 5;
 }
 
+footer a {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    transition: color 0.3s ease;
+}
+
+footer a:hover {
+    color: var(--accent-primary);
+}
+
+/* Suggestions/Datalist styling */
 .suggestions {
-    background-color: white;
-    color: black;
-    border: 1px solid #727785;
-    border-radius: 4px;
-    padding: 5px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 8px 0;
     max-height: 200px;
     overflow-y: auto;
 }
 
 .suggestions div {
-    padding: 2px 10px;
+    padding: 10px 16px;
     cursor: pointer;
+    transition: background 0.2s ease;
 }
 
 .suggestions div:hover {
-    background-color: #e0e0e0;
-}
-
-
-/* Mobile responsiveness */
-@media only screen and (max-width: 600px) {
-    body {
-        font-size: 16pt; /* Adjust the base font size for mobile */
-    }
-
-    h1 {
-        font-size: 24pt; /* Smaller font size for the title */
-        margin-top: 20px;
-        margin-bottom: 20px;
-    }
-
-    .label, .box {
-        padding: 5%; /* Increase padding for touch targets */
-    }
-
-    input[type="text"], input[type="color"].custom, input.search {
-        font-size: 18pt; /* Larger font size for inputs and buttons */
-    }
-
-    .button {
-        padding-top: 5%;
-        padding-bottom: 10%;
-    }
-
-    .button input[type="submit"] {
-        width: 80%; /* Wider button for easier clicking */
-        padding: 10px;
-        font-size: 18pt; /* Larger font size for readability */
-    }
-
-    footer {
-        padding: 10px; /* Less padding on footer */
-    }
+    background: var(--bg-tertiary);
 }
 
 /* Mobile responsiveness */
-@media only screen and (max-width: 600px) {
-    /* ... existing mobile styles ... */
-
-    /* Hide the poster scrolling feature on mobile devices */
+@media only screen and (max-width: 900px) {
     .poster-scroll-container {
         display: none;
     }
 }
 
-/* Desktop styles for .poster-scroll-container and .poster-item */
-@media only screen and (min-width: 601px) {
-    .poster-scroll-container {
-        display: flex; /* Flex is used to align and space children elements */
-        position: fixed;
-        top: 50%;
-        transform: translateY(-50%);
-        height: 1400px;
-        overflow-y: hidden;
+@media only screen and (max-width: 600px) {
+    body {
+        font-size: 14px;
+    }
+
+    .header-container {
+        padding: 40px 20px 30px;
+    }
+
+    .grid {
+        margin: 0 15px;
+        padding: 30px 20px;
+        border-radius: 20px;
+    }
+
+    .one, .two, .three, .four {
+        margin-bottom: 20px;
+    }
+
+    .three, .four {
         flex-direction: column;
-        align-items: center;
-        gap: 20px; /* This adds space between the scrolling posters */
+        align-items: flex-start;
     }
 
-    .poster-item {
-        width: 148px;
-        height: 240px;
-        background-color: #727785;
-        margin: 10px 0;
+    .three .box, .four .box {
+        width: 100%;
     }
 
-    .autoscroll {
-        animation: scrollPoster 60s ease-in-out infinite;
-    }
-    
-    @keyframes scrollPoster {
-        0% { transform: translateY(100%); }
-        100% { transform: translateY(-100%); }
-    }
-}
-
-/* Additional media query for desktop to adjust autoscroll animation */
-/* This will only apply the animation on devices wider than 600px */
-@media only screen and (min-width: 601px) {
-    .poster-item {
-        /* Desktop sizes for .poster-item */
-        width: 148px; /* Adjust size as needed */
-        height: 240px; /* Adjust size as needed */
+    input[type="color"].custom {
+        width: 100%;
+        height: 50px;
     }
 
-    .autoscroll {
-        /* Adjust the duration as needed for your number of posters */
-        animation: scrollPoster 30s linear infinite;
+    .button {
+        padding: 12px 0;
+    }
+
+    input.search {
+        width: 100%;
+        padding: 16px 30px;
+        font-size: 1rem;
+    }
+
+    .surprise-button {
+        width: 100%;
+        padding: 14px 30px;
+        font-size: 0.9rem;
+    }
+
+    footer {
+        padding: 30px 20px;
     }
 }
 
-
-.surprise-button {
-    display: inline-block;
-    padding: 10px 20px;
-    font-size: 20px;
-    font-weight: bold;
-    text-align: center;
-    text-decoration: none;
-    color: white;
-    background-color: #ff5733; /* Custom color for the button */
-    border-radius: 5px;
-    margin-top: 10px;
-    cursor: pointer;
+/* Animation for page load */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.surprise-button:hover {
-    background-color: #ff7043;
+.header-container {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.grid {
+    animation: fadeInUp 0.8s ease-out 0.2s both;
 }

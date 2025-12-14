@@ -5,102 +5,125 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>album poster</title>
+    <title>Album Poster | Create Beautiful Music Art</title>
     <link rel="stylesheet" href="static/css/index.css">
     <link rel="icon" href="static/images/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik&display=swap">
 </head>
 
 <body>
-    <div class="header-container">
-        <a href="{{ url_for('home') }}">
-            <h1 class="main-title">Album Poster</h1>
-        </a>
-        <a href="https://developer.spotify.com/documentation/web-api">
-            <h2 class="sub-title">Powered by Spotify API</h2>
-        </a>
-    </div>
-
+    <!-- Left Poster Scroll -->
     <div class="poster-scroll-container" style="left: 10px;">
         <!-- JavaScript will dynamically add poster items here -->
     </div>
 
-    
-    
+    <!-- Header -->
+    <div class="header-container">
+        <a href="{{ url_for('home') }}">
+            <h1 class="main-title">Album Poster</h1>
+        </a>
+        <a href="https://developer.spotify.com/documentation/web-api" target="_blank" rel="noopener">
+            <h2 class="sub-title">Powered by Spotify API</h2>
+        </a>
+    </div>
 
-    <!-- input form -->
+    <!-- Main Form -->
     <form class="grid" action="/result" method="POST" autocomplete="off">
         <center>
-
-            <img src="{{ img_data }}">
-
+            <img src="{{ img_data }}" alt="">
         </center>
 
+        <!-- Artist Input -->
         <div class="one">
             <div class="label">
-                <label for="artist">Enter an artist:</label>
+                <label for="artist">Enter an artist</label>
             </div>
             <div class="box">
-                <input type="text" list="artist-suggestions" style="font-size:40pt;" name="artist" id="artist" size="10" placeholder="name">
+                <input type="text" 
+                       list="artist-suggestions" 
+                       name="artist" 
+                       id="artist" 
+                       placeholder="Artist name...">
                 <datalist id="artist-suggestions"></datalist>
             </div>
         </div>
-        
-        <!-- Album input field -->
+
+        <!-- Album Input -->
         <div class="two">
             <div class="label">
-                <label for="album">Enter an album:</label>
+                <label for="album">Enter an album</label>
             </div>
             <div class="box">
-                <input type="text" list="album-suggestions" style="font-size:40pt;" name="album" id="album" size="10" placeholder="name or link">
+                <input type="text" 
+                       list="album-suggestions" 
+                       name="album" 
+                       id="album" 
+                       placeholder="Album name or Spotify link...">
                 <datalist id="album-suggestions"></datalist>
             </div>
         </div>
+
+        <!-- Background Color -->
         <div class="three">
             <div class="label">
-                <label for="song"> background color </label>
+                <label for="back_color">Background color</label>
             </div>
             <div class="box">
-                <input type="color" value=#ffffff id="back_color" name="background" class="custom">
+                <input type="color" 
+                       value="#ffffff" 
+                       id="back_color" 
+                       name="background" 
+                       class="custom">
             </div>
         </div>
+
+        <!-- Text Color -->
         <div class="four">
             <div class="label">
-                <label for="song"> text color </label>
+                <label for="text_color">Text color</label>
             </div>
             <div class="box">
-                <input type="color" value=#000000 id="text_color" name="text" class="custom">
+                <input type="color" 
+                       value="#000000" 
+                       id="text_color" 
+                       name="text" 
+                       class="custom">
             </div>
         </div>
 
+        <!-- Generate Button -->
         <div class="button">
-            <center><input type="submit" id="search" value="generate" class="search" /></center>
+            <center>
+                <input type="submit" id="search" value="Generate Poster" class="search">
+            </center>
         </div>
 
+        <!-- Surprise Me Button -->
         <div class="button">
-            <center><a href="{{ url_for('surprise') }}" class="surprise-button">Surprise Me!</a></center>
+            <center>
+                <a href="{{ url_for('surprise') }}" class="surprise-button">Surprise Me!</a>
+            </center>
         </div>
 
-        <a href="{{ url_for('mosaic') }}">examples</a>
+        <!-- Examples Link -->
+        <a href="{{ url_for('mosaic') }}">View Examples</a>
     </form>
 
-    
-        <!-- Right side scroll container for past posters -->
-    
-        <div class="poster-scroll-container" style="right: 10px;">
-            <!-- JavaScript will dynamically add poster items here -->
-        </div>
-        
-        
+    <!-- Right Poster Scroll -->
+    <div class="poster-scroll-container" style="right: 10px;">
+        <!-- JavaScript will dynamically add poster items here -->
+    </div>
+
+    <!-- Footer Gradient -->
     <div id="grad1"></div>
 
+    <!-- Footer -->
     <footer>
-
-        <a href="{{ url_for('about') }}">about</a>
-
+        <a href="{{ url_for('about') }}">About This Project</a>
     </footer>
+
+    <!-- Scripts -->
     <script src="{{ url_for('static', filename='js/auto.js') }}"></script>
     <script src="{{ url_for('static', filename='js/scroll.js') }}"></script>
     <script src="{{ url_for('static', filename='js/random.js') }}"></script>

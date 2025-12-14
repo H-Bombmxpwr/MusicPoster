@@ -1,52 +1,226 @@
-body {
-    background-color: rgb(32, 33, 36);
-    font-family: "Rubik", sans-serif;
-    font-size: 35pt;
-    color: #727785;
-    margin: 0;
-    text-align: center;
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #12121a;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0b0;
+    --accent-primary: #ff6b35;
+    --accent-secondary: #f7931e;
+    --accent-glow: rgba(255, 107, 53, 0.4);
+    --gradient-1: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ff6b35 100%);
+    --border-subtle: rgba(255, 255, 255, 0.08);
 }
 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Outfit", sans-serif;
+    background-color: var(--bg-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Subtle background */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(ellipse at 0% 0%, rgba(255, 107, 53, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 100% 100%, rgba(247, 147, 30, 0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Header */
+.mosaic-header {
+    text-align: center;
+    padding: 50px 20px 30px;
+}
+
+.mosaic-title {
+    font-family: "Syne", sans-serif;
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 800;
+    background: var(--gradient-1);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 8s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.mosaic-subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-top: 10px;
+    letter-spacing: 0.05em;
+}
+
+/* Mosaic Grid */
 .mosaic-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 10px;
-    padding: 20px;
-    margin-bottom: 80px; /* To avoid overlapping with the back button */
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+    padding: 30px;
+    margin-bottom: 100px;
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .poster {
-    border: 1px solid #ddd; /* Optional border */
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Optional shadow */
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg-secondary);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.poster::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, transparent 60%, rgba(0, 0, 0, 0.7) 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 1;
+}
+
+.poster:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.5),
+        0 0 0 2px var(--accent-primary);
+}
+
+.poster:hover::before {
+    opacity: 1;
 }
 
 .poster img {
     width: 100%;
     height: auto;
     display: block;
+    transition: transform 0.6s ease;
 }
 
+.poster:hover img {
+    transform: scale(1.05);
+}
+
+/* Footer */
 .footer {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
     text-align: center;
-    background-color: rgba(0, 0, 0, 0.8);
-    padding: 10px;
+    background: linear-gradient(to top, var(--bg-primary) 0%, rgba(10, 10, 15, 0.95) 70%, transparent 100%);
+    padding: 40px 20px 30px;
+    z-index: 100;
 }
 
 .back-button {
-    background-color: #ff5733;
+    display: inline-block;
+    padding: 16px 40px;
+    font-family: "Syne", sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-primary);
+    background: var(--gradient-1);
+    background-size: 200% 200%;
     border: none;
-    color: white;
-    padding: 10px 20px;
-    font-size: 20px;
-    font-weight: bold;
+    border-radius: 50px;
     cursor: pointer;
-    border-radius: 5px;
+    transition: all 0.4s ease;
+    box-shadow: 0 4px 20px var(--accent-glow);
 }
 
 .back-button:hover {
-    background-color: #ff7043;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px var(--accent-glow);
+    animation: gradientShift 2s ease-in-out infinite;
 }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .mosaic-container {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+        padding: 20px;
+    }
+}
+
+@media (max-width: 500px) {
+    .mosaic-header {
+        padding: 40px 15px 20px;
+    }
+
+    .mosaic-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 15px;
+    }
+
+    .poster {
+        border-radius: 8px;
+    }
+
+    .footer {
+        padding: 30px 15px 20px;
+    }
+
+    .back-button {
+        padding: 14px 30px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Staggered animation on load */
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.poster {
+    animation: fadeInScale 0.5s ease-out both;
+}
+
+.poster:nth-child(1) { animation-delay: 0.02s; }
+.poster:nth-child(2) { animation-delay: 0.04s; }
+.poster:nth-child(3) { animation-delay: 0.06s; }
+.poster:nth-child(4) { animation-delay: 0.08s; }
+.poster:nth-child(5) { animation-delay: 0.10s; }
+.poster:nth-child(6) { animation-delay: 0.12s; }
+.poster:nth-child(7) { animation-delay: 0.14s; }
+.poster:nth-child(8) { animation-delay: 0.16s; }
+.poster:nth-child(9) { animation-delay: 0.18s; }
+.poster:nth-child(10) { animation-delay: 0.20s; }
+.poster:nth-child(n+11) { animation-delay: 0.22s; }

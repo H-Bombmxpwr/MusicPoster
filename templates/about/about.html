@@ -5,78 +5,107 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Music Poster</title>
+    <title>About | Album Poster</title>
     <link rel="stylesheet" href="static/css/about.css">
     <link rel="icon" href="static/images/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik&display=swap">
 </head>
 
 <body>
+    <!-- Header -->
     <a href="{{ url_for('home') }}">
-        <h1 class="title">Music Poster</h1>
+        <h1 class="title">Album Poster</h1>
     </a>
 
+    <!-- Content Container -->
     <div class="container">
+        <!-- Intro Section -->
         <section class="intro">
-            <h2>What is Music Poster?</h2>
+            <h2>What is Album Poster?</h2>
             <p>
-                Music Poster is an open-source project designed to bring album art to life! Using Spotify's Web API, this tool generates visually stunning posters for your favorite albums and artists.
+                Album Poster is an open-source tool that transforms your favorite music into stunning visual art. 
+                Using Spotify's Web API, it automatically generates beautiful, print-ready posters featuring 
+                album artwork, tracklists, and perfectly harmonized colors.
+            </p>
+            <p>
+                Whether you're decorating your space, creating gifts for music lovers, or just exploring 
+                creative design, Album Poster makes it effortless to celebrate the albums that matter to you.
             </p>
         </section>
 
+        <!-- Features Section -->
         <section class="features">
             <h2>Key Features</h2>
             <ul>
-                <li>🎨 Automatically generate posters for albums using Spotify album art.</li>
-                <li>🖌️ Customize poster colors, including background and text colors.</li>
-                <li>✨ Analyze album art to extract dominant colors and harmonize the design.</li>
-                <li>🔍 Search by artist name, album name, or Spotify album URL.</li>
-                <li>📜 Display full tracklists with customizable formatting.</li>
-                <li>🔀 "Surprise Me" button to generate a random poster from trending albums.</li>
-                <li>📷 Download high-resolution posters to share or print.</li>
-                <li>🌐 Fully responsive and mobile-friendly interface.</li>
+                <li>Automatically generate posters using high-quality Spotify album art</li>
+                <li>Customize background and text colors to match your style</li>
+                <li>Smart color extraction analyzes artwork for perfect harmonies</li>
+                <li>Search by artist, album name, or paste a Spotify URL directly</li>
+                <li>Full tracklist display with optional formatting styles</li>
+                <li>Surprise Me feature generates random posters from trending albums</li>
+                <li>Download high-resolution PNGs ready for printing or sharing</li>
+                <li>Fully responsive design works beautifully on any device</li>
             </ul>
         </section>
 
+        <!-- How It Works -->
         <section class="how-it-works">
             <h2>How It Works</h2>
             <p>
-                Music Poster uses Spotify's API to fetch album details, including the album art, tracklist, and metadata. Once an album is selected, the tool analyzes the album art to extract dominant colors, ensuring the generated poster is visually cohesive. Users can further customize the poster by adjusting background and text colors.
+                When you search for an album, Album Poster connects to Spotify's API to fetch comprehensive 
+                album data including high-resolution artwork, complete tracklists, artist information, and 
+                release details.
             </p>
             <p>
-                The posters are created dynamically using Python's Pillow library, which enables high-quality image rendering. Finally, the generated posters are displayed on the website, ready for download or sharing!
+                The tool then analyzes the album cover using advanced color extraction algorithms to identify 
+                dominant colors. These colors are presented as suggestions, ensuring your poster maintains 
+                visual harmony with the original artwork while giving you full creative control.
+            </p>
+            <p>
+                Posters are rendered dynamically using Python's Pillow library, which enables precise 
+                typography, layout composition, and high-quality image output. The result is a 
+                professional-grade poster you can download instantly.
             </p>
         </section>
 
+        <!-- Acknowledgments Section -->
         <section class="acknowledgments">
             <h2>Acknowledgments</h2>
             <p>
-                Special thanks to <strong>Noah Sprovieri</strong> for graphic design help and creative input that shaped the visual identity of Music Poster.
+                Special thanks to <strong>Noah Sprovieri</strong> and <strong>Katie Ulinski</strong> for graphic design.
             </p>
             <p>
-                A heartfelt thanks to everyone who submitted a custom poster! Your contributions have enriched the <a href="{{ url_for('mosaic') }}">Mosaic</a> page, making it a vibrant showcase of creativity.
+                Heartfelt appreciation to everyone who has submitted custom posters to the project. Your 
+                contributions make the <a href="{{ url_for('mosaic') }}">community gallery</a> awesome.
             </p>
         </section>
 
+        <!-- Open Source Section -->
         <section class="open-source">
             <h2>Open Source</h2>
             <p>
-                This project is fully open source and available on <a href="https://github.com/H-Bombmxpwr/MusicPoster" target="_blank">GitHub</a>. Feel free to explore the code, contribute, or fork it for your own projects.
+                Everything is completely open source and available for anyone to explore, learn from, 
+                or contribute to.
             </p>
+            <a href="https://github.com/H-Bombmxpwr/MusicPoster" target="_blank" rel="noopener">
+                View on GitHub →
+            </a>
         </section>
     </div>
 
+    <!-- Footer Gradient -->
     <div id="grad1"></div>
 
+    <!-- Footer -->
     <footer>
         <p>
-            Created by <a href="https://home.hxr.life/" target="_blank">Hunter</a>. Powered by the Spotify Web API and Python.
+            Created by <a href="https://home.hxr.life/" target="_blank" rel="noopener">Hunter</a>
         </p>
         <p>
-            <a href="{{ url_for('home') }}" class="back-button">Back</a>
+            Powered by the Spotify Web API and Python
         </p>
+        <a href="{{ url_for('home') }}" class="back-button">Back to Home</a>
     </footer>
 </body>
 

@@ -5,123 +5,107 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>music poster</title>
+    <title>Your Poster | Album Poster</title>
     <link rel="stylesheet" href="static/css/poster.css">
     <link rel="icon" href="static/images/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik&display=swap">
-    <style>
-        .custom-color-picker-trigger {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            background: url("{{ url_for('static', filename='images/rainbow.png') }}") no-repeat center center;
-            background-size: cover;
-            display: inline-block;
-        }
-
-        .submission-section {
-            margin-top: 30px;
-            text-align: center;
-            padding: 20px;
-            background-color: #202124;
-            color: white;
-            border-radius: 10px;
-        }
-
-        .submission-section button {
-            font-size: 18px;
-            padding: 10px 20px;
-            background-color: #ff5733;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .submission-section button:hover {
-            background-color: #ff7043;
-        }
-
-        .submission-section button:disabled {
-            background-color: gray;
-            cursor: not-allowed;
-        }
-
-        .success-message {
-            margin-top: 15px;
-            font-size: 16px;
-            color: #00ff00; /* Green success message */
-        }
-    </style>
 </head>
 
 <body>
+    <!-- Header -->
     <a href="{{ url_for('home') }}">
-        <h1 class="title"> album poster </h1>
+        <h1 class="title">Album Poster</h1>
     </a>
 
+    <!-- Main Content -->
     <div class="content-container">
+        <!-- Poster Display -->
         <div class="poster-container">
-            <center>
-                {% if found %}
-                <img src="{{ img_data }}" id="poster-img">
-                {% else %}
-                <h3 class="error">That album was not found, check your spelling and try again</h3>
-                {% endif %}
-            </center>
+            {% if found %}
+            <img src="{{ img_data }}" id="poster-img" alt="{{ album_name }} by {{ artist_name }}">
+            {% else %}
+            <h3 class="error">Album not found. Please check your spelling and try again.</h3>
+            {% endif %}
         </div>
+
+        {% if found %}
+        <!-- Controls Panel -->
         <div class="controls">
-            <!-- Background Colors Section -->
+            <!-- Color Controls -->
             <div class="color-controls">
+                <!-- Background Color -->
                 <div class="color-picker-container">
-                    <div>Background Color:</div>
+                    <div>Background Color</div>
                     <div id="backgroundColors">
                         {% for color in background_colors %}
-                        <div class="color-square" onclick="updatePosterColor('{{ color }}', true, false, tabulated.checked, dotted.checked)" style="background-color: {{ color }};"></div>
+                        <div class="color-square" 
+                             onclick="updatePosterColor('{{ color }}', true, false, tabulated.checked, dotted.checked)" 
+                             style="background-color: {{ color }};"
+                             title="Set background to {{ color }}"></div>
                         {% endfor %}
+                        <div class="custom-color-picker-trigger" 
+                             onclick="document.getElementById('background-color-picker').click();"
+                             title="Custom color"></div>
+                        <input type="color" 
+                               id="background-color-picker" 
+                               onchange="updatePosterColor(this.value, true, false, tabulated.checked, dotted.checked)" 
+                               value="{{ background_color }}">
                     </div>
-                    <div class="custom-color-picker-trigger" onclick="document.getElementById('background-color-picker').click();"></div>
-                    <input type="color" id="background-color-picker" onchange="updatePosterColor(this.value, true, false, tabulated.checked, dotted.checked)" value="{{ background_color }}" style="width: 40px; height: 40px; opacity: 0; position: absolute; z-index: -1;">
                 </div>
-                
-                <!-- Text Colors Section -->
+
+                <!-- Text Color -->
                 <div class="color-picker-container">
-                    <div>Text Color:</div>
+                    <div>Text Color</div>
                     <div id="textColors">
                         {% for color in text_colors %}
-                        <div class="color-square" onclick="updatePosterColor('{{ color }}', false, true, tabulated.checked, dotted.checked)" style="background-color: {{ color }};"></div>
+                        <div class="color-square" 
+                             onclick="updatePosterColor('{{ color }}', false, true, tabulated.checked, dotted.checked)" 
+                             style="background-color: {{ color }};"
+                             title="Set text to {{ color }}"></div>
                         {% endfor %}
+                        <div class="custom-color-picker-trigger" 
+                             onclick="document.getElementById('text-color-picker').click();"
+                             title="Custom color"></div>
+                        <input type="color" 
+                               id="text-color-picker" 
+                               onchange="updatePosterColor(this.value, false, true, tabulated.checked, dotted.checked)" 
+                               value="{{ text_color }}">
                     </div>
-                    <div class="custom-color-picker-trigger" onclick="document.getElementById('text-color-picker').click();"></div>
-                    <input type="color" id="text-color-picker" onchange="updatePosterColor(this.value, false, true, tabulated.checked, dotted.checked)" value="{{ text_color }}" style="width: 40px; height: 40px; opacity: 0; position: absolute; z-index: -1;">
                 </div>
             </div>
-            <!-- Tracklist name Section -->
+
+            <!-- Tracklist Options -->
             <div class="tracklist-controls">
                 <div class="tabulated-container">
-                    <input type="checkbox" id="tabulated" onchange="updatePosterColor(NaN, false, false, this.checked, dotted.checked)" value="{{ text_color }}" style=float:left>
-                    <label for="tabulated">Tabulated</label>
+                    <input type="checkbox" 
+                           id="tabulated" 
+                           onchange="updatePosterColor(NaN, false, false, this.checked, dotted.checked)">
+                    <label for="tabulated">Tabulated Layout</label>
                 </div>
                 <div class="dotted-container">
-                    <input type="checkbox" id="dotted" onchange="updatePosterColor(NaN, false, false, tabulated.checked, this.checked)" value="{{ text_color }}" style=float:left>
-                    <label for="dotted">Dotted</label>
+                    <input type="checkbox" 
+                           id="dotted" 
+                           onchange="updatePosterColor(NaN, false, false, tabulated.checked, this.checked)">
+                    <label for="dotted">Dotted Lines</label>
                 </div>
             </div>
+
+            <!-- Download Button -->
             <div class="download-container">
                 <a href="#" id="download-link" download="{{ album_name.replace(' ', '_') }}.png">
                     <button type="button">Download Poster</button>
                 </a>
             </div>
         </div>
+        {% endif %}
     </div>
 
+    {% if found %}
     <!-- Submission Section -->
     <div class="submission-section">
-        <h3>Want your design on the site?</h3>
-        <p>If you're proud of your design and want it to be featured on the site, submit it here!</p>
+        <h3>Share Your Creation</h3>
+        <p>Love your design? Submit it for a chance to be featured in our community gallery!</p>
         <form id="submit-poster-form">
             <input type="hidden" name="img_data" id="img_data" value="{{ img_data }}">
             <input type="hidden" name="artist_name" value="{{ artist_name }}">
@@ -130,18 +114,24 @@
         </form>
         <div id="success-message" class="success-message" style="display: none;"></div>
     </div>
-    
+    {% endif %}
+
+    <!-- Hidden State -->
     <input type="hidden" id="current-artist" value="{{ artist_name }}">
     <input type="hidden" id="current-album" value="{{ album_name }}">
     <input type="hidden" id="current-background-color" value="{{ background_color }}">
     <input type="hidden" id="current-text-color" value="{{ text_color }}">
 
-
+    <!-- Footer Gradient -->
     <div id="grad1"></div>
+
+    <!-- Footer -->
     <footer>
-        <a href="{{ url_for('home') }}">make another | </a>
-        <a href="{{ url_for('about') }}">about</a>
+        <a href="{{ url_for('home') }}">Create Another</a>
+        <a href="{{ url_for('about') }}">About</a>
     </footer>
+
+    <!-- Scripts -->
     <script src="{{ url_for('static', filename='js/auto.js') }}"></script>
     <script src="{{ url_for('static', filename='js/update.js') }}"></script>
     <script src="{{ url_for('static', filename='js/submit.js') }}"></script>
