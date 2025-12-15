@@ -13,6 +13,140 @@ import base64
 import io
 import re
 
+
+import unicodedata
+from PIL import ImageFont
+
+def contains_cjk(text: str) -> bool:
+    for ch in text:
+        code = ord(ch)
+        # CJK Unified Ideographs + Extension A + Compatibility + Hiragana/Katakana
+        if (0x4E00 <= code <= 0x9FFF) or (0x3400 <= code <= 0x4DBF) or (0xF900 <= code <= 0xFAFF) \
+           or (0x3040 <= code <= 0x30FF):
+            return True
+    return False
+
+def contains_hangul(text: str) -> bool:
+    for ch in text:
+        code = ord(ch)
+        # Hangul Syllables + Jamo
+        if (0xAC00 <= code <= 0xD7AF) or (0x1100 <= code <= 0x11FF) or (0x3130 <= code <= 0x318F):
+            return True
+    return False
+
+def contains_cyrillic(text: str) -> bool:
+    for ch in text:
+        code = ord(ch)
+        if (0x0400 <= code <= 0x04FF) or (0x0500 <= code <= 0x052F) or (0x2DE0 <= code <= 0x2DFF) \
+           or (0xA640 <= code <= 0xA69F):
+            return True
+    return False
+
+from functools import lru_cache
+
+OSWALD_PATH = "static/Oswald-Medium.ttf"
+NOTO_BASE   = "static/fonts/NotoSans-Regular.ttf"
+NOTO_KR     = "static/fonts/NotoSansKR-Regular.ttf"
+NOTO_JP     = "static/fonts/NotoSansJP-Regular.ttf"
+NOTO_SC     = "static/fonts/NotoSansSC-Regular.ttf"
+
+def is_non_latin_glyph(ch: str) -> bool:
+    code = ord(ch)
+
+    if (0xAC00 <= code <= 0xD7AF) or (0x1100 <= code <= 0x11FF) or (0x3130 <= code <= 0x318F):
+        return True
+    if 0x3040 <= code <= 0x30FF:
+        return True
+    if (0x4E00 <= code <= 0x9FFF) or (0x3400 <= code <= 0x4DBF) or (0xF900 <= code <= 0xFAFF):
+        return True
+    if (0x0400 <= code <= 0x04FF) or (0x0500 <= code <= 0x052F):
+        return True
+
+    return False
+
+@lru_cache(maxsize=256)
+def load_font(path: str, size: int):
+    return ImageFont.truetype(path, size)
+
+def text_width(draw, txt: str, font) -> int:
+    l, t, r, b = draw.textbbox((0, 0), txt, font=font)
+    return r - l
+
+def pick_alt_font_for_char(ch: str, size: int):
+    code = ord(ch)
+    if (0xAC00 <= code <= 0xD7AF) or (0x1100 <= code <= 0x11FF) or (0x3130 <= code <= 0x318F):
+        return load_font(NOTO_KR, size)
+    if 0x3040 <= code <= 0x30FF:
+        return load_font(NOTO_JP, size)
+    if (0x4E00 <= code <= 0x9FFF) or (0x3400 <= code <= 0x4DBF) or (0xF900 <= code <= 0xFAFF):
+        return load_font(NOTO_SC, size)
+    if (0x0400 <= code <= 0x04FF) or (0x0500 <= code <= 0x052F):
+        return load_font(NOTO_BASE, size)
+    return load_font(NOTO_BASE, size)
+
+def mixed_text_width(draw, text: str, latin_font, size: int) -> int:
+    if not text:
+        return 0
+
+    total = 0
+    run = ""
+    run_is_alt = None
+
+    for ch in text:
+        ch_is_alt = is_non_latin_glyph(ch)
+        if run == "" or ch_is_alt == run_is_alt:
+            run += ch
+            run_is_alt = ch_is_alt
+        else:
+            font = pick_alt_font_for_char(run[0], size) if run_is_alt else latin_font
+            total += text_width(draw, run, font)
+            run = ch
+            run_is_alt = ch_is_alt
+
+    if run:
+        font = pick_alt_font_for_char(run[0], size) if run_is_alt else latin_font
+        total += text_width(draw, run, font)
+
+    return total
+
+def draw_mixed_text(draw, xy, text: str, latin_font, size: int, fill, fake_bold_px: int = 0):
+    x0, y0 = xy
+
+    def draw_pass(dx: int):
+        x = x0
+        run = ""
+        run_is_alt = None
+
+        def flush_run():
+            nonlocal x, run, run_is_alt
+            if not run:
+                return
+            font = pick_alt_font_for_char(run[0], size) if run_is_alt else latin_font
+            draw.text((x + dx, y0), run, font=font, fill=fill)
+            x += text_width(draw, run, font)
+            run = ""
+
+        for ch in text:
+            ch_is_alt = is_non_latin_glyph(ch)
+            if run == "" or ch_is_alt == run_is_alt:
+                run += ch
+                run_is_alt = ch_is_alt
+            else:
+                flush_run()
+                run = ch
+                run_is_alt = ch_is_alt
+
+        flush_run()
+
+    draw_pass(0)
+    if fake_bold_px and fake_bold_px > 0:
+        draw_pass(fake_bold_px)
+
+
+
+
+
+
 class Utility:
     def __init__(self, album):
         self.album = album
@@ -92,54 +226,86 @@ class Utility:
         self.start_date = y_offset #where to start the
 
     def draw_tracks(self, draw):
-        tracks = list(self.album.getTracks().values())[:30]  # Limit the number of tracks to the first 30
-        num_tracks = min(self.album.getNumTracks(), 30)  # Limit to a maximum of 30 tracks
+        tracks = list(self.album.getTracks().values())[:30]
+        num_tracks = min(self.album.getNumTracks(), 30)
 
         max_track_height = (self.height - 50 - self.below_pic_h) / max(num_tracks, self.full_page_track_count)
         font_size = int(max_track_height) - 5
         font_size = min(font_size, 30)
+        font_size = max(font_size, 10)
 
-        track_font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
+        latin_font = load_font(OSWALD_PATH, font_size)
+
         available_text_width = min(self.x_artist, self.x_album) - (2 * self.margin)
         offset = 710
 
         for tracknum, value in enumerate(tracks, 1):
-            # Remove parentheses
+            # --- cleanup rules ---
             value = re.sub(r'\(.*?\)-', '', value)
-            # Truncate anything after 'feat.' and "remaster"
-            value = re.split(r' feat\.', value, flags=re.IGNORECASE)[0]  # remove feat
-            value = re.split(r' REMASTER', value, flags=re.IGNORECASE)[0]  # remove remaster
-            value = re.split(r' \(', value, flags=re.IGNORECASE)[0]  # remove parenthesis
-            # value = re.split(r' \-', value, flags=re.IGNORECASE)[0] # remove -
-            value = re.sub(r'\(.*?\)', '', value)
-            value = f"{value.upper()}"
-            track_name_width, _ = draw.textsize(value, font=track_font)
+            value = re.split(r' feat\.', value, flags=re.IGNORECASE)[0]
+            value = re.split(r' REMASTER', value, flags=re.IGNORECASE)[0]
+            value = re.split(r' \(', value, flags=re.IGNORECASE)[0]
+            value = re.sub(r'\(.*?\)', '', value).strip()
 
-            # Truncate at the last space within the available width
-            while track_name_width > available_text_width:
-                space_index = value.rfind(' ', 0, len(value) - 1)
-                if space_index == -1:
-                    value = value[:-4] + '...'  # Preserve space for ellipsis
+            # Uppercase only if *all* characters are Latin-ish
+            if value and not any(is_non_latin_glyph(ch) for ch in value):
+                value = value.upper()
+
+            # Measure mixed width
+            w = mixed_text_width(draw, value, latin_font, font_size)
+
+            # Truncate
+            ellipsis = "..."
+            while w > available_text_width and len(value) > 1:
+                # Prefer truncating at spaces, else trim by character
+                space_index = value.rfind(" ", 0, len(value) - 1)
+                if space_index != -1:
+                    value = value[:space_index].rstrip()
                 else:
-                    value = value[:space_index] + '...'  # Truncate at the last space
-                track_name_width, _ = draw.textsize(value, font=track_font)
-            
-            # If the flag 'tabulated' is set, add spaces to align the track numbers
+                    value = value[:-1].rstrip()
+
+                value = value + ellipsis
+                w = mixed_text_width(draw, value, latin_font, font_size)
+
+            # formatting
             space = "     "
-            # If the flag is 'dotted', add a dot after the track number
+            display_tracknum = tracknum
             if self.dotted:
-                tracknum = f"{tracknum}."
+                display_tracknum = f"{tracknum}."
                 space += " "
-            
-            # Draw the track number and name
+
             if self.tabulated:
                 if num_tracks >= 10:
                     space += " "
-                draw.text((self.margin, offset), f"{tracknum}", font=track_font, fill=self.album.text_color)
-                draw.text((self.margin, offset), f"{space}{value}", font=track_font, fill=self.album.text_color)
+
+                # number is Oswald
+                draw.text((self.margin, offset), f"{display_tracknum}", font=latin_font, fill=self.album.text_color)
+
+                # title is mixed (English Oswald, non-Latin Noto)
+                draw_mixed_text(
+                    draw,
+                    (self.margin, offset),
+                    f"{space}{value}",
+                    latin_font=latin_font,
+                    size=font_size,
+                    fill=self.album.text_color,
+                    fake_bold_px=0  # set to 1 later if you still want thicker
+                )
             else:
-                draw.text((self.margin, offset), f"{tracknum}  {value}", font=track_font, fill=self.album.text_color)
+                draw_mixed_text(
+                    draw,
+                    (self.margin, offset),
+                    f"{display_tracknum}  {value}",
+                    latin_font=latin_font,
+                    size=font_size,
+                    fill=self.album.text_color,
+                    fake_bold_px=0
+                )
+
             offset += max_track_height
+
+
+
 
 
 

@@ -29,6 +29,21 @@ resized_directory = os.path.join(script_dir, "..", "posters_resized")  # Move on
 # Ensure the resized directory exists
 os.makedirs(resized_directory, exist_ok=True)
 
+import re
+
+def sanitize_filename(filename: str) -> str:
+    """
+    Remove characters that are illegal in Windows/macOS/Linux filenames.
+    Keeps extension intact.
+    """
+    name, ext = os.path.splitext(filename)
+    # Replace illegal characters with underscore
+    name = re.sub(r'[<>:"/\\|?*\x00-\x1F]', '_', name)
+    # Collapse repeated underscores
+    name = re.sub(r'_+', '_', name).strip('_')
+    return f"{name}{ext}"
+
+
 def get_existing_files(directory):
     """Returns a set of all filenames in a directory (without extensions)."""
     return {os.path.splitext(f)[0] for f in os.listdir(directory)}
@@ -49,7 +64,9 @@ def download_new_images_from_drive():
         if file_name not in existing_files:  # Only download if not already resized
             print(f"📥 Downloading new image: {file['name']}")
             request = drive_service.files().get_media(fileId=file["id"])
-            file_path = os.path.join(posters_directory, file["name"])  # Save in the script's directory
+            safe_name = sanitize_filename(file["name"])
+            file_path = os.path.join(posters_directory, safe_name)
+
 
             with open(file_path, "wb") as f:
                 downloader = MediaIoBaseDownload(f, request)
