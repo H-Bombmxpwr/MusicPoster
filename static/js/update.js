@@ -3,7 +3,16 @@
  * Handles real-time poster customization via AJAX
  */
 
+// Track if an update is in progress
+let updateInProgress = false;
+
 function updatePosterColor(color = NaN, isBackground = false, isText = false, tabulated = false, dotted = false) {
+    // Prevent multiple simultaneous updates
+    if (updateInProgress) {
+        console.log('Update already in progress, please wait...');
+        return;
+    }
+
     // Get current state
     const artist = document.getElementById('current-artist')?.value;
     const album = document.getElementById('current-album')?.value;
@@ -33,11 +42,24 @@ function updatePosterColor(color = NaN, isBackground = false, isText = false, ta
         dotted: dotted
     };
 
-    // Show loading state
-    const posterImg = document.getElementById('poster-img');
-    if (posterImg) {
-        posterImg.style.opacity = '0.7';
-        posterImg.style.transition = 'opacity 0.2s ease';
+    // Set update in progress
+    updateInProgress = true;
+
+    // Show loading state using LoadingManager if available
+    if (window.LoadingManager) {
+        window.LoadingManager.showPoster();
+    } else {
+        // Fallback: show basic loading state
+        const posterImg = document.getElementById('poster-img');
+        const controls = document.querySelector('.controls');
+        if (posterImg) {
+            posterImg.style.opacity = '0.5';
+            posterImg.style.transition = 'opacity 0.2s ease';
+        }
+        if (controls) {
+            controls.style.pointerEvents = 'none';
+            controls.style.opacity = '0.6';
+        }
     }
 
     // Send update request
@@ -53,6 +75,8 @@ function updatePosterColor(color = NaN, isBackground = false, isText = false, ta
         return response.json();
     })
     .then(data => {
+        const posterImg = document.getElementById('poster-img');
+        
         if (posterImg && data.img_data) {
             // Update poster image
             posterImg.src = data.img_data;
@@ -79,8 +103,25 @@ function updatePosterColor(color = NaN, isBackground = false, isText = false, ta
     })
     .catch(error => {
         console.error('Error updating poster:', error);
+        const posterImg = document.getElementById('poster-img');
         if (posterImg) {
             posterImg.style.opacity = '1';
+        }
+    })
+    .finally(() => {
+        // Reset update state
+        updateInProgress = false;
+
+        // Hide loading state
+        if (window.LoadingManager) {
+            window.LoadingManager.hidePoster();
+        } else {
+            // Fallback: reset basic loading state
+            const controls = document.querySelector('.controls');
+            if (controls) {
+                controls.style.pointerEvents = '';
+                controls.style.opacity = '';
+            }
         }
     });
 }

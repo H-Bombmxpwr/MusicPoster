@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Poster | Album Poster</title>
     <link rel="stylesheet" href="static/css/poster.css">
+    <link rel="stylesheet" href="static/css/loading.css">
     <link rel="icon" href="static/images/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,6 +25,10 @@
         <div class="poster-container">
             {% if found %}
             <img src="{{ img_data }}" id="poster-img" alt="{{ album_name }} by {{ artist_name }}">
+            <!-- Poster loading overlay -->
+            <div class="poster-loading">
+                <div class="mini-spinner"></div>
+            </div>
             {% else %}
             <h3 class="error">Album not found. Please check your spelling and try again.</h3>
             {% endif %}
@@ -132,6 +137,7 @@
     </footer>
 
     <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/loading.js') }}"></script>
     <script src="{{ url_for('static', filename='js/auto.js') }}"></script>
     <script src="{{ url_for('static', filename='js/update.js') }}"></script>
     <script src="{{ url_for('static', filename='js/submit.js') }}"></script>

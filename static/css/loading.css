@@ -1,0 +1,203 @@
+/* Loading Overlay Styles */
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 10, 15, 0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.loading-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Spinner Animation */
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    position: relative;
+}
+
+.loading-spinner::before,
+.loading-spinner::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+}
+
+.loading-spinner::before {
+    width: 100%;
+    height: 100%;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        var(--accent-primary, #ff6b35) 90deg,
+        var(--accent-secondary, #f7931e) 180deg,
+        transparent 270deg
+    );
+    animation: spin 1s linear infinite;
+}
+
+.loading-spinner::after {
+    width: 70%;
+    height: 70%;
+    background: var(--bg-primary, #0a0a0f);
+    top: 15%;
+    left: 15%;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Loading Text */
+.loading-text {
+    margin-top: 24px;
+    font-family: "Outfit", sans-serif;
+    font-size: 1.1rem;
+    color: var(--text-secondary, #a0a0b0);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.loading-text::after {
+    content: '';
+    animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+}
+
+/* Loading Subtext */
+.loading-subtext {
+    margin-top: 12px;
+    font-family: "Outfit", sans-serif;
+    font-size: 0.9rem;
+    color: var(--text-muted, #606070);
+    max-width: 300px;
+    text-align: center;
+    line-height: 1.5;
+}
+
+/* Pulse animation for the album icon */
+.loading-icon {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, var(--accent-primary, #ff6b35) 0%, var(--accent-secondary, #f7931e) 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 40px rgba(255, 107, 53, 0.3);
+}
+
+.loading-icon svg {
+    width: 40px;
+    height: 40px;
+    fill: white;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 40px rgba(255, 107, 53, 0.3);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 60px rgba(255, 107, 53, 0.5);
+    }
+}
+
+/* Poster-specific loading (for result page) */
+.poster-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 10, 15, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 10;
+}
+
+.poster-loading.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.poster-loading .mini-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 107, 53, 0.2);
+    border-top-color: var(--accent-primary, #ff6b35);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Disable interactions when loading */
+.controls-disabled {
+    pointer-events: none;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+/* Progress bar (optional, for longer loads) */
+.loading-progress {
+    width: 200px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    margin-top: 20px;
+    overflow: hidden;
+}
+
+.loading-progress-bar {
+    width: 30%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-primary, #ff6b35), var(--accent-secondary, #f7931e));
+    border-radius: 2px;
+    animation: progress 1.5s ease-in-out infinite;
+}
+
+@keyframes progress {
+    0% {
+        width: 0%;
+        margin-left: 0%;
+    }
+    50% {
+        width: 50%;
+        margin-left: 25%;
+    }
+    100% {
+        width: 0%;
+        margin-left: 100%;
+    }
+}
