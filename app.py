@@ -86,16 +86,20 @@ def about():
 @app.route("/artist-suggestions")
 def artist_suggestions():
     query = request.args.get('q', '')
+    if not query or len(query) < 2:
+        return jsonify([])
     autofill = AutoFill()
-    artists = autofill.search_artists(query)
+    artists = autofill.search_artists(query)  
     return jsonify(artists)
 
 @app.route("/album-suggestions")
 def album_suggestions():
     artist_name = request.args.get('artist', '')
     query = request.args.get('q', '')
+    if not query or len(query) < 2:
+        return jsonify([])
     autofill = AutoFill()
-    albums = autofill.search_albums(query,artist_name)
+    albums = autofill.search_albums(query, artist_name)  
     return jsonify(albums)
 
 @app.route("/mosaic")

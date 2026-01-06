@@ -8,6 +8,7 @@
     <title>Your Poster | Album Poster</title>
     <link rel="stylesheet" href="static/css/poster.css">
     <link rel="stylesheet" href="static/css/loading.css">
+    <link rel="stylesheet" href="static/css/colorpicker.css">
     <link rel="icon" href="static/images/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,13 +50,9 @@
                              style="background-color: {{ color }};"
                              title="Set background to {{ color }}"></div>
                         {% endfor %}
-                        <div class="custom-color-picker-trigger" 
-                             onclick="document.getElementById('background-color-picker').click();"
+                        <div class="custom-color-trigger" 
+                             onclick="openBackgroundColorPicker()"
                              title="Custom color"></div>
-                        <input type="color" 
-                               id="background-color-picker" 
-                               onchange="updatePosterColor(this.value, true, false, tabulated.checked, dotted.checked)" 
-                               value="{{ background_color }}">
                     </div>
                 </div>
 
@@ -69,13 +66,9 @@
                              style="background-color: {{ color }};"
                              title="Set text to {{ color }}"></div>
                         {% endfor %}
-                        <div class="custom-color-picker-trigger" 
-                             onclick="document.getElementById('text-color-picker').click();"
+                        <div class="custom-color-trigger" 
+                             onclick="openTextColorPicker()"
                              title="Custom color"></div>
-                        <input type="color" 
-                               id="text-color-picker" 
-                               onchange="updatePosterColor(this.value, false, true, tabulated.checked, dotted.checked)" 
-                               value="{{ text_color }}">
                     </div>
                 </div>
             </div>
@@ -138,9 +131,25 @@
 
     <!-- Scripts -->
     <script src="{{ url_for('static', filename='js/loading.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/auto.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/colorpicker.js') }}"></script>
     <script src="{{ url_for('static', filename='js/update.js') }}"></script>
     <script src="{{ url_for('static', filename='js/submit.js') }}"></script>
+    <script>
+        // Custom color picker integration
+        function openBackgroundColorPicker() {
+            const currentColor = document.getElementById('current-background-color').value || '#ffffff';
+            openColorPicker(currentColor, function(color) {
+                updatePosterColor(color, true, false, tabulated.checked, dotted.checked);
+            }, true);
+        }
+
+        function openTextColorPicker() {
+            const currentColor = document.getElementById('current-text-color').value || '#000000';
+            openColorPicker(currentColor, function(color) {
+                updatePosterColor(color, false, true, tabulated.checked, dotted.checked);
+            }, false);
+        }
+    </script>
 </body>
 
 </html>
