@@ -5,6 +5,7 @@
 
 // Global loading state
 let isLoading = false;
+let scrollPosition = 0;
 
 /**
  * Show the full-page loading overlay
@@ -28,13 +29,15 @@ function showLoading(message = 'Generating', subtext = 'Creating your custom pos
     if (textEl) textEl.textContent = message;
     if (subtextEl) subtextEl.textContent = subtext;
 
+    // Store scroll position and prevent body scroll (mobile-friendly approach)
+    scrollPosition = window.pageYOffset;
+    document.body.classList.add('loading-active');
+    document.body.style.top = `-${scrollPosition}px`;
+
     // Show overlay
     requestAnimationFrame(() => {
         overlay.classList.add('active');
     });
-
-    // Prevent body scroll
-    document.body.style.overflow = 'hidden';
 }
 
 /**
@@ -45,7 +48,12 @@ function hideLoading() {
     if (overlay) {
         overlay.classList.remove('active');
     }
-    document.body.style.overflow = '';
+    
+    // Restore scroll position
+    document.body.classList.remove('loading-active');
+    document.body.style.top = '';
+    window.scrollTo(0, scrollPosition);
+    
     isLoading = false;
 }
 
@@ -57,6 +65,10 @@ function createLoadingOverlay() {
     const overlay = document.createElement('div');
     overlay.id = 'loading-overlay';
     overlay.className = 'loading-overlay';
+    
+    // Prevent touch events from propagating on mobile
+    overlay.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    
     overlay.innerHTML = `
         <div class="loading-icon">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

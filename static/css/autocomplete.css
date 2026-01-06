@@ -277,3 +277,56 @@
 .autocomplete-item:nth-child(8) { animation-delay: 0.16s; }
 .autocomplete-item:nth-child(9) { animation-delay: 0.18s; }
 .autocomplete-item:nth-child(10) { animation-delay: 0.2s; }
+
+/* Mobile-specific styles */
+@media (max-width: 600px) {
+    .autocomplete-dropdown {
+        max-height: 220px;
+        border-radius: 10px;
+    }
+
+    .autocomplete-item {
+        padding: 12px 16px;
+    }
+
+    .autocomplete-item-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .autocomplete-item-icon svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .autocomplete-item-text {
+        font-size: 0.95rem;
+    }
+
+    .autocomplete-item-subtitle {
+        font-size: 0.75rem;
+    }
+
+    .autocomplete-hint {
+        display: none; /* Hide keyboard hints on mobile */
+    }
+
+    .autocomplete-loading,
+    .autocomplete-no-results {
+        padding: 16px;
+    }
+}
+
+/* Touch-friendly tap targets */
+@media (pointer: coarse) {
+    .autocomplete-item {
+        min-height: 48px;
+    }
+}
+
+/* Prevent zoom on input focus (iOS) */
+@media screen and (max-width: 600px) {
+    .autocomplete-wrapper input[type="text"] {
+        font-size: 16px !important; /* Prevents iOS zoom */
+    }
+}

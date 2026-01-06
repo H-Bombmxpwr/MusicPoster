@@ -26,6 +26,8 @@ class Autocomplete {
         this.isOpen = false;
         this.debounceTimer = null;
         this.abortController = null;
+        this.justSelected = false; // Flag to prevent reopening after selection
+        this.lastQuery = ''; // Track last query to prevent duplicate searches
 
         this.init();
     }
@@ -63,18 +65,30 @@ class Autocomplete {
         // Input events
         this.input.addEventListener('input', (e) => this.onInput(e));
         this.input.addEventListener('focus', (e) => this.onFocus(e));
-        this.input.addEventListener('blur', (e) => this.onBlur(e));
         this.input.addEventListener('keydown', (e) => this.onKeydown(e));
 
-        // Click outside to close
-        document.addEventListener('click', (e) => {
+        // Click outside to close - use mousedown for better timing
+        document.addEventListener('mousedown', (e) => {
             if (!this.wrapper.contains(e.target)) {
                 this.close();
             }
         });
+
+        // Touch outside to close (mobile)
+        document.addEventListener('touchstart', (e) => {
+            if (!this.wrapper.contains(e.target)) {
+                this.close();
+            }
+        }, { passive: true });
     }
 
     onInput(e) {
+        // If we just selected an item, don't reopen
+        if (this.justSelected) {
+            this.justSelected = false;
+            return;
+        }
+
         const value = e.target.value.trim();
 
         // Clear previous timer
@@ -89,6 +103,14 @@ class Autocomplete {
 
         if (value.length < this.options.minChars) {
             this.close();
+            this.items = [];
+            this.lastQuery = '';
+            return;
+        }
+
+        // Don't search if query hasn't changed
+        if (value === this.lastQuery && this.items.length > 0) {
+            this.open();
             return;
         }
 
@@ -102,24 +124,28 @@ class Autocomplete {
     }
 
     onFocus(e) {
-        if (this.items.length > 0) {
+        // Don't reopen if we just selected something
+        if (this.justSelected) {
+            return;
+        }
+        
+        // Only show dropdown if we have items and the input has enough characters
+        const value = this.input.value.trim();
+        if (this.items.length > 0 && value.length >= this.options.minChars && value === this.lastQuery) {
             this.open();
         }
-    }
-
-    onBlur(e) {
-        // Delay close to allow click on item
-        setTimeout(() => {
-            if (!this.wrapper.contains(document.activeElement)) {
-                this.close();
-            }
-        }, 200);
     }
 
     onKeydown(e) {
         if (!this.isOpen) {
             if (e.key === 'ArrowDown' && this.input.value.length >= this.options.minChars) {
-                this.search(this.input.value.trim());
+                e.preventDefault();
+                if (this.items.length > 0) {
+                    this.open();
+                    this.highlight(0);
+                } else {
+                    this.search(this.input.value.trim());
+                }
             }
             return;
         }
@@ -135,12 +161,16 @@ class Autocomplete {
                 break;
             case 'Enter':
                 e.preventDefault();
-                if (this.highlightedIndex >= 0) {
+                if (this.highlightedIndex >= 0 && this.items[this.highlightedIndex]) {
                     this.select(this.items[this.highlightedIndex]);
+                } else {
+                    this.close();
                 }
                 break;
             case 'Escape':
+                e.preventDefault();
                 this.close();
+                this.input.blur();
                 break;
             case 'Tab':
                 this.close();
@@ -150,6 +180,7 @@ class Autocomplete {
 
     async search(query) {
         this.abortController = new AbortController();
+        this.lastQuery = query;
 
         try {
             let url = `${this.endpoint}?q=${encodeURIComponent(query)}`;
@@ -184,7 +215,10 @@ class Autocomplete {
                 this.items = [];
             }
             
-            this.render(query);
+            // Only render if the input still has focus and query matches
+            if (document.activeElement === this.input && this.input.value.trim() === query) {
+                this.render(query);
+            }
 
         } catch (error) {
             if (error.name !== 'AbortError') {
@@ -199,6 +233,9 @@ class Autocomplete {
             this.showNoResults();
             return;
         }
+
+        // Check if on mobile (hide keyboard hints on touch devices)
+        const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
         this.dropdown.innerHTML = this.items.map((item, index) => {
             const name = item.name || item;
@@ -235,22 +272,35 @@ class Autocomplete {
             `;
         }).join('');
 
-        // Add keyboard hint
-        this.dropdown.innerHTML += `
-            <div class="autocomplete-hint">
-                <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
-                <span><kbd>Enter</kbd> Select</span>
-                <span><kbd>Esc</kbd> Close</span>
-            </div>
-        `;
+        // Add keyboard hint (only on desktop)
+        if (!isMobile) {
+            this.dropdown.innerHTML += `
+                <div class="autocomplete-hint">
+                    <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
+                    <span><kbd>Enter</kbd> Select</span>
+                    <span><kbd>Esc</kbd> Close</span>
+                </div>
+            `;
+        }
 
-        // Bind click events to items
+        // Bind click/touch events to items
         this.dropdown.querySelectorAll('.autocomplete-item').forEach((el) => {
+            // Use mousedown instead of click for better timing
             el.addEventListener('mousedown', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 const index = parseInt(el.dataset.index);
                 this.select(this.items[index]);
             });
+            
+            // Touch support
+            el.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const index = parseInt(el.dataset.index);
+                this.select(this.items[index]);
+            });
+            
             el.addEventListener('mouseenter', () => {
                 this.highlight(parseInt(el.dataset.index), false);
             });
@@ -291,13 +341,18 @@ class Autocomplete {
     }
 
     highlight(index, scroll = true) {
+        if (this.items.length === 0) return;
+        
         // Wrap around
         if (index < 0) index = this.items.length - 1;
         if (index >= this.items.length) index = 0;
 
         // Remove previous highlight
         const prev = this.dropdown.querySelector('.autocomplete-item.highlighted');
-        if (prev) prev.classList.remove('highlighted');
+        if (prev) {
+            prev.classList.remove('highlighted');
+            prev.setAttribute('aria-selected', 'false');
+        }
 
         // Add new highlight
         this.highlightedIndex = index;
@@ -307,28 +362,43 @@ class Autocomplete {
             items[index].setAttribute('aria-selected', 'true');
             
             if (scroll) {
-                items[index].scrollIntoView({ block: 'nearest' });
+                items[index].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
             }
         }
     }
 
     select(item) {
+        if (!item) return;
+        
+        // Set flag to prevent dropdown from reopening
+        this.justSelected = true;
+        
         // Handle both object format and string format
         const value = typeof item === 'object' ? item.name : item;
         this.input.value = value;
+        
+        // Clear items and close
+        this.lastQuery = value;
         this.close();
         
-        // Trigger input event for any listeners
-        this.input.dispatchEvent(new Event('input', { bubbles: true }));
+        // Trigger change event (but not input event to avoid reopening)
         this.input.dispatchEvent(new Event('change', { bubbles: true }));
         
-        // Focus next input or blur
+        // Small delay before allowing focus events again
+        setTimeout(() => {
+            this.justSelected = false;
+        }, 100);
+        
+        // Focus next input
         const form = this.input.closest('form');
         if (form) {
-            const inputs = Array.from(form.querySelectorAll('input[type="text"], input[type="color"], button[type="submit"]'));
+            const inputs = Array.from(form.querySelectorAll('input[type="text"]:not([readonly])'));
             const currentIndex = inputs.indexOf(this.input);
-            if (currentIndex < inputs.length - 1) {
-                inputs[currentIndex + 1].focus();
+            if (currentIndex >= 0 && currentIndex < inputs.length - 1) {
+                // Small delay to let the current selection complete
+                setTimeout(() => {
+                    inputs[currentIndex + 1].focus();
+                }, 50);
             }
         }
     }
@@ -354,12 +424,14 @@ class Autocomplete {
     }
 
     open() {
+        if (this.isOpen) return;
         this.isOpen = true;
         this.dropdown.classList.add('active');
         this.input.setAttribute('aria-expanded', 'true');
     }
 
     close() {
+        if (!this.isOpen) return;
         this.isOpen = false;
         this.dropdown.classList.remove('active');
         this.input.setAttribute('aria-expanded', 'false');
@@ -369,16 +441,21 @@ class Autocomplete {
 
 // Initialize autocomplete when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Artist autocomplete
-    const artistAutocomplete = new Autocomplete('artist', '/artist-suggestions', {
-        type: 'artist',
-        placeholder: 'Artist name...'
-    });
+    // Only initialize if the inputs exist (home page)
+    if (document.getElementById('artist')) {
+        // Artist autocomplete
+        new Autocomplete('artist', '/artist-suggestions', {
+            type: 'artist',
+            placeholder: 'Artist name...'
+        });
+    }
 
-    // Album autocomplete (with artist dependency)
-    const albumAutocomplete = new Autocomplete('album', '/album-suggestions', {
-        type: 'album',
-        dependentInputId: 'artist',
-        placeholder: 'Album name or Spotify link...'
-    });
+    if (document.getElementById('album')) {
+        // Album autocomplete (with artist dependency)
+        new Autocomplete('album', '/album-suggestions', {
+            type: 'album',
+            dependentInputId: 'artist',
+            placeholder: 'Album name or Spotify link...'
+        });
+    }
 });
