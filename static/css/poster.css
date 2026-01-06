@@ -92,6 +92,70 @@ a {
     transition: all 0.3s ease;
 }
 
+/* Back to Home Button */
+.back-to-home {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    font-family: "Outfit", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border-subtle);
+    border-radius: 50px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.back-to-home svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    transition: transform 0.3s ease;
+}
+
+.back-to-home:hover {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+    border-color: var(--accent-primary);
+}
+
+.back-to-home:hover svg {
+    transform: translateX(-3px);
+}
+
+@media (max-width: 600px) {
+    .back-to-home {
+        top: 15px;
+        left: 15px;
+        padding: 8px 14px;
+        font-size: 0.85rem;
+    }
+
+    .back-to-home svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .back-to-home span {
+        display: none;
+    }
+
+    .back-to-home {
+        padding: 10px;
+        border-radius: 50%;
+    }
+}
+
+
 /* Content Container */
 .content-container {
     display: flex;

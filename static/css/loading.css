@@ -268,3 +268,58 @@ body.loading-active {
         padding-right: env(safe-area-inset-right);
     }
 }
+
+/* Form validation message */
+.form-validation-message {
+    max-width: 500px;
+    margin: 0 auto 20px;
+    padding: 16px 24px;
+    background: rgba(255, 107, 53, 0.1);
+    border: 1px solid rgba(255, 107, 53, 0.3);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.form-validation-message.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.validation-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.validation-text {
+    font-family: "Outfit", sans-serif;
+    font-size: 0.95rem;
+    color: var(--text-secondary, #a0a0b0);
+    line-height: 1.5;
+}
+
+.validation-text strong {
+    color: var(--accent-primary, #ff6b35);
+}
+
+@media (max-width: 600px) {
+    .form-validation-message {
+        margin: 0 15px 20px;
+        padding: 14px 18px;
+        gap: 12px;
+    }
+
+    .validation-icon {
+        font-size: 1.3rem;
+    }
+
+    .validation-text {
+        font-size: 0.9rem;
+    }
+}

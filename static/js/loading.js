@@ -151,10 +151,15 @@ function initFormLoading() {
             const artist = document.getElementById('artist')?.value?.trim();
             const album = document.getElementById('album')?.value?.trim();
 
-            // Only show loading if at least one field has value
-            if (artist || album) {
-                showLoading('Generating', 'Fetching album data from Spotify...');
+            // Check if both fields are empty
+            if (!artist && !album) {
+                e.preventDefault();
+                showValidationMessage();
+                return false;
             }
+
+            // Show loading if at least one field has value
+            showLoading('Generating', 'Fetching album data from Spotify...');
         });
     }
 
@@ -167,8 +172,56 @@ function initFormLoading() {
     }
 }
 
+/**
+ * Show validation message when form is empty
+ */
+function showValidationMessage() {
+    // Check if message already exists
+    let messageEl = document.getElementById('form-validation-message');
+    
+    if (!messageEl) {
+        messageEl = document.createElement('div');
+        messageEl.id = 'form-validation-message';
+        messageEl.className = 'form-validation-message';
+        messageEl.innerHTML = `
+            <div class="validation-icon">💡</div>
+            <div class="validation-text">
+                Enter an artist/album name above, or click <strong>Surprise Me!</strong> for a random poster
+            </div>
+        `;
+        
+        // Insert after the generate button
+        const generateButton = document.querySelector('.button');
+        if (generateButton) {
+            generateButton.parentNode.insertBefore(messageEl, generateButton.nextSibling);
+        }
+    }
+    
+    // Show with animation
+    messageEl.classList.remove('show');
+    requestAnimationFrame(() => {
+        messageEl.classList.add('show');
+    });
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        messageEl.classList.remove('show');
+    }, 5000);
+}
+
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', initFormLoading);
+
+// Hide loading overlay when navigating back (fixes back button issue)
+window.addEventListener('pageshow', function(event) {
+    // This fires when page is shown, including from back/forward cache
+    hideLoading();
+});
+
+// Also hide on regular page load (belt and suspenders)
+window.addEventListener('load', function() {
+    hideLoading();
+});
 
 // Export for use in other scripts
 window.LoadingManager = {
