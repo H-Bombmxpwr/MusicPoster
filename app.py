@@ -1,9 +1,9 @@
 from src.album import Album
-from src.helper import Utility
+from src.helper import Utility, RESOLUTION_PRESETS
 from src.auto import AutoFill
 from src.surprise import SurpriseMe
 from src.infinity import InfinityPoster
-from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request,jsonify
+from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request, jsonify
 import os
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -11,7 +11,7 @@ import random
 import base64
 import json
 
-#google changes 
+# Google changes 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
@@ -22,17 +22,16 @@ load_dotenv(dotenv_path='keys.env')
 DRIVE_FOLDER_ID = os.getenv('DRIVE_FOLDER_ID')
 
 
-
 app = Flask(__name__)
 
-#decorator for homepage 
+# Decorator for homepage 
 @app.route("/")
 @app.route("/home")
 def home():
     return render_template("home/index.html")
 
 
-@app.route("/result", methods = ['POST','GET'])
+@app.route("/result", methods=['POST', 'GET'])
 def result():
     output = request.form.to_dict()
     bcolor = output.get("background", None)
@@ -40,42 +39,43 @@ def result():
     artist = output.get("artist", "")
     album_name = output.get("album", "")
 
-    #nonsense to fix the title savign as a spotify url
-    artist_query = output.get("artist", "")  # May be empty
-    album_query = output.get("album", "")  # May still be a URL
-    album = Album(artist, album_query)  # Album class fetches real name
+    # Fix for title saving as a spotify url
+    artist_query = output.get("artist", "")
+    album_query = output.get("album", "")
+    album = Album(artist, album_query)
+    
     if album.album_found:
-        artist = album.artist_name  # ✅ Fix: Use the artist name from Spotify API
-        album_name = album.album_name  # ✅ Fix: Use correct album name
+        artist = album.artist_name
+        album_name = album.album_name
     else:
-        artist = artist_query  # Keep input if album fetch fails
-        album_name = album_query  # Keep input if album fetch fails
+        artist = artist_query
+        album_name = album_query
 
     img_data = None
     text_colors = None
     album_img = None
     album_found = album.album_found
 
-    if album_found:  # only build the poster if the album was found, otherwise just pass the error message
+    if album_found:
         album.setColors(bcolor, tcolor)
-        utility = Utility(album)
+        # Use medium resolution for preview
+        utility = Utility(album, resolution='medium')
         poster = utility.buildPoster()
         img_data = utility.encodeImage(poster)
         album_img = utility.fetch_album_cover(album.getCoverArt()[0]['url'])
-        colors = utility.get_colors(album_img, 5)  # Adjust number of colors as needed
-        # Discard the first color and convert the rest to hex
+        colors = utility.get_colors(album_img, 5)
         text_colors = ['#' + ''.join(['{:02x}'.format(int(c)) for c in color]) for color in reversed(colors)]
 
-    # Prepare variables for rendering; if not found, these will remain None or use defaults
     return render_template("poster/result.html", 
                            img_data=img_data, 
                            found=album_found, 
-                           text_colors=text_colors or ['#000000'],  # Provide a default color if not found
-                           background_colors=text_colors or ['#FFFFFF'],  # Provide a default color if not found
+                           text_colors=text_colors or ['#000000'],
+                           background_colors=text_colors or ['#FFFFFF'],
                            artist_name=artist, 
                            album_name=album_name,
-                           background_color=bcolor or '#FFFFFF',  # Provide a default background color
-                           text_color=tcolor or '#000000')  # Provide a default text color
+                           background_color=bcolor or '#FFFFFF',
+                           text_color=tcolor or '#000000',
+                           resolution_presets=RESOLUTION_PRESETS)
 
     
 @app.route("/about")
@@ -92,6 +92,7 @@ def artist_suggestions():
     artists = autofill.search_artists(query)  
     return jsonify(artists)
 
+
 @app.route("/album-suggestions")
 def album_suggestions():
     artist_name = request.args.get('artist', '')
@@ -102,38 +103,94 @@ def album_suggestions():
     albums = autofill.search_albums(query, artist_name)  
     return jsonify(albums)
 
+
 @app.route("/mosaic")
 def mosaic():
     posters = os.listdir('static/posters_resized')
     random.shuffle(posters)
     return render_template('poster/mosaic.html', posters=posters)
 
+
 @app.route("/update-poster", methods=['POST'])
 def update_poster():
     data = request.json
     artist = data['artist']
     album_data = data['album']
-    background_color = data['background']  # Provided from the AJAX call
-    text_color = data['text']  # Provided from the AJAX call
+    background_color = data['background']
+    text_color = data['text']
     tabulated = data['tabulated']
     dotted = data['dotted']
 
-    # Instantiate your Album object
     album = Album(artist, album_data)
-
-
-    # Assuming setColors is a method that updates colors of the Album instance
     album.setColors(background_color, text_color)
-
-    # Update the tracklist format
     album.setTracklistFormat(tabulated, dotted)
     
-    # Rebuild the poster with the new colors
-    utility = Utility(album)
+    # Use medium resolution for preview
+    utility = Utility(album, resolution='medium')
     poster = utility.buildPoster()
     
     img_data = utility.encodeImage(poster)
     return jsonify({'img_data': img_data})
+
+
+@app.route("/download-poster", methods=['POST'])
+def download_poster():
+    """Generate and return poster for download at specified resolution/format"""
+    data = request.json
+    artist = data.get('artist')
+    album_data = data.get('album')
+    background_color = data.get('background', '#FFFFFF')
+    text_color = data.get('text', '#000000')
+    tabulated = data.get('tabulated', False)
+    dotted = data.get('dotted', False)
+    resolution = data.get('resolution', 'high')
+    format_type = data.get('format', 'png')
+    dpi = data.get('dpi', 300)
+
+    # Validate resolution
+    if resolution not in RESOLUTION_PRESETS:
+        resolution = 'high'
+    
+    # Validate DPI
+    try:
+        dpi = int(dpi)
+        dpi = max(72, min(600, dpi))  # Clamp between 72 and 600
+    except:
+        dpi = 300
+
+    album = Album(artist, album_data)
+    
+    if not album.album_found:
+        return jsonify({'error': 'Album not found'}), 404
+    
+    album.setColors(background_color, text_color)
+    album.setTracklistFormat(tabulated, dotted)
+    
+    utility = Utility(album, resolution=resolution)
+    
+    if format_type.lower() == 'svg':
+        # Generate SVG
+        svg_content = utility.generateSVG()
+        return jsonify({
+            'type': 'svg',
+            'data': svg_content,
+            'filename': f"{album.album_name.replace(' ', '_')}_{resolution}.svg"
+        })
+    else:
+        # Generate PNG
+        poster = utility.buildPoster()
+        img_bytes = utility.getImageBytes(poster, format='PNG', dpi=dpi)
+        
+        # Encode as base64
+        encoded = base64.b64encode(img_bytes.getvalue()).decode('utf-8')
+        
+        return jsonify({
+            'type': 'png',
+            'data': f"data:image/png;base64,{encoded}",
+            'filename': f"{album.album_name.replace(' ', '_')}_{resolution}_{dpi}dpi.png",
+            'width': RESOLUTION_PRESETS[resolution]['width'],
+            'height': RESOLUTION_PRESETS[resolution]['height']
+        })
 
 
 @app.route("/surprise", methods=["GET"])
@@ -142,13 +199,12 @@ def surprise():
     img_data, album_name, artist_name = surprise_me.generate_random_poster()
 
     if img_data:
-        # Recalculate dominant colors for the album art
         album = Album(artist_name, album_name)
-        utility = Utility(album)
+        utility = Utility(album, resolution='medium')
         album_img = utility.fetch_album_cover(album.getCoverArt()[0]['url'])
-        colors = utility.get_colors(album_img, 5)  # Extract 5 colors from album art
+        colors = utility.get_colors(album_img, 5)
         text_colors = ['#' + ''.join(['{:02x}'.format(int(c)) for c in color]) for color in reversed(colors)]
-        background_colors = text_colors  # Use the same colors for background options
+        background_colors = text_colors
 
         return render_template(
             "poster/result.html",
@@ -156,10 +212,11 @@ def surprise():
             found=True,
             artist_name=artist_name,
             album_name=album_name,
-            background_colors=background_colors,  # Pass background colors
-            text_colors=text_colors,  # Pass text colors
-            background_color="#FFFFFF",  # Default background color
-            text_color="#000000",  # Default text color
+            background_colors=background_colors,
+            text_colors=text_colors,
+            background_color="#FFFFFF",
+            text_color="#000000",
+            resolution_presets=RESOLUTION_PRESETS
         )
     else:
         return render_template(
@@ -172,17 +229,17 @@ def surprise():
 @app.route("/api/generate-posters", methods=['GET'])
 def generate_posters_api():
     infinity = InfinityPoster()
-    posters = infinity.generate_posters(limit=5)  # Generate 5 posters per API call
+    posters = infinity.generate_posters(limit=5)
     return jsonify(posters)
+
 
 # Authenticate using the service account
 SCOPES = ["https://www.googleapis.com/auth/drive.file"]
-# Load from environment variable
 base64_creds = os.getenv("GOOGLE_SERVICE_ACCOUNT_BASE64")
 
 if base64_creds:
     creds_json = base64.b64decode(base64_creds).decode("utf-8")
-    creds_dict = json.loads(creds_json)  # Convert to dictionary
+    creds_dict = json.loads(creds_json)
 
     credentials = service_account.Credentials.from_service_account_info(
         creds_dict, scopes=SCOPES
@@ -192,21 +249,19 @@ else:
 
 drive_service = build("drive", "v3", credentials=credentials)
 
+
 def upload_poster_to_drive(img_data, artist_name, album_name):
-    """ Uploads a poster image to Google Drive and returns the file link """
+    """Uploads a poster image to Google Drive and returns the file link"""
     try:
-        # Decode base64 image
-        img_bytes = base64.b64decode(img_data.split(",")[1])  # Remove 'data:image/png;base64,' prefix
+        img_bytes = base64.b64decode(img_data.split(",")[1])
         img_stream = io.BytesIO(img_bytes)
 
-        # Define file metadata
         file_name = f"{artist_name}_{album_name}.png".replace(" ", "_")
         file_metadata = {
             "name": file_name,
             "parents": [DRIVE_FOLDER_ID]
         }
 
-        # Upload file to Google Drive
         media = MediaIoBaseUpload(img_stream, mimetype="image/png")
         file = drive_service.files().create(
             body=file_metadata,
@@ -214,7 +269,6 @@ def upload_poster_to_drive(img_data, artist_name, album_name):
             fields="id"
         ).execute()
 
-        # Get shareable link
         file_id = file.get("id")
         file_link = f"https://drive.google.com/file/d/{file_id}/view"
 
@@ -223,6 +277,7 @@ def upload_poster_to_drive(img_data, artist_name, album_name):
     except Exception as e:
         print("Error uploading to Google Drive:", e)
         return None
+
 
 @app.route("/submit-poster", methods=["POST"])
 def submit_poster():
@@ -240,7 +295,6 @@ def submit_poster():
             print("🚨 Missing data in request")
             return jsonify({"success": False, "message": "Missing data"}), 400
 
-        # Upload poster to Google Drive
         file_link = upload_poster_to_drive(img_data, artist_name, album_name)
 
         if file_link:
@@ -257,10 +311,6 @@ def submit_poster():
         return jsonify({"success": False, "message": str(e)}), 500
 
 
-# if __name__ == '__main__':
-#     app.run(debug = True, host = "0.0.0.0",port = 80)
-
 if __name__ == '__main__':
-    import os
-    port = int(os.getenv("PORT", 5000))  # Use PORT from Railway or default to 5000
+    port = int(os.getenv("PORT", 5000))
     app.run(debug=False, host='0.0.0.0', port=port)

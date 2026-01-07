@@ -64,6 +64,45 @@ body::after {
     z-index: -1;
 }
 
+/* Back to Home Button */
+.back-to-home {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-family: "Outfit", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.back-to-home svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    transition: transform 0.3s ease;
+}
+
+.back-to-home:hover {
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
+}
+
+.back-to-home:hover svg {
+    transform: translateX(-4px);
+}
+
 /* Title */
 h1.title {
     font-family: "Syne", sans-serif;
@@ -91,70 +130,6 @@ a {
     color: inherit;
     transition: all 0.3s ease;
 }
-
-/* Back to Home Button */
-.back-to-home {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    font-family: "Outfit", sans-serif;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-    background: var(--card-bg);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid var(--border-subtle);
-    border-radius: 50px;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    z-index: 100;
-}
-
-.back-to-home svg {
-    width: 18px;
-    height: 18px;
-    fill: currentColor;
-    transition: transform 0.3s ease;
-}
-
-.back-to-home:hover {
-    color: var(--text-primary);
-    background: var(--bg-tertiary);
-    border-color: var(--accent-primary);
-}
-
-.back-to-home:hover svg {
-    transform: translateX(-3px);
-}
-
-@media (max-width: 600px) {
-    .back-to-home {
-        top: 15px;
-        left: 15px;
-        padding: 8px 14px;
-        font-size: 0.85rem;
-    }
-
-    .back-to-home svg {
-        width: 16px;
-        height: 16px;
-    }
-
-    .back-to-home span {
-        display: none;
-    }
-
-    .back-to-home {
-        padding: 10px;
-        border-radius: 50%;
-    }
-}
-
 
 /* Content Container */
 .content-container {
@@ -200,6 +175,39 @@ a {
 
 #poster-img:hover {
     transform: scale(1.02);
+}
+
+/* Poster loading overlay */
+.poster-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 10, 15, 0.8);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    z-index: 10;
+}
+
+.poster-loading.active {
+    display: flex;
+}
+
+.mini-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-subtle);
+    border-top-color: var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 .error {
@@ -272,7 +280,7 @@ a {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
-.custom-color-picker-trigger {
+.custom-color-trigger {
     width: 40px;
     height: 40px;
     border-radius: 10px;
@@ -284,17 +292,9 @@ a {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.custom-color-picker-trigger:hover {
+.custom-color-trigger:hover {
     transform: scale(1.15);
     border-color: var(--text-primary);
-}
-
-input[type="color"] {
-    width: 40px;
-    height: 40px;
-    opacity: 0;
-    position: absolute;
-    z-index: -1;
 }
 
 /* Tracklist Controls */
@@ -361,19 +361,27 @@ input[type="checkbox"]:hover {
     border-color: var(--accent-primary);
 }
 
-/* Download Button */
-.download-container {
+/* Download Section */
+.download-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     padding-top: 10px;
+    border-top: 1px solid var(--border-subtle);
 }
 
-.download-container a button {
+.quick-download-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     width: 100%;
-    padding: 16px 30px;
+    padding: 16px 24px;
     font-family: "Syne", sans-serif;
     font-size: 1rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     color: var(--text-primary);
     background: var(--gradient-1);
     background-size: 200% 200%;
@@ -382,12 +390,51 @@ input[type="checkbox"]:hover {
     cursor: pointer;
     transition: all 0.4s ease;
     box-shadow: 0 4px 20px var(--accent-glow);
+    text-decoration: none;
 }
 
-.download-container a button:hover {
+.quick-download-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+.quick-download-btn:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 30px var(--accent-glow);
     animation: gradientShift 2s ease-in-out infinite;
+}
+
+.download-options-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px 20px;
+    font-family: "Syne", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-primary);
+    background: transparent;
+    border: 2px solid var(--accent-primary);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.download-options-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+.download-options-btn:hover {
+    color: var(--text-primary);
+    background: var(--accent-primary);
+    box-shadow: 0 4px 20px var(--accent-glow);
 }
 
 /* Submission Section */
@@ -500,6 +547,12 @@ footer a:hover {
     #poster-img {
         max-width: 100%;
     }
+    
+    .back-to-home {
+        top: 10px;
+        left: 10px;
+        padding: 8px 12px;
+    }
 }
 
 @media (max-width: 500px) {
@@ -518,6 +571,18 @@ footer a:hover {
 
     .submission-section h3 {
         font-size: 1.3rem;
+    }
+    
+    .back-to-home span {
+        display: none;
+    }
+    
+    .back-to-home {
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        justify-content: center;
+        border-radius: 50%;
     }
 }
 
