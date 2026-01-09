@@ -1,0 +1,284 @@
+/* Add these styles to poster.css */
+
+/* Loading Overlay */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    border-radius: 12px;
+    z-index: 10;
+}
+
+.loading-overlay span {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-subtle);
+    border-top-color: var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Section Titles */
+.section-title {
+    font-family: "Syne", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Text Edit Section */
+.text-edit-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--border-subtle);
+}
+
+.edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.edit-field label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.edit-field input[type="text"] {
+    width: 100%;
+    padding: 12px 16px;
+    font-family: "Outfit", sans-serif;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-subtle);
+    border-radius: 10px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.edit-field input[type="text"]::placeholder {
+    color: var(--text-muted);
+}
+
+.edit-field input[type="text"]:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
+}
+
+/* Track Edit Toggle Button */
+.track-edit-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 14px 18px;
+    font-family: "Outfit", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-subtle);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.track-edit-toggle:hover {
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+}
+
+.track-edit-toggle svg {
+    transition: transform 0.3s ease;
+}
+
+/* Track Editor */
+.track-editor {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+}
+
+.track-editor[style*="display: block"] {
+    max-height: 600px;
+}
+
+.track-editor-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-subtle);
+    border-radius: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Custom scrollbar for track editor */
+.track-editor-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.track-editor-content::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+}
+
+.track-editor-content::-webkit-scrollbar-thumb {
+    background: var(--accent-primary);
+    border-radius: 4px;
+}
+
+.track-editor-content::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-secondary);
+}
+
+.track-field {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 12px;
+    align-items: center;
+}
+
+.track-field label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: right;
+}
+
+.track-field input[type="text"] {
+    padding: 10px 14px;
+    font-family: "Outfit", sans-serif;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.track-field input[type="text"]::placeholder {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.track-field input[type="text"]:focus {
+    border-color: var(--accent-primary);
+    background: var(--bg-secondary);
+}
+
+/* Apply Changes Button */
+.apply-changes-btn {
+    width: 100%;
+    padding: 16px 30px;
+    font-family: "Syne", sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-primary);
+    background: var(--gradient-1);
+    background-size: 200% 200%;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    box-shadow: 0 4px 20px var(--accent-glow);
+    margin-top: 8px;
+}
+
+.apply-changes-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px var(--accent-glow);
+    animation: gradientShift 2s ease-in-out infinite;
+}
+
+.apply-changes-btn:active {
+    transform: translateY(-1px);
+}
+
+/* Color Controls Spacing */
+.color-controls {
+    padding-top: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border-subtle);
+}
+
+/* Tracklist Controls Spacing */
+.tracklist-controls {
+    border-top: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .text-edit-section {
+        padding-bottom: 16px;
+    }
+    
+    .track-editor-content {
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 500px) {
+    .edit-field input[type="text"] {
+        padding: 10px 14px;
+        font-size: 0.9rem;
+    }
+    
+    .track-edit-toggle {
+        padding: 12px 16px;
+        font-size: 0.85rem;
+    }
+    
+    .track-field {
+        grid-template-columns: 25px 1fr;
+        gap: 10px;
+    }
+    
+    .track-field input[type="text"] {
+        padding: 9px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .apply-changes-btn {
+        padding: 14px 24px;
+        font-size: 0.9rem;
+    }
+}

@@ -55,6 +55,10 @@ def result():
     text_colors = None
     album_img = None
     album_found = album.album_found
+    num_tracks = 0
+    tracks_dict = {}
+    release_date = ""
+    label = ""
 
     if album_found:
         album.setColors(bcolor, tcolor)
@@ -65,6 +69,12 @@ def result():
         album_img = utility.fetch_album_cover(album.getCoverArt()[0]['url'])
         colors = utility.get_colors(album_img, 5)
         text_colors = ['#' + ''.join(['{:02x}'.format(int(c)) for c in color]) for color in reversed(colors)]
+        
+        # Get additional data for pre-filling edit fields
+        num_tracks = album.getNumTracks()
+        tracks_dict = album.getTracks()
+        release_date = album.getReleaseDate()
+        label = album.getLabel()
 
     return render_template("poster/result.html", 
                            img_data=img_data, 
@@ -75,7 +85,11 @@ def result():
                            album_name=album_name,
                            background_color=bcolor or '#FFFFFF',
                            text_color=tcolor or '#000000',
-                           resolution_presets=RESOLUTION_PRESETS)
+                           resolution_presets=RESOLUTION_PRESETS,
+                           num_tracks=num_tracks,
+                           tracks=tracks_dict,
+                           release_date=release_date,
+                           label=label)
 
     
 @app.route("/about")
@@ -118,8 +132,8 @@ def update_poster():
     album_data = data['album']
     background_color = data['background']
     text_color = data['text']
-    tabulated = data['tabulated']
-    dotted = data['dotted']
+    tabulated = data.get('tabulated', False)
+    dotted = data.get('dotted', False)
 
     album = Album(artist, album_data)
     album.setColors(background_color, text_color)
@@ -130,6 +144,49 @@ def update_poster():
     poster = utility.buildPoster()
     
     img_data = utility.encodeImage(poster)
+    return jsonify({'img_data': img_data})
+
+
+@app.route("/update-poster-custom", methods=['POST'])
+def update_poster_custom():
+    """Update poster with custom text edits"""
+    data = request.json
+    artist = data['artist']
+    album_data = data['album']
+    background_color = data['background']
+    text_color = data['text']
+    tabulated = data.get('tabulated', False)
+    dotted = data.get('dotted', False)
+    
+    # Get custom text fields
+    custom_artist = data.get('custom_artist', None)
+    custom_album = data.get('custom_album', None)
+    custom_tracks = data.get('custom_tracks', {})
+    custom_date = data.get('custom_date', None)
+    custom_label = data.get('custom_label', None)
+
+    # Instantiate Album object
+    album = Album(artist, album_data)
+    
+    # Override text fields if custom values provided
+    if custom_artist:
+        album.artist_name = custom_artist
+    if custom_album:
+        album.album_name = custom_album
+    
+    # Set colors and format
+    album.setColors(background_color, text_color)
+    album.setTracklistFormat(tabulated, dotted)
+    
+    # Build poster with custom utility that supports text overrides
+    utility = Utility(album)
+    utility.custom_tracks = custom_tracks
+    utility.custom_date = custom_date
+    utility.custom_label = custom_label
+    
+    poster = utility.buildPoster()
+    img_data = utility.encodeImage(poster)
+    
     return jsonify({'img_data': img_data})
 
 
@@ -154,7 +211,7 @@ def download_poster():
     # Validate DPI
     try:
         dpi = int(dpi)
-        dpi = max(72, min(600, dpi))  # Clamp between 72 and 600
+        dpi = max(72, min(600, dpi))
     except:
         dpi = 300
 
@@ -169,7 +226,6 @@ def download_poster():
     utility = Utility(album, resolution=resolution)
     
     if format_type.lower() == 'svg':
-        # Generate SVG
         svg_content = utility.generateSVG()
         return jsonify({
             'type': 'svg',
@@ -177,11 +233,9 @@ def download_poster():
             'filename': f"{album.album_name.replace(' ', '_')}_{resolution}.svg"
         })
     else:
-        # Generate PNG
         poster = utility.buildPoster()
         img_bytes = utility.getImageBytes(poster, format='PNG', dpi=dpi)
         
-        # Encode as base64
         encoded = base64.b64encode(img_bytes.getvalue()).decode('utf-8')
         
         return jsonify({
@@ -196,15 +250,23 @@ def download_poster():
 @app.route("/surprise", methods=["GET"])
 def surprise():
     surprise_me = SurpriseMe()
-    img_data, album_name, artist_name = surprise_me.generate_random_poster()
+    # Now returns 5 values including the actual colors used
+    img_data, album_name, artist_name, background_color, text_color = surprise_me.generate_random_poster()
 
     if img_data:
+        # Recalculate dominant colors for the color picker options
         album = Album(artist_name, album_name)
-        utility = Utility(album, resolution='medium')
+        utility = Utility(album)
         album_img = utility.fetch_album_cover(album.getCoverArt()[0]['url'])
         colors = utility.get_colors(album_img, 5)
         text_colors = ['#' + ''.join(['{:02x}'.format(int(c)) for c in color]) for color in reversed(colors)]
         background_colors = text_colors
+        
+        # Get additional data for pre-filling edit fields
+        num_tracks = album.getNumTracks()
+        tracks_dict = album.getTracks()
+        release_date = album.getReleaseDate()
+        label = album.getLabel()
 
         return render_template(
             "poster/result.html",
@@ -214,9 +276,13 @@ def surprise():
             album_name=album_name,
             background_colors=background_colors,
             text_colors=text_colors,
-            background_color="#FFFFFF",
-            text_color="#000000",
-            resolution_presets=RESOLUTION_PRESETS
+            # Use the ACTUAL colors from the generated poster, not defaults
+            background_color=background_color,
+            text_color=text_color,
+            num_tracks=num_tracks,
+            tracks=tracks_dict,
+            release_date=release_date,
+            label=label,
         )
     else:
         return render_template(
@@ -245,7 +311,7 @@ if base64_creds:
         creds_dict, scopes=SCOPES
     )
 else:
-    raise Exception("❌ GOOGLE_SERVICE_ACCOUNT_BASE64 environment variable not set!")
+    raise Exception("GOOGLE_SERVICE_ACCOUNT_BASE64 environment variable not set!")
 
 drive_service = build("drive", "v3", credentials=credentials)
 
@@ -286,13 +352,13 @@ def submit_poster():
         artist_name = request.form.get("artist_name")
         album_name = request.form.get("album_name")
 
-        print(f"🔍 Received Data in /submit-poster:")
+        print(f"Received Data in /submit-poster:")
         print(f"   - img_data: {'Yes' if img_data else 'No'}")
         print(f"   - artist_name: {artist_name}")
         print(f"   - album_name: {album_name}")
 
         if not img_data or not artist_name or not album_name:
-            print("🚨 Missing data in request")
+            print("Missing data in request")
             return jsonify({"success": False, "message": "Missing data"}), 400
 
         file_link = upload_poster_to_drive(img_data, artist_name, album_name)
@@ -303,7 +369,7 @@ def submit_poster():
                 "message": "Poster uploaded successfully!"
             })
         else:
-            print("🚨 Google Drive upload failed")
+            print("Google Drive upload failed")
             return jsonify({"success": False, "message": "Upload failed"}), 500
 
     except Exception as e:

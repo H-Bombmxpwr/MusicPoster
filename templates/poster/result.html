@@ -6,11 +6,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Poster | Album Poster</title>
-    <link rel="stylesheet" href="static/css/poster.css">
-    <link rel="stylesheet" href="static/css/loading.css">
-    <link rel="stylesheet" href="static/css/colorpicker.css">
-    <link rel="stylesheet" href="static/css/download-modal.css">
-    <link rel="icon" href="static/images/icon.png">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/poster.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/download-modal.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/icon.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
@@ -36,7 +34,7 @@
             {% if found %}
             <img src="{{ img_data }}" id="poster-img" alt="{{ album_name }} by {{ artist_name }}">
             <!-- Poster loading overlay -->
-            <div class="poster-loading">
+            <div class="poster-loading" id="poster-loading">
                 <div class="mini-spinner"></div>
             </div>
             {% else %}
@@ -47,21 +45,77 @@
         {% if found %}
         <!-- Controls Panel -->
         <div class="controls">
+            <!-- Text Edit Section -->
+            <div class="text-edit-section">
+                <h3 class="section-title">Edit Text</h3>
+                
+                <!-- Artist Name -->
+                <div class="edit-field">
+                    <label for="edit-artist">Artist Name</label>
+                    <input type="text" id="edit-artist" value="{{ artist_name }}" placeholder="Artist name...">
+                </div>
+
+                <!-- Album Name -->
+                <div class="edit-field">
+                    <label for="edit-album">Album Name</label>
+                    <input type="text" id="edit-album" value="{{ album_name }}" placeholder="Album name...">
+                </div>
+
+                <!-- Release Date -->
+                <div class="edit-field">
+                    <label for="edit-date">Release Date</label>
+                    <input type="text" id="edit-date" value="{{ release_date }}" placeholder="e.g., January 15, 2024">
+                </div>
+
+                <!-- Record Label -->
+                <div class="edit-field">
+                    <label for="edit-label">Record Label</label>
+                    <input type="text" id="edit-label" value="Released by {{ label.split(',')[0] }}" placeholder="e.g., Released by Atlantic Records">
+                </div>
+
+                <!-- Track List Editor Toggle -->
+                <button class="track-edit-toggle" onclick="toggleTrackEditor()">
+                    <span id="track-toggle-text">Edit Tracklist</span>
+                    <svg id="track-toggle-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M4 6l4 4 4-4z"/>
+                    </svg>
+                </button>
+
+                <!-- Collapsible Track Editor -->
+                <div class="track-editor" id="track-editor">
+                    <div class="track-editor-content" id="track-list">
+                        <!-- Tracks will be dynamically populated here -->
+                    </div>
+                </div>
+
+                <!-- Apply Changes Button -->
+                <button class="apply-changes-btn" onclick="applyCustomChanges()">
+                    Apply Changes
+                </button>
+            </div>
+
             <!-- Color Controls -->
             <div class="color-controls">
+                <h3 class="section-title">Colors</h3>
+                
                 <!-- Background Color -->
                 <div class="color-picker-container">
                     <div>Background Color</div>
                     <div id="backgroundColors">
                         {% for color in background_colors %}
                         <div class="color-square" 
-                             onclick="updatePosterColor('{{ color }}', true, false, tabulated.checked, dotted.checked)" 
+                             onclick="updatePosterColor('{{ color }}', true, false)" 
                              style="background-color: {{ color }};"
                              title="Set background to {{ color }}"></div>
                         {% endfor %}
                         <div class="custom-color-trigger" 
-                             onclick="openBackgroundColorPicker()"
+                             onclick="document.getElementById('background-color-picker').click();"
                              title="Custom color"></div>
+                        <input type="color" 
+                               id="background-color-picker" 
+                               onchange="updatePosterColor(this.value, true, false)" 
+                               value="{{ background_color }}"
+                               style="position: absolute; opacity: 0; pointer-events: none;">
                     </div>
                 </div>
 
@@ -71,29 +125,35 @@
                     <div id="textColors">
                         {% for color in text_colors %}
                         <div class="color-square" 
-                             onclick="updatePosterColor('{{ color }}', false, true, tabulated.checked, dotted.checked)" 
+                             onclick="updatePosterColor('{{ color }}', false, true)" 
                              style="background-color: {{ color }};"
                              title="Set text to {{ color }}"></div>
                         {% endfor %}
                         <div class="custom-color-trigger" 
-                             onclick="openTextColorPicker()"
+                             onclick="document.getElementById('text-color-picker').click();"
                              title="Custom color"></div>
+                        <input type="color" 
+                               id="text-color-picker" 
+                               onchange="updatePosterColor(this.value, false, true)" 
+                               value="{{ text_color }}"
+                               style="position: absolute; opacity: 0; pointer-events: none;">
                     </div>
                 </div>
             </div>
 
             <!-- Tracklist Options -->
             <div class="tracklist-controls">
+                <h3 class="section-title">Format</h3>
                 <div class="tabulated-container">
                     <input type="checkbox" 
                            id="tabulated" 
-                           onchange="updatePosterColor(NaN, false, false, this.checked, dotted.checked)">
+                           onchange="updatePosterColor(null, false, false)">
                     <label for="tabulated">Tabulated Numbers</label>
                 </div>
                 <div class="dotted-container">
                     <input type="checkbox" 
                            id="dotted" 
-                           onchange="updatePosterColor(NaN, false, false, tabulated.checked, this.checked)">
+                           onchange="updatePosterColor(null, false, false)">
                     <label for="dotted">Dotted Numbers</label>
                 </div>
             </div>
@@ -140,6 +200,12 @@
     <input type="hidden" id="current-album" value="{{ album_name }}">
     <input type="hidden" id="current-background-color" value="{{ background_color }}">
     <input type="hidden" id="current-text-color" value="{{ text_color }}">
+    <input type="hidden" id="track-count" value="{{ num_tracks|default(0) }}">
+    
+    <!-- Track data as JSON -->
+    <script type="application/json" id="tracks-data">
+        {{ tracks|tojson|safe }}
+    </script>
 
     <!-- Footer Gradient -->
     <div id="grad1"></div>
@@ -151,27 +217,12 @@
     </footer>
 
     <!-- Scripts -->
-    <script src="{{ url_for('static', filename='js/loading.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/colorpicker.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/auto.js') }}"></script>
     <script src="{{ url_for('static', filename='js/update.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/edit-text.js') }}"></script>
     <script src="{{ url_for('static', filename='js/submit.js') }}"></script>
     <script src="{{ url_for('static', filename='js/download-modal.js') }}"></script>
     <script>
-        // Custom color picker integration
-        function openBackgroundColorPicker() {
-            const currentColor = document.getElementById('current-background-color').value || '#ffffff';
-            openColorPicker(currentColor, function(color) {
-                updatePosterColor(color, true, false, tabulated.checked, dotted.checked);
-            }, true);
-        }
-
-        function openTextColorPicker() {
-            const currentColor = document.getElementById('current-text-color').value || '#000000';
-            openColorPicker(currentColor, function(color) {
-                updatePosterColor(color, false, true, tabulated.checked, dotted.checked);
-            }, false);
-        }
-
         // Initialize quick download link
         document.addEventListener('DOMContentLoaded', function() {
             const downloadLink = document.getElementById('download-link');
@@ -180,6 +231,17 @@
                 downloadLink.href = posterImg.src;
             }
         });
+
+        // Stub for download modal if not implemented
+        if (typeof openDownloadModal === 'undefined') {
+            function openDownloadModal() {
+                // Fallback to quick download if modal not implemented
+                const downloadLink = document.getElementById('download-link');
+                if (downloadLink) {
+                    downloadLink.click();
+                }
+            }
+        }
     </script>
 </body>
 

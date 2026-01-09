@@ -161,6 +161,9 @@ class Utility:
     def __init__(self, album, resolution='medium'):
         self.album = album
         self.resolution = resolution
+        self.custom_tracks = {}
+        self.custom_date = None
+        self.custom_label = None
         
         # Get scale factor from preset
         preset = RESOLUTION_PRESETS.get(resolution, RESOLUTION_PRESETS['medium'])
@@ -303,27 +306,27 @@ class Utility:
         tracks = list(self.album.getTracks().values())[:30]
         num_tracks = min(self.album.getNumTracks(), 30)
 
-        # Calculate track area and font size
-        track_area_height = self.height - self._scale(50) - self.below_pic_h
-        max_track_height = track_area_height / max(num_tracks, self.full_page_track_count)
-        
-        # Scale font size limits
-        font_size = int(max_track_height) - self._scale(5)
-        font_size = min(font_size, self._scale_font(self._base_track_font_max))
-        font_size = max(font_size, self._scale_font(self._base_track_font_min))
+        max_track_height = (self.height - 50 - self.below_pic_h) / max(num_tracks, self.full_page_track_count)
+        font_size = int(max_track_height) - 5
+        font_size = min(font_size, 30)
+        font_size = max(font_size, 10)
 
         latin_font = load_font(OSWALD_PATH, font_size)
 
         available_text_width = min(self.x_artist, self.x_album) - (2 * self.margin)
-        offset = self.below_pic_h  # Start at the scaled below_pic_h
+        offset = 710
 
         for tracknum, value in enumerate(tracks, 1):
-            # --- cleanup rules ---
-            value = re.sub(r'\(.*?\)-', '', value)
-            value = re.split(r' feat\.', value, flags=re.IGNORECASE)[0]
-            value = re.split(r' REMASTER', value, flags=re.IGNORECASE)[0]
-            value = re.split(r' \(', value, flags=re.IGNORECASE)[0]
-            value = re.sub(r'\(.*?\)', '', value).strip()
+            # Check if there's a custom track text override
+            if hasattr(self, 'custom_tracks') and str(tracknum) in self.custom_tracks:
+                value = self.custom_tracks[str(tracknum)]
+            else:
+                # --- cleanup rules ---
+                value = re.sub(r'\(.*?\)-', '', value)
+                value = re.split(r' feat\.', value, flags=re.IGNORECASE)[0]
+                value = re.split(r' REMASTER', value, flags=re.IGNORECASE)[0]
+                value = re.split(r' \(', value, flags=re.IGNORECASE)[0]
+                value = re.sub(r'\(.*?\)', '', value).strip()
 
             # Uppercase only if *all* characters are Latin-ish
             if value and not any(is_non_latin_glyph(ch) for ch in value):
@@ -335,6 +338,7 @@ class Utility:
             # Truncate
             ellipsis = "..."
             while w > available_text_width and len(value) > 1:
+                # Prefer truncating at spaces, else trim by character
                 space_index = value.rfind(" ", 0, len(value) - 1)
                 if space_index != -1:
                     value = value[:space_index].rstrip()
@@ -355,8 +359,10 @@ class Utility:
                 if num_tracks >= 10:
                     space += " "
 
+                # number is Oswald
                 draw.text((self.margin, offset), f"{display_tracknum}", font=latin_font, fill=self.album.text_color)
 
+                # title is mixed (English Oswald, non-Latin Noto)
                 draw_mixed_text(
                     draw,
                     (self.margin, offset),
@@ -364,7 +370,7 @@ class Utility:
                     latin_font=latin_font,
                     size=font_size,
                     fill=self.album.text_color,
-                    fake_bold_px=0
+                    fake_bold_px=0  # set to 1 later if you still want thicker
                 )
             else:
                 draw_mixed_text(
@@ -379,20 +385,21 @@ class Utility:
 
             offset += max_track_height
 
+
     def draw_release_date(self, draw):
-        date_string = self.album.getReleaseDate()
-        font_size = self._scale_font(self._base_date_font_size)
-        date_font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
+        # Check for custom date override
+        if hasattr(self, 'custom_date') and self.custom_date:
+            date_string = self.custom_date
+        else:
+            date_string = self.album.getReleaseDate()
+        
+        date_font = ImageFont.truetype('static/Oswald-Medium.ttf', 30)
+        ascent, descent = date_font.getmetrics()
+        (w, baseline), (offset_x, offset_y) = date_font.font.getsize(date_string)
+        draw.text((self.width - w - self.margin, self.below_pic_h + 230),
+                date_string, font=date_font, fill=self.album.text_color)
 
-        bbox = draw.textbbox((0, 0), date_string, font=date_font)
-        w = bbox[2] - bbox[0]
-
-        draw.text(
-            (self.width - w - self.margin, self.below_pic_h + self._scale(230)),
-            date_string, 
-            font=date_font, 
-            fill=self.album.text_color
-        )
+    
 
     def draw_runtime(self, draw):
         runtime_string = self.album.getRuntime()
@@ -409,32 +416,29 @@ class Utility:
             fill=self.album.text_color
         )
 
+    # Update draw_label to use custom label:
     def draw_label(self, draw):
-        label_string = "Released by " + self.album.getLabel().split(',')[0]
-        font_size = self._scale_font(self._base_label_font_size)
-        label_font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
+        # Check for custom label override
+        if hasattr(self, 'custom_label') and self.custom_label:
+            label_string = self.custom_label
+        else:
+            label_string = "Released by " + self.album.getLabel().split(',')[0]
+        
+        label_font = ImageFont.truetype('static/Oswald-Medium.ttf', 30)
+        ascent, descent = label_font.getmetrics()
+        (w, baseline), (offset_x, offset_y) = label_font.font.getsize(label_string)
 
-        bbox = label_font.getbbox("Ag")
-        ascent = bbox[3]
-        descent = bbox[1]
-
-        wrap_width = max(int(20 / self.scale), 10) if self.scale < 1 else 20
-        label_list = textwrap.wrap(label_string, width=wrap_width)
+        label_list = textwrap.wrap(label_string, width=20)
         g = 0
-        max_y = self.height - self._scale(90)
-        current_y = self.below_pic_h + self._scale(310)
+        max_y = self.height - 90
+        current_y = self.below_pic_h + 310
 
         for string in label_list:
             if current_y + g <= max_y:
-                bbox = draw.textbbox((0, 0), string, font=label_font)
-                w = bbox[2] - bbox[0]
-                draw.text(
-                    (self.width - w - self.margin, current_y + g),
-                    string, 
-                    font=label_font, 
-                    fill=self.album.text_color
-                )
-                g += ascent + abs(descent) + self._scale(self._base_line_spacing)
+                (w, baseline), (offset_x, offset_y) = label_font.font.getsize(string)
+                draw.text((self.width - w - self.margin, current_y + g),
+                        string, font=label_font, fill=self.album.text_color)
+                g += ascent + descent + 5
             else:
                 break
 
