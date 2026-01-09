@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Poster | Album Poster</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/poster.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/colorpicker.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/download-modal.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='images/icon.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -109,13 +110,8 @@
                              title="Set background to {{ color }}"></div>
                         {% endfor %}
                         <div class="custom-color-trigger" 
-                             onclick="document.getElementById('background-color-picker').click();"
+                             onclick="openBackgroundColorPicker()"
                              title="Custom color"></div>
-                        <input type="color" 
-                               id="background-color-picker" 
-                               onchange="updatePosterColor(this.value, true, false)" 
-                               value="{{ background_color }}"
-                               style="position: absolute; opacity: 0; pointer-events: none;">
                     </div>
                 </div>
 
@@ -130,13 +126,8 @@
                              title="Set text to {{ color }}"></div>
                         {% endfor %}
                         <div class="custom-color-trigger" 
-                             onclick="document.getElementById('text-color-picker').click();"
+                             onclick="openTextColorPicker()"
                              title="Custom color"></div>
-                        <input type="color" 
-                               id="text-color-picker" 
-                               onchange="updatePosterColor(this.value, false, true)" 
-                               value="{{ text_color }}"
-                               style="position: absolute; opacity: 0; pointer-events: none;">
                     </div>
                 </div>
             </div>
@@ -216,13 +207,29 @@
         <a href="{{ url_for('about') }}">About</a>
     </footer>
 
-    <!-- Scripts -->
+    <!-- Scripts - colorpicker.js must load first -->
+    <script src="{{ url_for('static', filename='js/colorpicker.js') }}"></script>
     <script src="{{ url_for('static', filename='js/auto.js') }}"></script>
     <script src="{{ url_for('static', filename='js/update.js') }}"></script>
     <script src="{{ url_for('static', filename='js/edit-text.js') }}"></script>
     <script src="{{ url_for('static', filename='js/submit.js') }}"></script>
     <script src="{{ url_for('static', filename='js/download-modal.js') }}"></script>
     <script>
+        // Custom color picker handlers for result page
+        function openBackgroundColorPicker() {
+            const currentColor = document.getElementById('current-background-color').value || '#ffffff';
+            openColorPicker(currentColor, function(color) {
+                updatePosterColor(color, true, false);
+            }, true);
+        }
+
+        function openTextColorPicker() {
+            const currentColor = document.getElementById('current-text-color').value || '#000000';
+            openColorPicker(currentColor, function(color) {
+                updatePosterColor(color, false, true);
+            }, false);
+        }
+
         // Initialize quick download link
         document.addEventListener('DOMContentLoaded', function() {
             const downloadLink = document.getElementById('download-link');

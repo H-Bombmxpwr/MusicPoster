@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Album Poster</title>
     <link rel="stylesheet" href="static/css/index.css">
+    <link rel="stylesheet" href="static/css/colorpicker.css">
     <link rel="stylesheet" href="static/css/loading.css">
     <link rel="stylesheet" href="static/css/autocomplete.css">
     <link rel="icon" href="static/images/icon.png">
@@ -67,28 +68,34 @@
         <!-- Background Color -->
         <div class="three">
             <div class="label">
-                <label for="back_color">Background color</label>
+                <label>Background color</label>
             </div>
-            <div class="box">
-                <input type="color" 
-                       value="#ffffff" 
-                       id="back_color" 
-                       name="background" 
-                       class="custom">
+            <div class="box color-input-box">
+                <!-- Hidden input for form submission -->
+                <input type="hidden" name="background" id="background-color-value" value="#ffffff">
+                <!-- Color preview and trigger -->
+                <div class="color-preview-trigger" id="background-color-preview" onclick="openBackgroundPicker()">
+                    <div class="color-preview-swatch" id="background-swatch" style="background-color: #ffffff;"></div>
+                    <span class="color-preview-hex" id="background-hex">#FFFFFF</span>
+                    <div class="color-preview-rainbow"></div>
+                </div>
             </div>
         </div>
 
         <!-- Text Color -->
         <div class="four">
             <div class="label">
-                <label for="text_color">Text color</label>
+                <label>Text color</label>
             </div>
-            <div class="box">
-                <input type="color" 
-                       value="#000000" 
-                       id="text_color" 
-                       name="text" 
-                       class="custom">
+            <div class="box color-input-box">
+                <!-- Hidden input for form submission -->
+                <input type="hidden" name="text" id="text-color-value" value="#000000">
+                <!-- Color preview and trigger -->
+                <div class="color-preview-trigger" id="text-color-preview" onclick="openTextPicker()">
+                    <div class="color-preview-swatch" id="text-swatch" style="background-color: #000000;"></div>
+                    <span class="color-preview-hex" id="text-hex">#000000</span>
+                    <div class="color-preview-rainbow"></div>
+                </div>
             </div>
         </div>
 
@@ -123,11 +130,36 @@
         <a href="{{ url_for('about') }}">About This Project</a>
     </footer>
 
-    <!-- Scripts -->
+    <!-- Scripts - colorpicker.js must load first -->
+    <script src="{{ url_for('static', filename='js/colorpicker.js') }}"></script>
     <script src="{{ url_for('static', filename='js/loading.js') }}"></script>
     <script src="{{ url_for('static', filename='js/autocomplete.js') }}"></script>
     <script src="{{ url_for('static', filename='js/scroll.js') }}"></script>
     <script src="{{ url_for('static', filename='js/random.js') }}"></script>
+    <script>
+        // Custom color picker handlers for index page
+        function openBackgroundPicker() {
+            const currentColor = document.getElementById('background-color-value').value || '#ffffff';
+            openColorPicker(currentColor, function(color) {
+                // Update hidden input for form submission
+                document.getElementById('background-color-value').value = color;
+                // Update visual preview
+                document.getElementById('background-swatch').style.backgroundColor = color;
+                document.getElementById('background-hex').textContent = color.toUpperCase();
+            }, true);
+        }
+
+        function openTextPicker() {
+            const currentColor = document.getElementById('text-color-value').value || '#000000';
+            openColorPicker(currentColor, function(color) {
+                // Update hidden input for form submission
+                document.getElementById('text-color-value').value = color;
+                // Update visual preview
+                document.getElementById('text-swatch').style.backgroundColor = color;
+                document.getElementById('text-hex').textContent = color.toUpperCase();
+            }, false);
+        }
+    </script>
 </body>
 
 </html>
