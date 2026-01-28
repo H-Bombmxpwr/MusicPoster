@@ -84,13 +84,13 @@ function populateTrackEditor() {
     // Convert tracks object to array for easier iteration
     const tracksArray = Object.entries(tracksData);
 
-    for (let i = 1; i <= Math.min(trackCount, 30); i++) {
+    for (let i = 1; i <= trackCount; i++) {
         // Get the track name from the data if it exists
         let trackName = '';
         if (tracksArray[i - 1]) {
             trackName = tracksArray[i - 1][1]; // Get the track name
-            // Clean up the track name (remove parentheses, etc.)
-            trackName = trackName.replace(/[\(\[].*?[\)\]]/g, '').trim();
+            // Clean up the track name (same rules as backend)
+            trackName = cleanTrackName(trackName);
         }
 
         // Check if track is removed (from PosterState if available)
@@ -169,6 +169,40 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+/**
+ * Clean up track name - remove remastered, feat., etc.
+ */
+function cleanTrackName(name) {
+    if (!name) return '';
+
+    let clean = name;
+
+    // Remove remastered variations
+    clean = clean.replace(/\s*[-–—]\s*remaster(ed)?\s*\d*\s*/gi, '');
+    clean = clean.replace(/\s*[-–—]\s*\d+\s*remaster(ed)?\s*/gi, '');
+    clean = clean.replace(/\(.*?remaster(ed)?.*?\)/gi, '');
+    clean = clean.replace(/\[.*?remaster(ed)?.*?\]/gi, '');
+
+    // Remove other common suffixes
+    clean = clean.replace(/\s*[-–—]\s*(mono|stereo|deluxe|bonus|extended|anniversary|edition).*$/gi, '');
+    clean = clean.replace(/\(.*?(mono|stereo|deluxe|bonus|extended|anniversary|edition).*?\)/gi, '');
+
+    // Remove feat./featuring
+    clean = clean.split(/\s+feat\./i)[0];
+    clean = clean.split(/\s+featuring\s+/i)[0];
+    clean = clean.split(/\s+ft\./i)[0];
+
+    // Remove remaining parentheses/brackets content
+    clean = clean.replace(/\(.*?\)/g, '');
+    clean = clean.replace(/\[.*?\]/g, '');
+
+    // Clean up extra whitespace and dashes at the end
+    clean = clean.replace(/\s*[-–—]\s*$/, '');
+    clean = clean.trim();
+
+    return clean;
 }
 
 /**

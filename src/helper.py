@@ -273,23 +273,31 @@ class Utility:
         poster.paste(code_banner, (banner_x, banner_y), code_banner)
 
     def draw_artist_name(self, draw):
-        artist_name = self.album.artist_name.upper()
+        # Check for custom artist (can be empty string to hide)
+        if hasattr(self, 'custom_artist') and self.custom_artist is not None:
+            artist_name = self.custom_artist.upper() if self.custom_artist else ''
+        else:
+            artist_name = self.album.artist_name.upper()
+
         font_size = self._scale_font(self._base_artist_font_size)
         artist_font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
 
-        # Adjust wrap width based on scale
-        wrap_width = max(int(20 / self.scale), 10) if self.scale < 1 else 20
-        artist_name_wrapped = textwrap.wrap(artist_name, width=wrap_width)
         y_offset = self.below_pic_h + self._scale(30)
+        x_coordinate = self.width - self.margin  # Default if no text
 
-        for line in artist_name_wrapped:
-            bbox = draw.textbbox((0, 0), line, font=artist_font)
-            text_w = bbox[2] - bbox[0]
-            x_coordinate = self.width - text_w - self.margin
-            draw.text((x_coordinate, y_offset), line, font=artist_font, fill=self.album.text_color)
-            line_height = bbox[3] - bbox[1]
-            y_offset += line_height + self._scale(self._base_line_spacing)
-            
+        if artist_name:
+            # Adjust wrap width based on scale
+            wrap_width = max(int(20 / self.scale), 10) if self.scale < 1 else 20
+            artist_name_wrapped = textwrap.wrap(artist_name, width=wrap_width)
+
+            for line in artist_name_wrapped:
+                bbox = draw.textbbox((0, 0), line, font=artist_font)
+                text_w = bbox[2] - bbox[0]
+                x_coordinate = self.width - text_w - self.margin
+                draw.text((x_coordinate, y_offset), line, font=artist_font, fill=self.album.text_color)
+                line_height = bbox[3] - bbox[1]
+                y_offset += line_height + self._scale(self._base_line_spacing)
+
         self.y_offset = y_offset
         self.x_artist = x_coordinate
 
@@ -351,16 +359,31 @@ class Utility:
         offset = self.below_pic_h  # Use already-scaled below_pic_h
 
         for original_tracknum, value in tracks_with_nums:
-            # Check if there's a custom track text override
+            # Check if there's a custom track text override (including empty string)
             if hasattr(self, 'custom_tracks') and str(original_tracknum) in self.custom_tracks:
-                value = self.custom_tracks[str(original_tracknum)]
+                custom_value = self.custom_tracks[str(original_tracknum)]
+                # Use custom value as-is (allows empty strings to hide track text)
+                value = custom_value if custom_value is not None else ''
             else:
                 # --- cleanup rules ---
-                value = re.sub(r'\(.*?\)-', '', value)
-                value = re.split(r' feat\.', value, flags=re.IGNORECASE)[0]
-                value = re.split(r' REMASTER', value, flags=re.IGNORECASE)[0]
-                value = re.split(r' \(', value, flags=re.IGNORECASE)[0]
-                value = re.sub(r'\(.*?\)', '', value).strip()
+                # Remove remastered variations: "- Remastered", "- Remaster 2023", "(Remastered)", etc.
+                value = re.sub(r'\s*[-–—]\s*remaster(ed)?\s*\d*\s*', '', value, flags=re.IGNORECASE)
+                value = re.sub(r'\s*[-–—]\s*\d+\s*remaster(ed)?\s*', '', value, flags=re.IGNORECASE)
+                value = re.sub(r'\(.*?remaster(ed)?.*?\)', '', value, flags=re.IGNORECASE)
+                value = re.sub(r'\[.*?remaster(ed)?.*?\]', '', value, flags=re.IGNORECASE)
+                # Remove other common suffixes
+                value = re.sub(r'\s*[-–—]\s*(mono|stereo|deluxe|bonus|extended|anniversary|edition).*$', '', value, flags=re.IGNORECASE)
+                value = re.sub(r'\(.*?(mono|stereo|deluxe|bonus|extended|anniversary|edition).*?\)', '', value, flags=re.IGNORECASE)
+                # Remove feat./featuring
+                value = re.split(r'\s+feat\.', value, flags=re.IGNORECASE)[0]
+                value = re.split(r'\s+featuring\s+', value, flags=re.IGNORECASE)[0]
+                value = re.split(r'\s+ft\.', value, flags=re.IGNORECASE)[0]
+                # Remove remaining parentheses/brackets content
+                value = re.sub(r'\(.*?\)', '', value)
+                value = re.sub(r'\[.*?\]', '', value)
+                # Clean up extra whitespace and dashes at the end
+                value = re.sub(r'\s*[-–—]\s*$', '', value)
+                value = value.strip()
 
             # Uppercase only if *all* characters are Latin-ish
             if value and not any(is_non_latin_glyph(ch) for ch in value):
