@@ -236,8 +236,19 @@ class Utility:
 
     def fetch_album_cover(self, url):
         """Return the image of the album cover"""
-        response = requests.get(url)
-        return Image.open(BytesIO(response.content)).convert("RGBA")
+        try:
+            if not url or len(url.strip()) == 0:
+                raise ValueError("Empty URL provided")
+
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+
+            return Image.open(BytesIO(response.content)).convert("RGBA")
+        except Exception as e:
+            print(f"Error fetching album cover from {url}: {e}")
+            # Return a placeholder image (solid color)
+            placeholder = Image.new('RGBA', (640, 640), (128, 128, 128, 255))
+            return placeholder
 
     def overlay_album_cover(self, poster, album_img):
         """Paste the album cover onto the image"""
@@ -304,22 +315,45 @@ class Utility:
 
     def draw_tracks(self, draw):
         tracks = list(self.album.getTracks().values())[:30]
-        num_tracks = min(self.album.getNumTracks(), 30)
 
-        max_track_height = (self.height - 50 - self.below_pic_h) / max(num_tracks, self.full_page_track_count)
-        font_size = int(max_track_height) - 5
-        font_size = min(font_size, 30)
-        font_size = max(font_size, 10)
+        # Filter out removed tracks if any
+        removed_tracks = getattr(self, 'removed_tracks', set())
+        if removed_tracks:
+            # Create new list excluding removed tracks
+            filtered_tracks = []
+            for i, track in enumerate(tracks, 1):
+                if str(i) not in removed_tracks:
+                    filtered_tracks.append((i, track))
+            tracks_with_nums = filtered_tracks
+        else:
+            tracks_with_nums = [(i, track) for i, track in enumerate(tracks, 1)]
+
+        num_tracks = len(tracks_with_nums)
+        if num_tracks == 0:
+            return
+
+        # Calculate track height based on available space (all scaled)
+        base_bottom_margin = 50
+        max_track_height = (self.height - self._scale(base_bottom_margin) - self.below_pic_h) / max(num_tracks, self.full_page_track_count)
+
+        # Scale font size properly
+        base_font_size = int(max_track_height / self.scale) - 5 if self.scale > 0 else int(max_track_height) - 5
+        base_font_size = min(base_font_size, self._base_track_font_max)
+        base_font_size = max(base_font_size, self._base_track_font_min)
+        font_size = self._scale_font(base_font_size)
 
         latin_font = load_font(OSWALD_PATH, font_size)
 
+        # Calculate available text width using scaled values
         available_text_width = min(self.x_artist, self.x_album) - (2 * self.margin)
-        offset = 710
 
-        for tracknum, value in enumerate(tracks, 1):
+        # Start offset at the scaled position (710 is the base value at 740x1200)
+        offset = self.below_pic_h  # Use already-scaled below_pic_h
+
+        for original_tracknum, value in tracks_with_nums:
             # Check if there's a custom track text override
-            if hasattr(self, 'custom_tracks') and str(tracknum) in self.custom_tracks:
-                value = self.custom_tracks[str(tracknum)]
+            if hasattr(self, 'custom_tracks') and str(original_tracknum) in self.custom_tracks:
+                value = self.custom_tracks[str(original_tracknum)]
             else:
                 # --- cleanup rules ---
                 value = re.sub(r'\(.*?\)-', '', value)
@@ -350,13 +384,13 @@ class Utility:
 
             # formatting
             space = "     "
-            display_tracknum = tracknum
+            display_tracknum = original_tracknum
             if self.dotted:
-                display_tracknum = f"{tracknum}."
+                display_tracknum = f"{original_tracknum}."
                 space += " "
 
             if self.tabulated:
-                if num_tracks >= 10:
+                if len(tracks_with_nums) >= 10 or any(tn >= 10 for tn, _ in tracks_with_nums):
                     space += " "
 
                 # number is Oswald
@@ -392,11 +426,18 @@ class Utility:
             date_string = self.custom_date
         else:
             date_string = self.album.getReleaseDate()
-        
-        date_font = ImageFont.truetype('static/Oswald-Medium.ttf', 30)
-        ascent, descent = date_font.getmetrics()
-        (w, baseline), (offset_x, offset_y) = date_font.font.getsize(date_string)
-        draw.text((self.width - w - self.margin, self.below_pic_h + 230),
+
+        # Use scaled font size
+        font_size = self._scale_font(self._base_date_font_size)
+        date_font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
+
+        # Use textbbox for accurate width measurement
+        bbox = draw.textbbox((0, 0), date_string, font=date_font)
+        w = bbox[2] - bbox[0]
+
+        # Scale the vertical offset (230 at base resolution)
+        y_offset = self.below_pic_h + self._scale(230)
+        draw.text((self.width - w - self.margin, y_offset),
                 date_string, font=date_font, fill=self.album.text_color)
 
     
@@ -416,29 +457,36 @@ class Utility:
             fill=self.album.text_color
         )
 
-    # Update draw_label to use custom label:
     def draw_label(self, draw):
         # Check for custom label override
         if hasattr(self, 'custom_label') and self.custom_label:
             label_string = self.custom_label
         else:
             label_string = "Released by " + self.album.getLabel().split(',')[0]
-        
-        label_font = ImageFont.truetype('static/Oswald-Medium.ttf', 30)
-        ascent, descent = label_font.getmetrics()
-        (w, baseline), (offset_x, offset_y) = label_font.font.getsize(label_string)
 
-        label_list = textwrap.wrap(label_string, width=20)
+        # Use scaled font size
+        font_size = self._scale_font(self._base_label_font_size)
+        label_font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
+        ascent, descent = label_font.getmetrics()
+
+        # Adjust wrap width based on scale to maintain similar appearance
+        base_wrap_width = 20
+        wrap_width = max(int(base_wrap_width / self.scale), 10) if self.scale < 1 else base_wrap_width
+        label_list = textwrap.wrap(label_string, width=wrap_width)
+
+        # Scale all vertical positions (310 and 90 are base values)
+        current_y = self.below_pic_h + self._scale(310)
+        max_y = self.height - self._scale(90)
+        line_spacing = self._scale(5)
         g = 0
-        max_y = self.height - 90
-        current_y = self.below_pic_h + 310
 
         for string in label_list:
             if current_y + g <= max_y:
-                (w, baseline), (offset_x, offset_y) = label_font.font.getsize(string)
+                bbox = draw.textbbox((0, 0), string, font=label_font)
+                w = bbox[2] - bbox[0]
                 draw.text((self.width - w - self.margin, current_y + g),
                         string, font=label_font, fill=self.album.text_color)
-                g += ascent + descent + 5
+                g += ascent + descent + line_spacing
             else:
                 break
 

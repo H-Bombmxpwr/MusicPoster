@@ -107,9 +107,29 @@ class Album:
                 "[\(\[].*?[\)\]]", "", track_return[i]['name'])
         return tracks
 
-    def getCoverArt(self,):
+    def getCoverArt(self):
+        # If a custom cover URL is set (and not empty), return it in the same format as Spotify
+        if hasattr(self, 'custom_cover_url') and self.custom_cover_url and len(self.custom_cover_url.strip()) > 0:
+            return [{'url': self.custom_cover_url, 'height': 640, 'width': 640}]
         album_images = self.sp.album(self.album_id)['images']
         return album_images
+
+    def setCustomCover(self, url):
+        """Set a custom cover art URL (e.g., from covers.musichoarders.xyz)"""
+        if url and len(url.strip()) > 0:
+            self.custom_cover_url = url.strip()
+        else:
+            self.custom_cover_url = None
+
+    def getMusicHoardersUrl(self):
+        """Generate the covers.musichoarders.xyz search URL for this album"""
+        import urllib.parse
+        base_url = "https://covers.musichoarders.xyz/"
+        params = {
+            'artist': self.artist_name,
+            'album': self.album_name
+        }
+        return base_url + "?" + urllib.parse.urlencode(params)
 
     def getLabel(self):
         label = self.sp.album(self.album_id)['label']

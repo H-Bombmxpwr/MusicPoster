@@ -75,13 +75,14 @@ def result():
         tracks_dict = album.getTracks()
         release_date = album.getReleaseDate()
         label = album.getLabel()
+        musichoarders_url = album.getMusicHoardersUrl()
 
-    return render_template("poster/result.html", 
-                           img_data=img_data, 
-                           found=album_found, 
+    return render_template("poster/result.html",
+                           img_data=img_data,
+                           found=album_found,
                            text_colors=text_colors or ['#000000'],
                            background_colors=text_colors or ['#FFFFFF'],
-                           artist_name=artist, 
+                           artist_name=artist,
                            album_name=album_name,
                            background_color=bcolor or '#FFFFFF',
                            text_color=tcolor or '#000000',
@@ -89,7 +90,8 @@ def result():
                            num_tracks=num_tracks,
                            tracks=tracks_dict,
                            release_date=release_date,
-                           label=label)
+                           label=label,
+                           musichoarders_url=musichoarders_url if album_found else '')
 
     
 @app.route("/about")
@@ -164,6 +166,8 @@ def update_poster_custom():
     custom_tracks = data.get('custom_tracks', {})
     custom_date = data.get('custom_date', None)
     custom_label = data.get('custom_label', None)
+    removed_tracks = set(data.get('removed_tracks', []))
+    custom_cover_url = data.get('custom_cover_url', None)
 
     # Instantiate Album object
     album = Album(artist, album_data)
@@ -178,16 +182,29 @@ def update_poster_custom():
     album.setColors(background_color, text_color)
     album.setTracklistFormat(tabulated, dotted)
     
+    # Set custom cover if provided (and not empty)
+    if custom_cover_url and len(custom_cover_url.strip()) > 0:
+        album.setCustomCover(custom_cover_url.strip())
+
     # Build poster with custom utility that supports text overrides
     utility = Utility(album)
     utility.custom_tracks = custom_tracks
     utility.custom_date = custom_date
     utility.custom_label = custom_label
+    utility.removed_tracks = removed_tracks
     
     poster = utility.buildPoster()
     img_data = utility.encodeImage(poster)
-    
-    return jsonify({'img_data': img_data})
+
+    # Extract colors from the current album cover (including custom cover)
+    album_img = utility.fetch_album_cover(album.getCoverArt()[0]['url'])
+    colors = utility.get_colors(album_img, 5)
+    hex_colors = ['#' + ''.join(['{:02x}'.format(int(c)) for c in color]) for color in reversed(colors)]
+
+    return jsonify({
+        'img_data': img_data,
+        'colors': hex_colors
+    })
 
 
 @app.route("/download-poster", methods=['POST'])
@@ -215,15 +232,24 @@ def download_poster():
     except:
         dpi = 300
 
+    # Get custom cover and removed tracks
+    custom_cover_url = data.get('custom_cover_url', None)
+    removed_tracks = set(data.get('removed_tracks', []))
+
     album = Album(artist, album_data)
-    
+
     if not album.album_found:
         return jsonify({'error': 'Album not found'}), 404
-    
+
+    # Set custom cover if provided (and not empty)
+    if custom_cover_url and len(custom_cover_url.strip()) > 0:
+        album.setCustomCover(custom_cover_url.strip())
+
     album.setColors(background_color, text_color)
     album.setTracklistFormat(tabulated, dotted)
-    
+
     utility = Utility(album, resolution=resolution)
+    utility.removed_tracks = removed_tracks
     
     if format_type.lower() == 'svg':
         svg_content = utility.generateSVG()
@@ -267,6 +293,7 @@ def surprise():
         tracks_dict = album.getTracks()
         release_date = album.getReleaseDate()
         label = album.getLabel()
+        musichoarders_url = album.getMusicHoardersUrl()
 
         return render_template(
             "poster/result.html",
@@ -283,6 +310,7 @@ def surprise():
             tracks=tracks_dict,
             release_date=release_date,
             label=label,
+            musichoarders_url=musichoarders_url,
         )
     else:
         return render_template(

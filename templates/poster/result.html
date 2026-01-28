@@ -74,6 +74,29 @@
                     <input type="text" id="edit-label" value="Released by {{ label.split(',')[0] }}" placeholder="e.g., Released by Atlantic Records">
                 </div>
 
+                <!-- Album Cover Section -->
+                <div class="album-cover-section">
+                    <label>Album Cover</label>
+                    <div class="cover-controls">
+                        <button type="button" class="hires-cover-btn" title="Search for high-resolution covers">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                            </svg>
+                            Find HD Cover
+                        </button>
+                        <button type="button" class="custom-cover-btn" onclick="toggleCoverInput()" title="Use custom cover URL">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                            </svg>
+                            Custom URL
+                        </button>
+                    </div>
+                    <div class="custom-cover-input" id="custom-cover-input" style="display: none;">
+                        <input type="text" id="edit-cover-url" placeholder="Paste image URL here..." />
+                        <small>Paste a direct link to a high-resolution album cover image</small>
+                    </div>
+                </div>
+
                 <!-- Track List Editor Toggle -->
                 <button class="track-edit-toggle" onclick="toggleTrackEditor()">
                     <span id="track-toggle-text">Edit Tracklist</span>
@@ -104,14 +127,21 @@
                     <div>Background Color</div>
                     <div id="backgroundColors">
                         {% for color in background_colors %}
-                        <div class="color-square" 
-                             onclick="updatePosterColor('{{ color }}', true, false)" 
+                        <div class="color-square"
+                             onclick="updatePosterColor('{{ color }}', true, false)"
                              style="background-color: {{ color }};"
                              title="Set background to {{ color }}"></div>
                         {% endfor %}
-                        <div class="custom-color-trigger" 
+                        <div class="custom-color-trigger"
                              onclick="openBackgroundColorPicker()"
                              title="Custom color"></div>
+                        <div class="eyedropper-trigger"
+                             onclick="activateEyedropper('background')"
+                             title="Pick color from poster">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20.71 5.63l-2.34-2.34a1 1 0 00-1.41 0l-3.12 3.12-1.41-1.41-1.42 1.42 1.42 1.41-9.19 9.19a1 1 0 000 1.41l2.34 2.34a1 1 0 001.41 0l9.19-9.19 1.41 1.42 1.42-1.42-1.41-1.41 3.12-3.12a1 1 0 000-1.42z"/>
+                            </svg>
+                        </div>
                     </div>
                 </div>
 
@@ -120,14 +150,21 @@
                     <div>Text Color</div>
                     <div id="textColors">
                         {% for color in text_colors %}
-                        <div class="color-square" 
-                             onclick="updatePosterColor('{{ color }}', false, true)" 
+                        <div class="color-square"
+                             onclick="updatePosterColor('{{ color }}', false, true)"
                              style="background-color: {{ color }};"
                              title="Set text to {{ color }}"></div>
                         {% endfor %}
-                        <div class="custom-color-trigger" 
+                        <div class="custom-color-trigger"
                              onclick="openTextColorPicker()"
                              title="Custom color"></div>
+                        <div class="eyedropper-trigger"
+                             onclick="activateEyedropper('text')"
+                             title="Pick color from poster">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20.71 5.63l-2.34-2.34a1 1 0 00-1.41 0l-3.12 3.12-1.41-1.41-1.42 1.42 1.42 1.41-9.19 9.19a1 1 0 000 1.41l2.34 2.34a1 1 0 001.41 0l9.19-9.19 1.41 1.42 1.42-1.42-1.41-1.41 3.12-3.12a1 1 0 000-1.42z"/>
+                            </svg>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -192,6 +229,7 @@
     <input type="hidden" id="current-background-color" value="{{ background_color }}">
     <input type="hidden" id="current-text-color" value="{{ text_color }}">
     <input type="hidden" id="track-count" value="{{ num_tracks|default(0) }}">
+    <input type="hidden" id="musichoarders-url" value="{{ musichoarders_url }}">
     
     <!-- Track data as JSON -->
     <script type="application/json" id="tracks-data">
@@ -207,13 +245,16 @@
         <a href="{{ url_for('about') }}">About</a>
     </footer>
 
-    <!-- Scripts - colorpicker.js must load first -->
+    <!-- Scripts - poster-state.js must load first for centralized state management -->
+    <script src="{{ url_for('static', filename='js/poster-state.js') }}"></script>
     <script src="{{ url_for('static', filename='js/colorpicker.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/eyedropper.js') }}"></script>
     <script src="{{ url_for('static', filename='js/auto.js') }}"></script>
     <script src="{{ url_for('static', filename='js/update.js') }}"></script>
     <script src="{{ url_for('static', filename='js/edit-text.js') }}"></script>
     <script src="{{ url_for('static', filename='js/submit.js') }}"></script>
     <script src="{{ url_for('static', filename='js/download-modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/cover-picker.js') }}"></script>
     <script>
         // Custom color picker handlers for result page
         function openBackgroundColorPicker() {
@@ -247,6 +288,14 @@
                 if (downloadLink) {
                     downloadLink.click();
                 }
+            }
+        }
+
+        // Toggle custom cover URL input visibility
+        function toggleCoverInput() {
+            const input = document.getElementById('custom-cover-input');
+            if (input) {
+                input.style.display = input.style.display === 'none' ? 'block' : 'none';
             }
         }
     </script>

@@ -297,6 +297,134 @@ a {
     border-color: var(--text-primary);
 }
 
+/* Eyedropper trigger button */
+.eyedropper-trigger {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    cursor: pointer;
+    background: var(--bg-tertiary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--border-subtle);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.eyedropper-trigger svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--text-secondary);
+    transition: fill 0.3s ease;
+}
+
+.eyedropper-trigger:hover {
+    transform: scale(1.15);
+    border-color: var(--accent-primary);
+    background: rgba(255, 107, 53, 0.15);
+}
+
+.eyedropper-trigger:hover svg {
+    fill: var(--accent-primary);
+}
+
+/* Eyedropper active state on poster */
+#poster-img.eyedropper-active {
+    cursor: crosshair !important;
+    outline: 3px solid var(--accent-primary);
+    outline-offset: 4px;
+}
+
+/* Eyedropper indicator bar */
+.eyedropper-indicator {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: var(--bg-secondary);
+    border: 1px solid var(--accent-primary);
+    border-radius: 12px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 10000;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.eyedropper-indicator.active {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.eyedropper-indicator svg {
+    width: 22px;
+    height: 22px;
+    fill: var(--accent-primary);
+}
+
+.eyedropper-indicator span {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.eyedropper-indicator button {
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.eyedropper-indicator button:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+}
+
+/* Color picked feedback */
+.color-picked-feedback {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--bg-secondary);
+    border: 1px solid var(--success-green);
+    border-radius: 10px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 10000;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.color-picked-feedback.active {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.picked-color-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.color-picked-feedback span {
+    font-size: 0.95rem;
+    color: var(--success-green);
+    font-weight: 500;
+}
+
 /* Tracklist Controls */
 .tracklist-controls {
     display: flex;
@@ -778,9 +906,19 @@ footer a:hover {
 
 .track-field {
     display: grid;
-    grid-template-columns: 30px 1fr;
+    grid-template-columns: 30px 1fr 36px;
     gap: 12px;
     align-items: center;
+    transition: opacity 0.3s ease;
+}
+
+.track-field.removed {
+    opacity: 0.4;
+}
+
+.track-field.removed input[type="text"] {
+    text-decoration: line-through;
+    color: var(--text-muted);
 }
 
 .track-field label {
@@ -810,6 +948,339 @@ footer a:hover {
 .track-field input[type="text"]:focus {
     border-color: var(--accent-primary);
     background: var(--bg-secondary);
+}
+
+/* Track Remove Button */
+.track-remove-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.track-remove-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: var(--text-muted);
+    transition: fill 0.2s ease;
+}
+
+.track-remove-btn:hover {
+    border-color: var(--error-red);
+    background: rgba(255, 71, 87, 0.1);
+}
+
+.track-remove-btn:hover svg {
+    fill: var(--error-red);
+}
+
+/* Restore button (when track is removed) */
+.track-remove-btn.restore {
+    border-color: var(--success-green);
+    background: rgba(0, 210, 106, 0.1);
+}
+
+.track-remove-btn.restore svg {
+    fill: var(--success-green);
+}
+
+.track-remove-btn.restore:hover {
+    background: rgba(0, 210, 106, 0.2);
+}
+
+/* Album Cover Section */
+.album-cover-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border-subtle);
+    margin-top: 8px;
+}
+
+.album-cover-section > label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.cover-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.hires-cover-btn,
+.custom-cover-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 12px;
+    font-family: "Outfit", sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.hires-cover-btn svg,
+.custom-cover-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+.hires-cover-btn:hover,
+.custom-cover-btn:hover {
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
+    background: rgba(255, 107, 53, 0.1);
+}
+
+.custom-cover-input {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.custom-cover-input input {
+    width: 100%;
+    padding: 10px 14px;
+    font-family: "Outfit", sans-serif;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-subtle);
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.custom-cover-input input:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
+}
+
+.custom-cover-input input::placeholder {
+    color: var(--text-muted);
+}
+
+.custom-cover-input small {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Cover picker loading state */
+.hires-cover-btn.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.hires-cover-btn .spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Cover applied message */
+.cover-applied-msg {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    margin-top: 8px;
+    background: rgba(0, 210, 106, 0.15);
+    border: 1px solid var(--success-green);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--success-green);
+    animation: fadeIn 0.3s ease;
+}
+
+.cover-applied-msg svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Cover hint message */
+.cover-hint-msg {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 14px;
+    margin-top: 8px;
+    background: rgba(255, 107, 53, 0.1);
+    border: 1px solid var(--accent-primary);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    animation: fadeIn 0.3s ease;
+}
+
+.cover-hint-msg svg {
+    width: 18px;
+    height: 18px;
+    fill: var(--accent-primary);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+/* Cover Picker Instructions Overlay */
+.cover-instructions-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 10, 15, 0.9);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.cover-instructions-overlay.active {
+    opacity: 1;
+}
+
+.cover-instructions-modal {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.cover-instructions-overlay.active .cover-instructions-modal {
+    transform: translateY(0);
+}
+
+.cover-instructions-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.cover-instructions-header svg {
+    width: 28px;
+    height: 28px;
+    fill: var(--accent-primary);
+}
+
+.cover-instructions-header span {
+    font-family: "Syne", sans-serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.cover-instructions-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.instruction-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.step-number {
+    width: 28px;
+    height: 28px;
+    background: var(--accent-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.step-text {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    padding-top: 3px;
+}
+
+.step-text strong {
+    color: var(--text-primary);
+}
+
+.cover-instructions-btn {
+    width: 100%;
+    padding: 14px 24px;
+    font-family: "Syne", sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--accent-primary);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cover-instructions-btn:hover {
+    background: var(--accent-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px var(--accent-glow);
+}
+
+.cover-instructions-cancel {
+    width: 100%;
+    padding: 10px 24px;
+    margin-top: 10px;
+    font-family: "Outfit", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cover-instructions-cancel:hover {
+    color: var(--text-secondary);
+    border-color: var(--text-muted);
 }
 
 /* Apply Changes Button */
@@ -1127,9 +1598,19 @@ footer a:hover {
 
 .track-field {
     display: grid;
-    grid-template-columns: 30px 1fr;
+    grid-template-columns: 30px 1fr 36px;
     gap: 12px;
     align-items: center;
+    transition: opacity 0.3s ease;
+}
+
+.track-field.removed {
+    opacity: 0.4;
+}
+
+.track-field.removed input[type="text"] {
+    text-decoration: line-through;
+    color: var(--text-muted);
 }
 
 .track-field label {
@@ -1159,6 +1640,339 @@ footer a:hover {
 .track-field input[type="text"]:focus {
     border-color: var(--accent-primary);
     background: var(--bg-secondary);
+}
+
+/* Track Remove Button */
+.track-remove-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.track-remove-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: var(--text-muted);
+    transition: fill 0.2s ease;
+}
+
+.track-remove-btn:hover {
+    border-color: var(--error-red);
+    background: rgba(255, 71, 87, 0.1);
+}
+
+.track-remove-btn:hover svg {
+    fill: var(--error-red);
+}
+
+/* Restore button (when track is removed) */
+.track-remove-btn.restore {
+    border-color: var(--success-green);
+    background: rgba(0, 210, 106, 0.1);
+}
+
+.track-remove-btn.restore svg {
+    fill: var(--success-green);
+}
+
+.track-remove-btn.restore:hover {
+    background: rgba(0, 210, 106, 0.2);
+}
+
+/* Album Cover Section */
+.album-cover-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border-subtle);
+    margin-top: 8px;
+}
+
+.album-cover-section > label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.cover-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.hires-cover-btn,
+.custom-cover-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 12px;
+    font-family: "Outfit", sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.hires-cover-btn svg,
+.custom-cover-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+.hires-cover-btn:hover,
+.custom-cover-btn:hover {
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
+    background: rgba(255, 107, 53, 0.1);
+}
+
+.custom-cover-input {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.custom-cover-input input {
+    width: 100%;
+    padding: 10px 14px;
+    font-family: "Outfit", sans-serif;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-subtle);
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.custom-cover-input input:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
+}
+
+.custom-cover-input input::placeholder {
+    color: var(--text-muted);
+}
+
+.custom-cover-input small {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Cover picker loading state */
+.hires-cover-btn.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.hires-cover-btn .spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Cover applied message */
+.cover-applied-msg {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    margin-top: 8px;
+    background: rgba(0, 210, 106, 0.15);
+    border: 1px solid var(--success-green);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--success-green);
+    animation: fadeIn 0.3s ease;
+}
+
+.cover-applied-msg svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Cover hint message */
+.cover-hint-msg {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 14px;
+    margin-top: 8px;
+    background: rgba(255, 107, 53, 0.1);
+    border: 1px solid var(--accent-primary);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    animation: fadeIn 0.3s ease;
+}
+
+.cover-hint-msg svg {
+    width: 18px;
+    height: 18px;
+    fill: var(--accent-primary);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+/* Cover Picker Instructions Overlay */
+.cover-instructions-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 10, 15, 0.9);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.cover-instructions-overlay.active {
+    opacity: 1;
+}
+
+.cover-instructions-modal {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.cover-instructions-overlay.active .cover-instructions-modal {
+    transform: translateY(0);
+}
+
+.cover-instructions-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.cover-instructions-header svg {
+    width: 28px;
+    height: 28px;
+    fill: var(--accent-primary);
+}
+
+.cover-instructions-header span {
+    font-family: "Syne", sans-serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.cover-instructions-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.instruction-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.step-number {
+    width: 28px;
+    height: 28px;
+    background: var(--accent-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.step-text {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    padding-top: 3px;
+}
+
+.step-text strong {
+    color: var(--text-primary);
+}
+
+.cover-instructions-btn {
+    width: 100%;
+    padding: 14px 24px;
+    font-family: "Syne", sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--accent-primary);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cover-instructions-btn:hover {
+    background: var(--accent-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px var(--accent-glow);
+}
+
+.cover-instructions-cancel {
+    width: 100%;
+    padding: 10px 24px;
+    margin-top: 10px;
+    font-family: "Outfit", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cover-instructions-cancel:hover {
+    color: var(--text-secondary);
+    border-color: var(--text-muted);
 }
 
 /* Apply Changes Button */

@@ -237,39 +237,43 @@ function setDpi(value) {
  */
 function downloadWithOptions() {
     const downloadBtn = document.getElementById('modal-download-btn');
-    
-    // Get current state
-    const artist = document.getElementById('current-artist')?.value;
-    const album = document.getElementById('current-album')?.value;
-    const backgroundColor = document.getElementById('current-background-color')?.value;
-    const textColor = document.getElementById('current-text-color')?.value;
-    const tabulated = document.getElementById('tabulated')?.checked || false;
-    const dotted = document.getElementById('dotted')?.checked || false;
-    
-    if (!artist || !album) {
+
+    // Use PosterState if available for consistent state
+    let postData;
+    if (window.PosterState) {
+        PosterState.syncFromForm();
+        postData = PosterState.getState();
+    } else {
+        // Fallback to reading from DOM directly
+        postData = {
+            artist: document.getElementById('current-artist')?.value,
+            album: document.getElementById('current-album')?.value,
+            background: document.getElementById('current-background-color')?.value,
+            text: document.getElementById('current-text-color')?.value,
+            tabulated: document.getElementById('tabulated')?.checked || false,
+            dotted: document.getElementById('dotted')?.checked || false,
+            custom_cover_url: document.getElementById('edit-cover-url')?.value.trim() || null,
+            removed_tracks: [],
+            custom_tracks: {}
+        };
+    }
+
+    if (!postData.artist || !postData.album) {
         console.error('Missing artist or album information');
         return;
     }
-    
+
+    // Add download-specific options
+    postData.resolution = selectedResolution;
+    postData.format = selectedFormat;
+    postData.dpi = selectedDpi;
+
     // Show loading state
     if (downloadBtn) {
         downloadBtn.classList.add('loading');
         downloadBtn.innerHTML = '<div class="btn-spinner"></div> Generating...';
         downloadBtn.disabled = true;
     }
-    
-    // Prepare request
-    const postData = {
-        artist: artist,
-        album: album,
-        background: backgroundColor,
-        text: textColor,
-        tabulated: tabulated,
-        dotted: dotted,
-        resolution: selectedResolution,
-        format: selectedFormat,
-        dpi: selectedDpi
-    };
     
     fetch('/download-poster', {
         method: 'POST',

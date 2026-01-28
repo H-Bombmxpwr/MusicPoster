@@ -1,11 +1,10 @@
 /**
  * Text editing functionality for poster customization
- * Allows users to edit individual text components on the poster
+ * Uses centralized PosterState for consistency
  */
 
 // Track editor state
 let trackEditorOpen = false;
-let customTracks = {};
 let tracksData = {};
 
 /**
@@ -22,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
             tracksData = {};
         }
     }
-    
+
     populateTrackEditor();
 });
 
@@ -33,11 +32,11 @@ function toggleTrackEditor() {
     const trackEditor = document.getElementById('track-editor');
     const toggleIcon = document.getElementById('track-toggle-icon');
     const toggleText = document.getElementById('track-toggle-text');
-    
+
     if (!trackEditor) return;
-    
+
     trackEditorOpen = !trackEditorOpen;
-    
+
     if (trackEditorOpen) {
         // Show the editor
         trackEditor.style.display = 'block';
@@ -45,7 +44,7 @@ function toggleTrackEditor() {
         trackEditor.offsetHeight;
         trackEditor.style.maxHeight = '600px';
         trackEditor.style.opacity = '1';
-        
+
         if (toggleIcon) {
             toggleIcon.style.transform = 'rotate(180deg)';
         }
@@ -56,12 +55,12 @@ function toggleTrackEditor() {
         // Hide the editor
         trackEditor.style.maxHeight = '0';
         trackEditor.style.opacity = '0';
-        
+
         // Wait for transition to complete before hiding
         setTimeout(() => {
             trackEditor.style.display = 'none';
         }, 400);
-        
+
         if (toggleIcon) {
             toggleIcon.style.transform = 'rotate(0deg)';
         }
@@ -77,14 +76,14 @@ function toggleTrackEditor() {
 function populateTrackEditor() {
     const trackList = document.getElementById('track-list');
     const trackCount = parseInt(document.getElementById('track-count')?.value || 0);
-    
+
     if (!trackList || trackCount === 0) return;
-    
+
     trackList.innerHTML = '';
-    
+
     // Convert tracks object to array for easier iteration
     const tracksArray = Object.entries(tracksData);
-    
+
     for (let i = 1; i <= Math.min(trackCount, 30); i++) {
         // Get the track name from the data if it exists
         let trackName = '';
@@ -93,18 +92,73 @@ function populateTrackEditor() {
             // Clean up the track name (remove parentheses, etc.)
             trackName = trackName.replace(/[\(\[].*?[\)\]]/g, '').trim();
         }
-        
+
+        // Check if track is removed (from PosterState if available)
+        const isRemoved = window.PosterState ? PosterState.isTrackRemoved(i) : false;
+
         const trackField = document.createElement('div');
-        trackField.className = 'track-field';
+        trackField.className = 'track-field' + (isRemoved ? ' removed' : '');
+        trackField.id = `track-field-${i}`;
         trackField.innerHTML = `
             <label for="track-${i}">${i}.</label>
-            <input type="text" 
-                   id="track-${i}" 
+            <input type="text"
+                   id="track-${i}"
                    value="${escapeHtml(trackName)}"
                    placeholder="Track ${i} name..."
-                   data-track-num="${i}">
+                   data-track-num="${i}"
+                   ${isRemoved ? 'disabled' : ''}>
+            <button type="button"
+                    class="track-remove-btn ${isRemoved ? 'restore' : ''}"
+                    onclick="toggleTrackRemoval(${i})"
+                    title="${isRemoved ? 'Restore track' : 'Remove track'}">
+                ${isRemoved ?
+                    '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>' :
+                    '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>'
+                }
+            </button>
         `;
         trackList.appendChild(trackField);
+    }
+}
+
+/**
+ * Toggle track removal state
+ */
+function toggleTrackRemoval(trackNum) {
+    const trackNumStr = String(trackNum);
+    const trackField = document.getElementById(`track-field-${trackNum}`);
+    const trackInput = document.getElementById(`track-${trackNum}`);
+    const removeBtn = trackField?.querySelector('.track-remove-btn');
+
+    // Use PosterState if available
+    const isCurrentlyRemoved = window.PosterState ?
+        PosterState.isTrackRemoved(trackNum) :
+        trackField?.classList.contains('removed');
+
+    if (isCurrentlyRemoved) {
+        // Restore track
+        if (window.PosterState) {
+            PosterState.restoreTrack(trackNum);
+        }
+        if (trackField) trackField.classList.remove('removed');
+        if (trackInput) trackInput.disabled = false;
+        if (removeBtn) {
+            removeBtn.classList.remove('restore');
+            removeBtn.title = 'Remove track';
+            removeBtn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
+        }
+    } else {
+        // Remove track
+        if (window.PosterState) {
+            PosterState.removeTrack(trackNum);
+        }
+        if (trackField) trackField.classList.add('removed');
+        if (trackInput) trackInput.disabled = true;
+        if (removeBtn) {
+            removeBtn.classList.add('restore');
+            removeBtn.title = 'Restore track';
+            removeBtn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>';
+        }
     }
 }
 
@@ -121,65 +175,30 @@ function escapeHtml(text) {
  * Apply all custom text changes and regenerate poster
  */
 function applyCustomChanges() {
-    // Get current state - READ from hidden fields that are always up to date
-    const artist = document.getElementById('current-artist')?.value;
-    const album = document.getElementById('current-album')?.value;
-    const backgroundColor = document.getElementById('current-background-color')?.value;
-    const textColor = document.getElementById('current-text-color')?.value;
-    const tabulated = document.getElementById('tabulated')?.checked || false;
-    const dotted = document.getElementById('dotted')?.checked || false;
+    // Ensure PosterState is initialized
+    if (!window.PosterState) {
+        console.error('PosterState not initialized');
+        return;
+    }
 
-    // Get custom text values
-    const customArtist = document.getElementById('edit-artist')?.value.trim();
-    const customAlbum = document.getElementById('edit-album')?.value.trim();
-    const customDate = document.getElementById('edit-date')?.value.trim();
-    const customLabel = document.getElementById('edit-label')?.value.trim();
-
-    // Get custom track values
-    const trackInputs = document.querySelectorAll('[data-track-num]');
-    customTracks = {};
-    trackInputs.forEach(input => {
-        const trackNum = input.getAttribute('data-track-num');
-        const trackValue = input.value.trim();
-        if (trackValue) {
-            customTracks[trackNum] = trackValue;
-        }
-    });
+    // Sync all form values to state
+    PosterState.syncFromForm();
 
     // Validate required fields
-    if (!artist || !album) {
+    if (!PosterState.artist || !PosterState.album) {
         console.error('Missing required artist or album information');
         showErrorFeedback('Missing required information');
         return;
     }
 
-    // Debug log to verify colors are being sent
-    console.log('Applying custom changes with:', {
-        artist: artist,
-        album: album,
-        background: backgroundColor,
-        text: textColor,
-        tabulated: tabulated,
-        dotted: dotted
-    });
+    // Debug log
+    console.log('Applying custom changes with state:', PosterState.getState());
 
     // Show loading state
     showLoadingState();
 
-    // Prepare request data
-    const postData = {
-        artist: artist,
-        album: album,
-        background: backgroundColor,
-        text: textColor,
-        tabulated: tabulated,
-        dotted: dotted,
-        custom_artist: customArtist || null,
-        custom_album: customAlbum || null,
-        custom_date: customDate || null,
-        custom_label: customLabel || null,
-        custom_tracks: customTracks
-    };
+    // Get full state for API call
+    const postData = PosterState.getState();
 
     // Send update request
     fetch('/update-poster-custom', {
@@ -196,7 +215,12 @@ function applyCustomChanges() {
     .then(data => {
         if (data.img_data) {
             updatePosterImage(data.img_data);
-            
+
+            // Update color palette if new colors were returned
+            if (data.colors && typeof updateColorPalette === 'function') {
+                updateColorPalette(data.colors);
+            }
+
             // Show success feedback
             showSuccessFeedback();
         }
@@ -215,23 +239,23 @@ function updatePosterImage(imgData) {
     const posterImg = document.getElementById('poster-img');
     const downloadLink = document.getElementById('download-link');
     const imgDataInput = document.getElementById('img_data');
-    
+
     if (posterImg) {
         posterImg.src = imgData;
     }
-    
+
     if (downloadLink) {
         downloadLink.href = imgData;
-        const albumName = document.getElementById('edit-album')?.value || 
+        const albumName = document.getElementById('edit-album')?.value ||
                          document.getElementById('current-album')?.value || 'poster';
         const formattedAlbumName = albumName.replace(/\s+/g, '_');
         downloadLink.setAttribute('download', `${formattedAlbumName}.png`);
     }
-    
+
     if (imgDataInput) {
         imgDataInput.value = imgData;
     }
-    
+
     hideLoadingState();
 }
 
@@ -241,12 +265,12 @@ function updatePosterImage(imgData) {
 function showLoadingState() {
     const posterImg = document.getElementById('poster-img');
     const loadingOverlay = document.getElementById('poster-loading');
-    
+
     if (posterImg) {
         posterImg.style.opacity = '0.5';
         posterImg.style.transition = 'opacity 0.3s ease';
     }
-    
+
     if (loadingOverlay) {
         loadingOverlay.classList.add('active');
     }
@@ -258,11 +282,11 @@ function showLoadingState() {
 function hideLoadingState() {
     const posterImg = document.getElementById('poster-img');
     const loadingOverlay = document.getElementById('poster-loading');
-    
+
     if (posterImg) {
         posterImg.style.opacity = '1';
     }
-    
+
     if (loadingOverlay) {
         loadingOverlay.classList.remove('active');
     }
@@ -274,13 +298,13 @@ function hideLoadingState() {
 function showSuccessFeedback() {
     const applyBtn = document.querySelector('.apply-changes-btn');
     if (!applyBtn) return;
-    
+
     const originalText = applyBtn.textContent;
-    
-    applyBtn.textContent = '✓ Applied!';
+
+    applyBtn.textContent = 'Applied!';
     applyBtn.style.background = '#00d26a';
     applyBtn.style.transition = 'all 0.3s ease';
-    
+
     setTimeout(() => {
         applyBtn.textContent = originalText;
         applyBtn.style.background = '';
@@ -293,17 +317,17 @@ function showSuccessFeedback() {
 function showErrorFeedback(message) {
     const applyBtn = document.querySelector('.apply-changes-btn');
     if (!applyBtn) return;
-    
+
     const originalText = applyBtn.textContent;
-    
-    applyBtn.textContent = '✗ Error';
+
+    applyBtn.textContent = 'Error';
     applyBtn.style.background = '#ff4757';
     applyBtn.style.transition = 'all 0.3s ease';
-    
+
     setTimeout(() => {
         applyBtn.textContent = originalText;
         applyBtn.style.background = '';
     }, 2000);
-    
+
     console.error(message);
 }

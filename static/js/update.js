@@ -1,55 +1,49 @@
 /**
  * Poster color and style update functionality
- * Handles real-time poster customization via AJAX
+ * Uses centralized PosterState for consistency
  */
 
 // Track pending requests to prevent duplicate calls
 let pendingRequest = null;
 
+/**
+ * Update poster with current state
+ * @param {string|null} color - Color to update (or null for format-only changes)
+ * @param {boolean} isBackground - Whether this is a background color change
+ * @param {boolean} isText - Whether this is a text color change
+ */
 function updatePosterColor(color, isBackground = false, isText = false) {
-    // Get current state from hidden fields
-    const artist = document.getElementById('current-artist')?.value;
-    const album = document.getElementById('current-album')?.value;
-    let backgroundColor = document.getElementById('current-background-color')?.value;
-    let textColor = document.getElementById('current-text-color')?.value;
-    const tabulated = document.getElementById('tabulated')?.checked || false;
-    const dotted = document.getElementById('dotted')?.checked || false;
-
-    if (!artist || !album) {
-        console.error('Missing artist or album information');
+    // Ensure PosterState is initialized
+    if (!window.PosterState || !PosterState.artist) {
+        console.error('PosterState not initialized');
         return;
     }
 
-    // Check if a valid color string was passed (not NaN, not undefined, not null)
-    // Using typeof check because isNaN('#ff0000') returns true (tries to convert string to number)
+    // Sync current form state
+    PosterState.syncFromForm();
+
+    // Check if a valid color string was passed
     const hasValidColor = color !== undefined && color !== null && typeof color === 'string' && color.startsWith('#');
 
     // Update colors based on which was changed
     if (isBackground && hasValidColor) {
-        backgroundColor = color;
-        // Update hidden field immediately
-        document.getElementById('current-background-color').value = backgroundColor;
+        PosterState.set('backgroundColor', color);
     }
     if (isText && hasValidColor) {
-        textColor = color;
-        // Update hidden field immediately
-        document.getElementById('current-text-color').value = textColor;
+        PosterState.set('textColor', color);
     }
+
+    // Update checkbox states
+    PosterState.set('tabulated', document.getElementById('tabulated')?.checked || false);
+    PosterState.set('dotted', document.getElementById('dotted')?.checked || false);
 
     // Cancel any pending request
     if (pendingRequest) {
         pendingRequest.abort();
     }
 
-    // Prepare request data
-    const postData = {
-        artist: artist,
-        album: album,
-        background: backgroundColor,
-        text: textColor,
-        tabulated: tabulated,
-        dotted: dotted
-    };
+    // Get full state for API call
+    const postData = PosterState.getState();
 
     console.log('Sending update request:', postData);
 
@@ -60,8 +54,8 @@ function updatePosterColor(color, isBackground = false, isText = false) {
     const controller = new AbortController();
     pendingRequest = controller;
 
-    // Send update request
-    fetch('/update-poster', {
+    // Use the custom endpoint that preserves all state
+    fetch('/update-poster-custom', {
         method: 'POST',
         body: JSON.stringify(postData),
         headers: {
@@ -78,44 +72,90 @@ function updatePosterColor(color, isBackground = false, isText = false) {
     .then(data => {
         pendingRequest = null;
         console.log('Received response with img_data:', !!data.img_data);
-        
+
         if (data.img_data) {
-            const posterImg = document.getElementById('poster-img');
-            if (posterImg) {
-                posterImg.src = data.img_data;
-            }
+            updatePosterDisplay(data.img_data);
 
-            // Update download link
-            const downloadLink = document.getElementById('download-link');
-            if (downloadLink) {
-                downloadLink.href = data.img_data;
-                const formattedAlbumName = album.replace(/\s+/g, '_');
-                downloadLink.setAttribute('download', `${formattedAlbumName}.png`);
-            }
-
-            // Update hidden form data for submission
-            const imgDataInput = document.getElementById('img_data');
-            if (imgDataInput) {
-                imgDataInput.value = data.img_data;
+            // Update color palette if new colors were returned
+            if (data.colors) {
+                updateColorPalette(data.colors);
             }
         } else {
             console.error('No img_data in response');
         }
-        
+
         hidePosterLoading();
     })
     .catch(error => {
         pendingRequest = null;
-        
+
         if (error.name === 'AbortError') {
-            // Request was cancelled, ignore
             console.log('Request aborted');
             return;
         }
-        
+
         console.error('Error updating poster:', error);
         hidePosterLoading();
     });
+}
+
+/**
+ * Update poster image display
+ */
+function updatePosterDisplay(imgData) {
+    const posterImg = document.getElementById('poster-img');
+    if (posterImg) {
+        posterImg.src = imgData;
+    }
+
+    // Update download link
+    const downloadLink = document.getElementById('download-link');
+    if (downloadLink) {
+        downloadLink.href = imgData;
+        const albumName = PosterState.customAlbum || PosterState.album || 'poster';
+        const formattedAlbumName = albumName.replace(/\s+/g, '_');
+        downloadLink.setAttribute('download', `${formattedAlbumName}.png`);
+    }
+
+    // Update hidden form data for submission
+    const imgDataInput = document.getElementById('img_data');
+    if (imgDataInput) {
+        imgDataInput.value = imgData;
+    }
+}
+
+/**
+ * Update color palette with new colors
+ */
+function updateColorPalette(colors) {
+    if (!colors || !Array.isArray(colors)) return;
+
+    // Update background colors
+    const bgContainer = document.getElementById('backgroundColors');
+    if (bgContainer) {
+        // Keep existing squares but update colors
+        const squares = bgContainer.querySelectorAll('.color-square');
+        colors.forEach((color, i) => {
+            if (squares[i]) {
+                squares[i].style.backgroundColor = color;
+                squares[i].setAttribute('onclick', `updatePosterColor('${color}', true, false)`);
+                squares[i].setAttribute('title', `Set background to ${color}`);
+            }
+        });
+    }
+
+    // Update text colors
+    const textContainer = document.getElementById('textColors');
+    if (textContainer) {
+        const squares = textContainer.querySelectorAll('.color-square');
+        colors.forEach((color, i) => {
+            if (squares[i]) {
+                squares[i].style.backgroundColor = color;
+                squares[i].setAttribute('onclick', `updatePosterColor('${color}', false, true)`);
+                squares[i].setAttribute('title', `Set text to ${color}`);
+            }
+        });
+    }
 }
 
 /**
@@ -124,12 +164,12 @@ function updatePosterColor(color, isBackground = false, isText = false) {
 function showPosterLoading() {
     const posterImg = document.getElementById('poster-img');
     const loadingOverlay = document.getElementById('poster-loading');
-    
+
     if (posterImg) {
         posterImg.style.opacity = '0.5';
         posterImg.style.transition = 'opacity 0.2s ease';
     }
-    
+
     if (loadingOverlay) {
         loadingOverlay.style.display = 'flex';
         loadingOverlay.classList.add('active');
@@ -142,11 +182,11 @@ function showPosterLoading() {
 function hidePosterLoading() {
     const posterImg = document.getElementById('poster-img');
     const loadingOverlay = document.getElementById('poster-loading');
-    
+
     if (posterImg) {
         posterImg.style.opacity = '1';
     }
-    
+
     if (loadingOverlay) {
         loadingOverlay.style.display = 'none';
         loadingOverlay.classList.remove('active');
