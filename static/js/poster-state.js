@@ -7,6 +7,7 @@ const PosterState = {
     // Core album info (read-only after init)
     artist: '',
     album: '',
+    albumId: '',
 
     // Customizable fields
     backgroundColor: '#FFFFFF',
@@ -29,14 +30,29 @@ const PosterState = {
 
     /**
      * Initialize state from DOM elements
+     * Called immediately on page load to capture initial values
      */
     init() {
         this.artist = document.getElementById('current-artist')?.value || '';
         this.album = document.getElementById('current-album')?.value || '';
+        this.albumId = document.getElementById('album-id')?.value || '';
         this.backgroundColor = document.getElementById('current-background-color')?.value || '#FFFFFF';
         this.textColor = document.getElementById('current-text-color')?.value || '#000000';
         this.tabulated = document.getElementById('tabulated')?.checked || false;
         this.dotted = document.getElementById('dotted')?.checked || false;
+
+        // Pre-populate custom fields from edit form so state is ready from the start
+        const editArtist = document.getElementById('edit-artist');
+        const editAlbum = document.getElementById('edit-album');
+        const editDate = document.getElementById('edit-date');
+        const editLabel = document.getElementById('edit-label');
+        const editCoverUrl = document.getElementById('edit-cover-url');
+
+        if (editArtist) this.customArtist = editArtist.value.trim() || null;
+        if (editAlbum) this.customAlbum = editAlbum.value.trim() || null;
+        if (editDate) this.customDate = editDate.value.trim() || null;
+        if (editLabel) this.customLabel = editLabel.value.trim() || null;
+        if (editCoverUrl) this.customCoverUrl = editCoverUrl.value.trim() || null;
 
         console.log('PosterState initialized:', this.getState());
     },
@@ -75,6 +91,7 @@ const PosterState = {
         return {
             artist: this.artist,
             album: this.album,
+            album_id: this.albumId,
             background: this.backgroundColor,
             text: this.textColor,
             tabulated: this.tabulated,
@@ -91,35 +108,34 @@ const PosterState = {
 
     /**
      * Sync state from edit form fields
+     * Empty strings are preserved (sent as '') so the backend can render empty fields
      */
     syncFromForm() {
         // Read current form values
-        const customArtist = document.getElementById('edit-artist')?.value.trim();
-        const customAlbum = document.getElementById('edit-album')?.value.trim();
-        const customDate = document.getElementById('edit-date')?.value.trim();
-        const customLabel = document.getElementById('edit-label')?.value.trim();
-        const customCoverUrl = document.getElementById('edit-cover-url')?.value.trim();
+        const artistEl = document.getElementById('edit-artist');
+        const albumEl = document.getElementById('edit-album');
+        const dateEl = document.getElementById('edit-date');
+        const labelEl = document.getElementById('edit-label');
+        const coverUrlEl = document.getElementById('edit-cover-url');
 
-        // Update state
-        this.customArtist = customArtist || null;
-        this.customAlbum = customAlbum || null;
-        this.customDate = customDate || null;
-        this.customLabel = customLabel || null;
-        this.customCoverUrl = customCoverUrl || null;
+        // Use empty string (not null) when field exists but is empty,
+        // so the backend knows the user intentionally cleared it
+        if (artistEl) this.customArtist = artistEl.value.trim();
+        if (albumEl) this.customAlbum = albumEl.value.trim();
+        if (dateEl) this.customDate = dateEl.value.trim();
+        if (labelEl) this.customLabel = labelEl.value.trim();
+        this.customCoverUrl = coverUrlEl ? (coverUrlEl.value.trim() || null) : null;
 
         // Sync checkbox states
         this.tabulated = document.getElementById('tabulated')?.checked || false;
         this.dotted = document.getElementById('dotted')?.checked || false;
 
-        // Sync custom tracks from track inputs
+        // Sync custom tracks from track inputs (empty string = hide track text)
         const trackInputs = document.querySelectorAll('[data-track-num]');
         this.customTracks = {};
         trackInputs.forEach(input => {
             const trackNum = input.getAttribute('data-track-num');
-            const trackValue = input.value.trim();
-            if (trackValue) {
-                this.customTracks[trackNum] = trackValue;
-            }
+            this.customTracks[trackNum] = input.value.trim();
         });
     },
 

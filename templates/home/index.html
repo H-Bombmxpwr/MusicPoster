@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Album Poster</title>
     <link rel="stylesheet" href="static/css/index.css">
-    <link rel="stylesheet" href="static/css/colorpicker.css">
     <link rel="stylesheet" href="static/css/loading.css">
     <link rel="stylesheet" href="static/css/autocomplete.css">
     <link rel="icon" href="static/images/icon.png">
@@ -37,65 +36,21 @@
             <img src="{{ img_data }}" alt="">
         </center>
 
-        <!-- Artist Input -->
-        <div class="one">
-            <div class="label">
-                <label for="artist">Enter an artist</label>
-            </div>
-            <div class="box">
-                <input type="text" 
-                       name="artist" 
-                       id="artist" 
-                       placeholder="Artist name..."
-                       autocomplete="off">
-            </div>
-        </div>
+        <!-- Hidden fields for form submission -->
+        <input type="hidden" name="artist" id="artist" value="">
+        <input type="hidden" name="album_id" id="selected-album-id" value="">
 
         <!-- Album Input -->
         <div class="two">
             <div class="label">
-                <label for="album">Enter an album</label>
+                <label for="album">Search for an album</label>
             </div>
             <div class="box">
-                <input type="text" 
-                       name="album" 
-                       id="album" 
-                       placeholder="Album name or Spotify link..."
+                <input type="text"
+                       name="album"
+                       id="album"
+                       placeholder="Album name, artist, or Spotify link..."
                        autocomplete="off">
-            </div>
-        </div>
-
-        <!-- Background Color -->
-        <div class="three">
-            <div class="label">
-                <label>Background color</label>
-            </div>
-            <div class="box color-input-box">
-                <!-- Hidden input for form submission -->
-                <input type="hidden" name="background" id="background-color-value" value="#ffffff">
-                <!-- Color preview and trigger -->
-                <div class="color-preview-trigger" id="background-color-preview" onclick="openBackgroundPicker()">
-                    <div class="color-preview-swatch" id="background-swatch" style="background-color: #ffffff;"></div>
-                    <span class="color-preview-hex" id="background-hex">#FFFFFF</span>
-                    <div class="color-preview-rainbow"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Text Color -->
-        <div class="four">
-            <div class="label">
-                <label>Text color</label>
-            </div>
-            <div class="box color-input-box">
-                <!-- Hidden input for form submission -->
-                <input type="hidden" name="text" id="text-color-value" value="#000000">
-                <!-- Color preview and trigger -->
-                <div class="color-preview-trigger" id="text-color-preview" onclick="openTextPicker()">
-                    <div class="color-preview-swatch" id="text-swatch" style="background-color: #000000;"></div>
-                    <span class="color-preview-hex" id="text-hex">#000000</span>
-                    <div class="color-preview-rainbow"></div>
-                </div>
             </div>
         </div>
 
@@ -130,36 +85,11 @@
         <a href="{{ url_for('about') }}">About This Project</a>
     </footer>
 
-    <!-- Scripts - colorpicker.js must load first -->
-    <script src="{{ url_for('static', filename='js/colorpicker.js') }}"></script>
+    <!-- Scripts -->
     <script src="{{ url_for('static', filename='js/loading.js') }}"></script>
     <script src="{{ url_for('static', filename='js/autocomplete.js') }}"></script>
     <script src="{{ url_for('static', filename='js/scroll.js') }}"></script>
     <script src="{{ url_for('static', filename='js/random.js') }}"></script>
-    <script>
-        // Custom color picker handlers for index page
-        function openBackgroundPicker() {
-            const currentColor = document.getElementById('background-color-value').value || '#ffffff';
-            openColorPicker(currentColor, function(color) {
-                // Update hidden input for form submission
-                document.getElementById('background-color-value').value = color;
-                // Update visual preview
-                document.getElementById('background-swatch').style.backgroundColor = color;
-                document.getElementById('background-hex').textContent = color.toUpperCase();
-            }, true);
-        }
-
-        function openTextPicker() {
-            const currentColor = document.getElementById('text-color-value').value || '#000000';
-            openColorPicker(currentColor, function(color) {
-                // Update hidden input for form submission
-                document.getElementById('text-color-value').value = color;
-                // Update visual preview
-                document.getElementById('text-swatch').style.backgroundColor = color;
-                document.getElementById('text-hex').textContent = color.toUpperCase();
-            }, false);
-        }
-    </script>
 </body>
 
 </html>

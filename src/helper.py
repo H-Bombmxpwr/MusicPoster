@@ -212,12 +212,17 @@ class Utility:
     def buildPoster(self):
         """Build poster at the configured resolution"""
         poster = self.create_poster(self.width, self.height, self.album.background)
-        album_img = self.fetch_album_cover(self.album.getCoverArt()[0]['url'])
-        
+
+        # Get the cover URL (may be custom or Spotify)
+        cover_url = self.album.getCoverArt()[0]['url']
+        # Get original Spotify cover as fallback if custom cover fails
+        fallback_url = self.album.getSpotifyCoverUrl()
+        album_img = self.fetch_album_cover(cover_url, fallback_url=fallback_url)
+
         # Resize album cover to fit the scaled poster
         cover_size = self._scale(640)  # Base album cover is 640x640
         album_img_resized = album_img.resize((cover_size, cover_size), Image.LANCZOS)
-        
+
         self.overlay_album_cover(poster, album_img_resized)
         self.overlay_code_banner(poster)
         draw = ImageDraw.Draw(poster)
@@ -234,8 +239,8 @@ class Utility:
         """Create the blank canvas of the poster"""
         return Image.new(mode="RGBA", size=(width, height), color=background)
 
-    def fetch_album_cover(self, url):
-        """Return the image of the album cover"""
+    def fetch_album_cover(self, url, fallback_url=None):
+        """Return the image of the album cover. If url fails, try fallback_url."""
         try:
             if not url or len(url.strip()) == 0:
                 raise ValueError("Empty URL provided")
@@ -246,7 +251,16 @@ class Utility:
             return Image.open(BytesIO(response.content)).convert("RGBA")
         except Exception as e:
             print(f"Error fetching album cover from {url}: {e}")
-            # Return a placeholder image (solid color)
+            # Try fallback URL (original Spotify cover) if available
+            if fallback_url and fallback_url != url:
+                try:
+                    print(f"Falling back to original cover: {fallback_url}")
+                    response = requests.get(fallback_url, timeout=10)
+                    response.raise_for_status()
+                    return Image.open(BytesIO(response.content)).convert("RGBA")
+                except Exception as e2:
+                    print(f"Error fetching fallback cover: {e2}")
+            # Return a placeholder image (solid color) as last resort
             placeholder = Image.new('RGBA', (640, 640), (128, 128, 128, 255))
             return placeholder
 
@@ -302,27 +316,35 @@ class Utility:
         self.x_artist = x_coordinate
 
     def draw_album_name(self, draw):
-        album_name = self.album.album_name.upper()
+        # Check for custom album (can be empty string to hide)
+        if hasattr(self, 'custom_album') and self.custom_album is not None:
+            album_name = self.custom_album.upper() if self.custom_album else ''
+        else:
+            album_name = self.album.album_name.upper()
+
         font_size = self._scale_font(self._base_album_font_size)
         album_font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
 
-        wrap_width = max(int(16 / self.scale), 8) if self.scale < 1 else 16
-        album_name_wrapped = textwrap.wrap(album_name, width=wrap_width)
         y_offset = self.y_offset
+        x_coordinate = self.width - self.margin  # Default if no text
 
-        for line in album_name_wrapped:
-            bbox = draw.textbbox((0, 0), line, font=album_font)
-            text_w = bbox[2] - bbox[0]
-            x_coordinate = self.width - text_w - self.margin
-            draw.text((x_coordinate, y_offset), line, font=album_font, fill=self.album.text_color)
-            line_height = bbox[3] - bbox[1]
-            y_offset += line_height + self._scale(self._base_line_spacing)
+        if album_name:
+            wrap_width = max(int(16 / self.scale), 8) if self.scale < 1 else 16
+            album_name_wrapped = textwrap.wrap(album_name, width=wrap_width)
+
+            for line in album_name_wrapped:
+                bbox = draw.textbbox((0, 0), line, font=album_font)
+                text_w = bbox[2] - bbox[0]
+                x_coordinate = self.width - text_w - self.margin
+                draw.text((x_coordinate, y_offset), line, font=album_font, fill=self.album.text_color)
+                line_height = bbox[3] - bbox[1]
+                y_offset += line_height + self._scale(self._base_line_spacing)
 
         self.x_album = x_coordinate
         self.start_date = y_offset
 
     def draw_tracks(self, draw):
-        tracks = list(self.album.getTracks().values())[:30]
+        tracks = list(self.album.getTracks().values())
 
         # Filter out removed tracks if any
         removed_tracks = getattr(self, 'removed_tracks', set())
@@ -444,11 +466,14 @@ class Utility:
 
 
     def draw_release_date(self, draw):
-        # Check for custom date override
-        if hasattr(self, 'custom_date') and self.custom_date:
+        # Check for custom date override (can be empty string to hide)
+        if hasattr(self, 'custom_date') and self.custom_date is not None:
             date_string = self.custom_date
         else:
             date_string = self.album.getReleaseDate()
+
+        if not date_string:
+            return
 
         # Use scaled font size
         font_size = self._scale_font(self._base_date_font_size)
@@ -481,11 +506,14 @@ class Utility:
         )
 
     def draw_label(self, draw):
-        # Check for custom label override
-        if hasattr(self, 'custom_label') and self.custom_label:
+        # Check for custom label override (can be empty string to hide)
+        if hasattr(self, 'custom_label') and self.custom_label is not None:
             label_string = self.custom_label
         else:
             label_string = "Released by " + self.album.getLabel().split(',')[0]
+
+        if not label_string:
+            return
 
         # Use scaled font size
         font_size = self._scale_font(self._base_label_font_size)

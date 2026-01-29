@@ -12,14 +12,17 @@ SPOTIPY_CLIENT_SECRET = os.getenv('SPOTIPY_CLIENT_SECRET')
 
 
 class Album:
-    def __init__(self, artist, title):
+    def __init__(self, artist, title, album_id=None):
         # Setup a Spotify client
         client_credentials_manager = SpotifyClientCredentials(
             SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET)
         self.sp = spotipy.Spotify(
             client_credentials_manager=client_credentials_manager)
-        
-        if self.is_spotify_url(title):
+
+        if album_id:
+            # Use album_id directly to avoid re-searching and getting a different version
+            self.fetch_album_by_id(album_id)
+        elif self.is_spotify_url(title):
             self.fetch_album_by_url(title)
         else:
             self.fetch_album_by_artist_and_title(artist, title)
@@ -27,6 +30,16 @@ class Album:
         self.background = "#FFFFFF"  # Default background color (white)
         self.tabulated = False
         self.dotted = False
+
+    def fetch_album_by_id(self, album_id):
+        """Fetch album directly by Spotify album ID (avoids re-search ambiguity)"""
+        try:
+            album = self.sp.album(album_id)
+            self.set_album_data(album)
+        except spotipy.exceptions.SpotifyException as e:
+            self.album_found = False
+            self.message = f'Error fetching album by ID: {e}'
+            print(self.message)
 
     def is_spotify_url(self, title):
         return re.match(r'https?://open\.spotify\.com/album/[A-Za-z0-9]+', title)
@@ -84,7 +97,12 @@ class Album:
         self.artist_id = album_data['artists'][0]['id']
         self.artist_name = album_data['artists'][0]['name']
         self.album_id = album_data['id']
-        self.album_name = re.sub("[\(\[].*?[\)\]]|['\"]", "", album_data['name'])
+        album_name = re.sub("[\(\[].*?[\)\]]|['\"]", "", album_data['name'])
+        # Remove "- Remastered", "- Deluxe Edition", etc. from album name
+        album_name = re.sub(r'\s*[-–—]\s*remaster(ed)?\s*\d*\s*$', '', album_name, flags=re.IGNORECASE)
+        album_name = re.sub(r'\s*[-–—]\s*\d+\s*remaster(ed)?\s*$', '', album_name, flags=re.IGNORECASE)
+        album_name = re.sub(r'\s*[-–—]\s*(mono|stereo|deluxe|bonus|extended|anniversary|edition).*$', '', album_name, flags=re.IGNORECASE)
+        self.album_name = album_name.strip()
         print(self.album_name + " by " + self.artist_name + " was found!")
 
     
@@ -99,7 +117,7 @@ class Album:
         self.dotted = dotted
 
     # get the track of an album object, optional parameter limit to limit the tracks returned
-    def getTracks(self, limit=30):
+    def getTracks(self, limit=50):
         track_return = self.sp.album_tracks(self.album_id, limit)['items']
         tracks = {}
         for i in range(0, len(track_return)):
@@ -113,6 +131,16 @@ class Album:
             return [{'url': self.custom_cover_url, 'height': 640, 'width': 640}]
         album_images = self.sp.album(self.album_id)['images']
         return album_images
+
+    def getSpotifyCoverUrl(self):
+        """Get the original Spotify cover URL (ignoring any custom cover)"""
+        try:
+            album_images = self.sp.album(self.album_id)['images']
+            if album_images:
+                return album_images[0]['url']
+        except Exception:
+            pass
+        return None
 
     def setCustomCover(self, url):
         """Set a custom cover art URL (e.g., from covers.musichoarders.xyz)"""

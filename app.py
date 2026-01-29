@@ -38,11 +38,13 @@ def result():
     tcolor = output.get("text", None)
     artist = output.get("artist", "")
     album_name = output.get("album", "")
+    selected_album_id = output.get("album_id", "")
 
     # Fix for title saving as a spotify url
     artist_query = output.get("artist", "")
     album_query = output.get("album", "")
-    album = Album(artist, album_query)
+    # Use album_id from dropdown selection if available for exact match
+    album = Album(artist, album_query, album_id=selected_album_id if selected_album_id else None)
     
     if album.album_found:
         artist = album.artist_name
@@ -61,7 +63,7 @@ def result():
     label = ""
 
     if album_found:
-        album.setColors(bcolor, tcolor)
+        album.setColors(bcolor or '#FFFFFF', tcolor or '#000000')
         # Use medium resolution for preview
         utility = Utility(album, resolution='medium')
         poster = utility.buildPoster()
@@ -84,6 +86,7 @@ def result():
                            background_colors=text_colors or ['#FFFFFF'],
                            artist_name=artist,
                            album_name=album_name,
+                           album_id=album.album_id if album_found else '',
                            background_color=bcolor or '#FFFFFF',
                            text_color=tcolor or '#000000',
                            resolution_presets=RESOLUTION_PRESETS,
@@ -116,7 +119,7 @@ def album_suggestions():
     if not query or len(query) < 2:
         return jsonify([])
     autofill = AutoFill()
-    albums = autofill.search_albums(query, artist_name)  
+    albums = autofill.search_albums(query, artist_name if artist_name else None)
     return jsonify(albums)
 
 
@@ -168,14 +171,15 @@ def update_poster_custom():
     custom_label = data.get('custom_label', None)
     removed_tracks = set(data.get('removed_tracks', []))
     custom_cover_url = data.get('custom_cover_url', None)
+    album_id = data.get('album_id', None)
 
-    # Instantiate Album object
-    album = Album(artist, album_data)
+    # Instantiate Album object - use album_id if available to avoid re-search ambiguity
+    album = Album(artist, album_data, album_id=album_id)
     
-    # Override text fields if custom values provided
-    if custom_artist:
+    # Override text fields if custom values provided (use 'is not None' to allow empty strings)
+    if custom_artist is not None:
         album.artist_name = custom_artist
-    if custom_album:
+    if custom_album is not None:
         album.album_name = custom_album
     
     # Set colors and format
@@ -188,6 +192,8 @@ def update_poster_custom():
 
     # Build poster with custom utility that supports text overrides
     utility = Utility(album)
+    utility.custom_artist = custom_artist
+    utility.custom_album = custom_album
     utility.custom_tracks = custom_tracks
     utility.custom_date = custom_date
     utility.custom_label = custom_label
@@ -197,7 +203,9 @@ def update_poster_custom():
     img_data = utility.encodeImage(poster)
 
     # Extract colors from the current album cover (including custom cover)
-    album_img = utility.fetch_album_cover(album.getCoverArt()[0]['url'])
+    cover_url = album.getCoverArt()[0]['url']
+    fallback_url = album.getSpotifyCoverUrl()
+    album_img = utility.fetch_album_cover(cover_url, fallback_url=fallback_url)
     colors = utility.get_colors(album_img, 5)
     hex_colors = ['#' + ''.join(['{:02x}'.format(int(c)) for c in color]) for color in reversed(colors)]
 
@@ -235,8 +243,9 @@ def download_poster():
     # Get custom cover and removed tracks
     custom_cover_url = data.get('custom_cover_url', None)
     removed_tracks = set(data.get('removed_tracks', []))
+    album_id = data.get('album_id', None)
 
-    album = Album(artist, album_data)
+    album = Album(artist, album_data, album_id=album_id)
 
     if not album.album_found:
         return jsonify({'error': 'Album not found'}), 404
@@ -301,6 +310,7 @@ def surprise():
             found=True,
             artist_name=artist_name,
             album_name=album_name,
+            album_id=album.album_id,
             background_colors=background_colors,
             text_colors=text_colors,
             # Use the ACTUAL colors from the generated poster, not defaults

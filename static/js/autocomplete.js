@@ -89,6 +89,10 @@ class Autocomplete {
             return;
         }
 
+        // Clear stored album_id when user types (they may be changing their selection)
+        const albumIdField = document.getElementById('selected-album-id');
+        if (albumIdField) albumIdField.value = '';
+
         const value = e.target.value.trim();
 
         // Clear previous timer
@@ -369,38 +373,37 @@ class Autocomplete {
 
     select(item) {
         if (!item) return;
-        
+
         // Set flag to prevent dropdown from reopening
         this.justSelected = true;
-        
+
         // Handle both object format and string format
         const value = typeof item === 'object' ? item.name : item;
         this.input.value = value;
-        
+
+        // If this is an album selection, store the album_id and artist
+        if (typeof item === 'object') {
+            if (item.album_id) {
+                const albumIdField = document.getElementById('selected-album-id');
+                if (albumIdField) albumIdField.value = item.album_id;
+            }
+            if (item.artist) {
+                const artistField = document.getElementById('artist');
+                if (artistField) artistField.value = item.artist;
+            }
+        }
+
         // Clear items and close
         this.lastQuery = value;
         this.close();
-        
+
         // Trigger change event (but not input event to avoid reopening)
         this.input.dispatchEvent(new Event('change', { bubbles: true }));
-        
+
         // Small delay before allowing focus events again
         setTimeout(() => {
             this.justSelected = false;
         }, 100);
-        
-        // Focus next input
-        const form = this.input.closest('form');
-        if (form) {
-            const inputs = Array.from(form.querySelectorAll('input[type="text"]:not([readonly])'));
-            const currentIndex = inputs.indexOf(this.input);
-            if (currentIndex >= 0 && currentIndex < inputs.length - 1) {
-                // Small delay to let the current selection complete
-                setTimeout(() => {
-                    inputs[currentIndex + 1].focus();
-                }, 50);
-            }
-        }
     }
 
     showLoading() {
@@ -441,21 +444,11 @@ class Autocomplete {
 
 // Initialize autocomplete when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Only initialize if the inputs exist (home page)
-    if (document.getElementById('artist')) {
-        // Artist autocomplete
-        new Autocomplete('artist', '/artist-suggestions', {
-            type: 'artist',
-            placeholder: 'Artist name...'
-        });
-    }
-
     if (document.getElementById('album')) {
-        // Album autocomplete (with artist dependency)
+        // Album autocomplete (standalone search)
         new Autocomplete('album', '/album-suggestions', {
             type: 'album',
-            dependentInputId: 'artist',
-            placeholder: 'Album name or Spotify link...'
+            placeholder: 'Album name, artist, or Spotify link...'
         });
     }
 });

@@ -35,6 +35,8 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Animated background */
@@ -364,6 +366,7 @@ input.search:active {
     background: linear-gradient(to bottom, transparent 0%, var(--bg-primary) 100%);
     position: relative;
     z-index: 5;
+    margin-top: auto;
 }
 
 footer {
