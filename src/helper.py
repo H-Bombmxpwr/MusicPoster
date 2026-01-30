@@ -496,6 +496,11 @@ class Utility:
             date_string = self.album.getReleaseDate()
 
         if not date_string:
+            # Still set y position for subsequent elements
+            self.date_end_y = max(
+                getattr(self, 'start_date', self.below_pic_h) + self._scale(20),
+                self.below_pic_h + self._scale(230)
+            )
             return
 
         # Use scaled font size
@@ -505,11 +510,16 @@ class Utility:
         # Use textbbox for accurate width measurement
         bbox = draw.textbbox((0, 0), date_string, font=date_font)
         w = bbox[2] - bbox[0]
+        h = bbox[3] - bbox[1]
 
-        # Scale the vertical offset (230 at base resolution)
-        y_offset = self.below_pic_h + self._scale(230)
+        # Dynamic y: use start_date with gap, but never higher than the original fixed offset
+        y_offset = max(
+            getattr(self, 'start_date', self.below_pic_h) + self._scale(20),
+            self.below_pic_h + self._scale(230)
+        )
         draw.text((self.width - w - self.margin, y_offset),
                 date_string, font=date_font, fill=self.album.text_color)
+        self.date_end_y = y_offset + h + self._scale(self._base_line_spacing)
 
     
 
@@ -520,13 +530,21 @@ class Utility:
 
         bbox = draw.textbbox((0, 0), runtime_string, font=runtime_font)
         w = bbox[2] - bbox[0]
+        h = bbox[3] - bbox[1]
+
+        # Dynamic y: use date_end_y if available, otherwise fall back to fixed offset
+        y_offset = max(
+            getattr(self, 'date_end_y', self.below_pic_h + self._scale(270)),
+            self.below_pic_h + self._scale(270)
+        )
 
         draw.text(
-            (self.width - w - self.margin, self.below_pic_h + self._scale(270)),
-            runtime_string, 
-            font=runtime_font, 
+            (self.width - w - self.margin, y_offset),
+            runtime_string,
+            font=runtime_font,
             fill=self.album.text_color
         )
+        self.runtime_end_y = y_offset + h + self._scale(self._base_line_spacing)
 
     def draw_label(self, draw):
         # Check for custom label override (can be empty string to hide)
@@ -548,8 +566,11 @@ class Utility:
         wrap_width = max(int(base_wrap_width / self.scale), 10) if self.scale < 1 else base_wrap_width
         label_list = textwrap.wrap(label_string, width=wrap_width)
 
-        # Scale all vertical positions (310 and 90 are base values)
-        current_y = self.below_pic_h + self._scale(310)
+        # Dynamic y: use runtime_end_y if available, otherwise fall back to fixed offset
+        current_y = max(
+            getattr(self, 'runtime_end_y', self.below_pic_h + self._scale(310)),
+            self.below_pic_h + self._scale(310)
+        )
         max_y = self.height - self._scale(90)
         line_spacing = self._scale(5)
         g = 0
