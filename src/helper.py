@@ -286,6 +286,32 @@ class Utility:
         
         poster.paste(code_banner, (banner_x, banner_y), code_banner)
 
+    def _fit_right_text(self, draw, text, base_font_size, wrap_width):
+        """Wrap and measure right-aligned text, auto-scaling font if it extends past center.
+        Returns (lines, font, font_size, min_x) where min_x is the leftmost x position."""
+        font_size = self._scale_font(base_font_size)
+        # The right-side text should not extend past 45% from the left edge
+        min_allowed_x = int(self.width * 0.45)
+
+        for attempt in range(5):  # Try up to 5 reductions
+            font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
+            lines = textwrap.wrap(text, width=wrap_width)
+            min_x = self.width - self.margin
+
+            for line in lines:
+                bbox = draw.textbbox((0, 0), line, font=font)
+                text_w = bbox[2] - bbox[0]
+                x = self.width - text_w - self.margin
+                min_x = min(min_x, x)
+
+            if min_x >= min_allowed_x or font_size <= self._scale_font(16):
+                break
+            # Reduce font and widen wrap to fit
+            font_size = max(font_size - self._scale(2), self._scale_font(16))
+            wrap_width = wrap_width + 4
+
+        return lines, font, font_size, min_x
+
     def draw_artist_name(self, draw):
         # Check for custom artist (can be empty string to hide)
         if hasattr(self, 'custom_artist') and self.custom_artist is not None:
@@ -293,22 +319,20 @@ class Utility:
         else:
             artist_name = self.album.artist_name.upper()
 
-        font_size = self._scale_font(self._base_artist_font_size)
-        artist_font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
-
         y_offset = self.below_pic_h + self._scale(30)
         x_coordinate = self.width - self.margin  # Default if no text
 
         if artist_name:
-            # Adjust wrap width based on scale
             wrap_width = max(int(20 / self.scale), 10) if self.scale < 1 else 20
-            artist_name_wrapped = textwrap.wrap(artist_name, width=wrap_width)
+            lines, artist_font, font_size, x_coordinate = self._fit_right_text(
+                draw, artist_name, self._base_artist_font_size, wrap_width)
 
-            for line in artist_name_wrapped:
+            for line in lines:
                 bbox = draw.textbbox((0, 0), line, font=artist_font)
                 text_w = bbox[2] - bbox[0]
-                x_coordinate = self.width - text_w - self.margin
-                draw.text((x_coordinate, y_offset), line, font=artist_font, fill=self.album.text_color)
+                line_x = self.width - text_w - self.margin
+                x_coordinate = min(x_coordinate, line_x)
+                draw.text((line_x, y_offset), line, font=artist_font, fill=self.album.text_color)
                 line_height = bbox[3] - bbox[1]
                 y_offset += line_height + self._scale(self._base_line_spacing)
 
@@ -322,21 +346,20 @@ class Utility:
         else:
             album_name = self.album.album_name.upper()
 
-        font_size = self._scale_font(self._base_album_font_size)
-        album_font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
-
         y_offset = self.y_offset
         x_coordinate = self.width - self.margin  # Default if no text
 
         if album_name:
             wrap_width = max(int(16 / self.scale), 8) if self.scale < 1 else 16
-            album_name_wrapped = textwrap.wrap(album_name, width=wrap_width)
+            lines, album_font, font_size, x_coordinate = self._fit_right_text(
+                draw, album_name, self._base_album_font_size, wrap_width)
 
-            for line in album_name_wrapped:
+            for line in lines:
                 bbox = draw.textbbox((0, 0), line, font=album_font)
                 text_w = bbox[2] - bbox[0]
-                x_coordinate = self.width - text_w - self.margin
-                draw.text((x_coordinate, y_offset), line, font=album_font, fill=self.album.text_color)
+                line_x = self.width - text_w - self.margin
+                x_coordinate = min(x_coordinate, line_x)
+                draw.text((line_x, y_offset), line, font=album_font, fill=self.album.text_color)
                 line_height = bbox[3] - bbox[1]
                 y_offset += line_height + self._scale(self._base_line_spacing)
 
@@ -344,7 +367,7 @@ class Utility:
         self.start_date = y_offset
 
     def draw_tracks(self, draw):
-        tracks = list(self.album.getTracks().values())
+        tracks = self.album.getTracks()
 
         # Filter out removed tracks if any
         removed_tracks = getattr(self, 'removed_tracks', set())
@@ -609,7 +632,7 @@ class Utility:
             'release_date': self.album.getReleaseDate(),
             'runtime': self.album.getRuntime(),
             'label': "Released by " + self.album.getLabel().split(',')[0],
-            'tracks': list(self.album.getTracks().values())[:30],
+            'tracks': self.album.getTracks()[:30],
             'album_cover_url': self.album.getCoverArt()[0]['url'],
             'margin': self.margin,
             'below_pic_h': self.below_pic_h,

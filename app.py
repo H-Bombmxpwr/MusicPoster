@@ -58,7 +58,7 @@ def result():
     album_img = None
     album_found = album.album_found
     num_tracks = 0
-    tracks_dict = {}
+    tracks_dict = []
     release_date = ""
     label = ""
 

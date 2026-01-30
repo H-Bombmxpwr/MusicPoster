@@ -5,7 +5,7 @@
 
 // Track editor state
 let trackEditorOpen = false;
-let tracksData = {};
+let tracksData = [];
 
 /**
  * Initialize track editor on page load
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
             tracksData = JSON.parse(tracksDataElement.textContent);
         } catch (e) {
             console.error('Error parsing tracks data:', e);
-            tracksData = {};
+            tracksData = [];
         }
     }
 
@@ -81,14 +81,11 @@ function populateTrackEditor() {
 
     trackList.innerHTML = '';
 
-    // Convert tracks object to array for easier iteration
-    const tracksArray = Object.entries(tracksData);
-
     for (let i = 1; i <= trackCount; i++) {
         // Get the track name from the data if it exists
         let trackName = '';
-        if (tracksArray[i - 1]) {
-            trackName = tracksArray[i - 1][1]; // Get the track name
+        if (tracksData[i - 1]) {
+            trackName = tracksData[i - 1]; // Get the track name from list
             // Clean up the track name (same rules as backend)
             trackName = cleanTrackName(trackName);
         }

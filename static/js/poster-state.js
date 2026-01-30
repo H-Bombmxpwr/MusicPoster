@@ -12,7 +12,7 @@ const PosterState = {
     // Customizable fields
     backgroundColor: '#FFFFFF',
     textColor: '#000000',
-    tabulated: false,
+    tabulated: true,
     dotted: false,
 
     // Custom text overrides

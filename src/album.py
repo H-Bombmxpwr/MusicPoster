@@ -28,7 +28,7 @@ class Album:
             self.fetch_album_by_artist_and_title(artist, title)
         self.text_color = "#000000"  # Default text color (black)
         self.background = "#FFFFFF"  # Default background color (white)
-        self.tabulated = False
+        self.tabulated = True
         self.dotted = False
 
     def fetch_album_by_id(self, album_id):
@@ -105,6 +105,25 @@ class Album:
         self.album_name = album_name.strip()
         print(self.album_name + " by " + self.artist_name + " was found!")
 
+        # Cache all album data so we never re-fetch from the API
+        self._cached_images = album_data.get('images', [])
+        self._cached_label = album_data.get('label', '')
+        self._cached_release_date = album_data.get('release_date', '')
+        self._cached_total_tracks = album_data.get('total_tracks', 0)
+
+        # Cache tracks (fetch once, preserve order)
+        try:
+            track_items = self.sp.album_tracks(self.album_id, limit=50)['items']
+        except Exception:
+            track_items = []
+        self._cached_tracks = []
+        for item in track_items:
+            self._cached_tracks.append({
+                'id': item['id'],
+                'name': item['name'],
+                'duration_ms': item['duration_ms']
+            })
+
     
     # set the colors of the album poster
     def setColors(self, background_color, text_color):
@@ -116,30 +135,21 @@ class Album:
         self.tabulated = tabulated
         self.dotted = dotted
 
-    # get the track of an album object, optional parameter limit to limit the tracks returned
+    # get the tracks of an album object using cached data (preserves order)
+    # Returns a list of track names in disc/track order
     def getTracks(self, limit=50):
-        track_return = self.sp.album_tracks(self.album_id, limit)['items']
-        tracks = {}
-        for i in range(0, len(track_return)):
-            tracks[track_return[i]['id']] = re.sub(
-                "[\(\[].*?[\)\]]", "", track_return[i]['name'])
-        return tracks
+        return [re.sub("[\(\[].*?[\)\]]", "", item['name']) for item in self._cached_tracks[:limit]]
 
     def getCoverArt(self):
         # If a custom cover URL is set (and not empty), return it in the same format as Spotify
         if hasattr(self, 'custom_cover_url') and self.custom_cover_url and len(self.custom_cover_url.strip()) > 0:
             return [{'url': self.custom_cover_url, 'height': 640, 'width': 640}]
-        album_images = self.sp.album(self.album_id)['images']
-        return album_images
+        return self._cached_images
 
     def getSpotifyCoverUrl(self):
         """Get the original Spotify cover URL (ignoring any custom cover)"""
-        try:
-            album_images = self.sp.album(self.album_id)['images']
-            if album_images:
-                return album_images[0]['url']
-        except Exception:
-            pass
+        if self._cached_images:
+            return self._cached_images[0]['url']
         return None
 
     def setCustomCover(self, url):
@@ -160,11 +170,10 @@ class Album:
         return base_url + "?" + urllib.parse.urlencode(params)
 
     def getLabel(self):
-        label = self.sp.album(self.album_id)['label']
-        return label
+        return self._cached_label
 
     def getReleaseDate(self):
-        date = str(self.sp.album(self.album_id)['release_date'])
+        date = str(self._cached_release_date)
         if len(date.split("-")) == 3:
             date = date.split("-")
             date = datetime(int(date[0]), int(date[1]), int(date[2]))
@@ -172,19 +181,17 @@ class Album:
         return date
 
     def getReleaseYear(self):
-        date = str(self.sp.album(self.album_id)['release_date'])
+        date = str(self._cached_release_date)
         date = date.split("-")
         return date[0]
 
     def getNumTracks(self):
-        num_tracks = int(self.sp.album(self.album_id)['total_tracks'])
-        return num_tracks
+        return int(self._cached_total_tracks)
 
     def getRuntime(self):
-        track_return = self.sp.album_tracks(self.album_id)['items']
         time = 0
-        for i in range(0, len(track_return)):
-            time += track_return[i]['duration_ms']
+        for item in self._cached_tracks:
+            time += item['duration_ms']
 
         # calculate the seconds and add leading zero if 1 digit
         seconds = str(int((time/1000) % 60))
