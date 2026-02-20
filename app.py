@@ -2,7 +2,6 @@ from src.album import Album
 from src.helper import Utility, RESOLUTION_PRESETS
 from src.auto import AutoFill
 from src.surprise import SurpriseMe
-from src.infinity import InfinityPoster
 from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request, jsonify
 import os
 from spotipy import Spotify
@@ -23,6 +22,8 @@ DRIVE_FOLDER_ID = os.getenv('DRIVE_FOLDER_ID')
 
 
 app = Flask(__name__)
+
+autofill = AutoFill()
 
 # Decorator for homepage 
 @app.route("/")
@@ -107,8 +108,7 @@ def artist_suggestions():
     query = request.args.get('q', '')
     if not query or len(query) < 2:
         return jsonify([])
-    autofill = AutoFill()
-    artists = autofill.search_artists(query)  
+    artists = autofill.search_artists(query)
     return jsonify(artists)
 
 
@@ -118,7 +118,6 @@ def album_suggestions():
     query = request.args.get('q', '')
     if not query or len(query) < 2:
         return jsonify([])
-    autofill = AutoFill()
     albums = autofill.search_albums(query, artist_name if artist_name else None)
     return jsonify(albums)
 
@@ -329,13 +328,6 @@ def surprise():
             error_message="Could not generate a random poster. Please try again.",
         )
     
-
-@app.route("/api/generate-posters", methods=['GET'])
-def generate_posters_api():
-    infinity = InfinityPoster()
-    posters = infinity.generate_posters(limit=5)
-    return jsonify(posters)
-
 
 # Authenticate using the service account
 SCOPES = ["https://www.googleapis.com/auth/drive.file"]
