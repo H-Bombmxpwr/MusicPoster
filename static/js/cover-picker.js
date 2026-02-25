@@ -29,8 +29,9 @@ function launchCoverPickerPopup(artist, album) {
     // Build URL with search parameters
     const baseUrl = 'https://covers.musichoarders.xyz/';
     const params = new URLSearchParams({
-        artist: artist,
-        album: album
+    artist: artist,
+    album: album,
+    country: 'us'
     });
 
     const url = baseUrl + '?' + params.toString();

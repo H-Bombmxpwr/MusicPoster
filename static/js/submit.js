@@ -48,7 +48,7 @@ function submitPoster() {
                 submitButton.textContent = 'Submitted!';
             }
         } else {
-            showMessage(successMessage, 'Upload failed: ' + (data.message || 'Unknown error'), false);
+            showMessage(successMessage, 'Upload failed: ' + (data.message || 'Unknown error') + ', maybe try again?', false);
             resetButton(submitButton);
         }
     })

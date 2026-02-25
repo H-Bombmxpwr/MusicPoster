@@ -142,6 +142,15 @@ a {
     margin: 0 auto;
 }
 
+/* Poster Column (poster + submit stacked vertically) */
+.poster-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+}
+
 /* Poster Container */
 .poster-container {
     flex-shrink: 0;
@@ -567,14 +576,15 @@ input[type="checkbox"]:hover {
 
 /* Submission Section */
 .submission-section {
-    max-width: 600px;
-    margin: 50px auto;
-    padding: 40px;
+    width: 100%;
+    max-width: 450px;
+    margin: 0;
+    padding: 24px 30px;
     background: var(--card-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--border-subtle);
-    border-radius: 20px;
+    border-radius: 16px;
     text-align: center;
 }
 

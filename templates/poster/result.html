@@ -30,6 +30,8 @@
 
     <!-- Main Content -->
     <div class="content-container">
+        <!-- Poster Column (poster + submit) -->
+        <div class="poster-column">
         <!-- Poster Display -->
         <div class="poster-container">
             {% if found %}
@@ -41,6 +43,22 @@
             {% else %}
             <h3 class="error">Album not found. Please check your spelling and try again. If you get a repeated error trying getting the link to the album from Spotify and putting it in the second box.</h3>
             {% endif %}
+        </div>
+
+        {% if found %}
+        <!-- Submission Section -->
+        <div class="submission-section">
+            <h3>Share Your Creation</h3>
+            <p>Love your design? Submit it for a chance to be featured in our community gallery!</p>
+            <form id="submit-poster-form">
+                <input type="hidden" name="img_data" id="img_data" value="{{ img_data }}">
+                <input type="hidden" name="artist_name" value="{{ artist_name }}">
+                <input type="hidden" name="album_name" value="{{ album_name }}">
+                <button type="button" id="submit-button" onclick="submitPoster()">Submit for Review</button>
+            </form>
+            <div id="success-message" class="success-message" style="display: none;"></div>
+        </div>
+        {% endif %}
         </div>
 
         {% if found %}
@@ -208,21 +226,6 @@
         </div>
         {% endif %}
     </div>
-
-    {% if found %}
-    <!-- Submission Section -->
-    <div class="submission-section">
-        <h3>Share Your Creation</h3>
-        <p>Love your design? Submit it for a chance to be featured in our community gallery!</p>
-        <form id="submit-poster-form">
-            <input type="hidden" name="img_data" id="img_data" value="{{ img_data }}">
-            <input type="hidden" name="artist_name" value="{{ artist_name }}">
-            <input type="hidden" name="album_name" value="{{ album_name }}">
-            <button type="button" id="submit-button" onclick="submitPoster()">Submit for Review</button>
-        </form>
-        <div id="success-message" class="success-message" style="display: none;"></div>
-    </div>
-    {% endif %}
 
     <!-- Hidden State -->
     <input type="hidden" id="current-artist" value="{{ artist_name }}">
