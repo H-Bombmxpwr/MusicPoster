@@ -29,16 +29,15 @@ function submitPoster() {
         submitButton.textContent = 'Submitting...';
     }
 
-    // Prepare form data
-    const formData = new FormData();
-    formData.append('img_data', imgDataInput.value);
-    formData.append('artist_name', artistInput.value);
-    formData.append('album_name', albumInput.value);
-
     // Submit poster
     fetch('/submit-poster', {
         method: 'POST',
-        body: formData
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            img_data: imgDataInput.value,
+            artist_name: artistInput.value,
+            album_name: albumInput.value
+        })
     })
     .then(response => response.json())
     .then(data => {

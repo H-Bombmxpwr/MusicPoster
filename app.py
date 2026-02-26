@@ -378,9 +378,10 @@ def upload_poster_to_drive(img_data, artist_name, album_name):
 @app.route("/submit-poster", methods=["POST"])
 def submit_poster():
     try:
-        img_data = request.form.get("img_data")
-        artist_name = request.form.get("artist_name")
-        album_name = request.form.get("album_name")
+        data = request.get_json(silent=True) or {}
+        img_data = data.get("img_data")
+        artist_name = data.get("artist_name")
+        album_name = data.get("album_name")
 
         print(f"Received Data in /submit-poster:")
         print(f"   - img_data: {'Yes' if img_data else 'No'}")
