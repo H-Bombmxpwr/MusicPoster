@@ -453,7 +453,20 @@ def surprise():
         return render_template(
             "poster/result.html",
             found=False,
-            error_message="Could not generate a random poster. Please try again.",
+            img_data=None,
+            artist_name='',
+            album_name='',
+            album_id='',
+            background_color='#FFFFFF',
+            text_color='#000000',
+            background_colors=['#FFFFFF'],
+            text_colors=['#000000'],
+            resolution_presets=RESOLUTION_PRESETS,
+            num_tracks=0,
+            tracks=[],
+            release_date='',
+            label='',
+            musichoarders_url='',
         )
     
 
