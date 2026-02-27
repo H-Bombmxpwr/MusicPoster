@@ -228,8 +228,8 @@ document.addEventListener('DOMContentLoaded', function () {
         return array;
     }
 
-    // Shuffle the posters array
-    const shuffledPosters = shuffle(posters);
+    // Shuffle and take only what's needed for the scroll effect
+    const shuffledPosters = shuffle(posters).slice(0, 30);
 
     // Function to create poster items
     function createPosterItem(src) {
@@ -238,6 +238,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const img = document.createElement('img');
         img.src = `static/posters_resized/${src}`;
         img.alt = src;
+        img.loading = 'lazy';
         posterItem.appendChild(img);
         return posterItem;
     }
@@ -248,9 +249,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     shuffledPosters.forEach((posterSrc, index) => {
         const posterItem = createPosterItem(posterSrc);
-        if (index % 2 === 0) { // Even index, left side
+        if (index % 2 === 0) {
             leftContainer.appendChild(posterItem);
-        } else { // Odd index, right side
+        } else {
             rightContainer.appendChild(posterItem);
         }
     });
