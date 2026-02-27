@@ -284,6 +284,45 @@ input.search:active {
     transform: translateY(-3px);
 }
 
+/* Spotify Login Button */
+.spotify-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: "Syne", sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 16px 32px;
+    color: #000000;
+    background: #1DB954;
+    border: 2px solid #1DB954;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    box-shadow: 0 4px 20px rgba(29, 185, 84, 0.3);
+}
+
+.spotify-button:hover {
+    background: #1ed760;
+    border-color: #1ed760;
+    box-shadow: 0 8px 30px rgba(29, 185, 84, 0.5);
+    transform: translateY(-3px);
+    color: #000000;
+}
+
+.spotify-button:active {
+    transform: translateY(-1px);
+}
+
+.spotify-icon {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
 /* Examples link */
 .grid > a:last-of-type {
     display: inline-block;

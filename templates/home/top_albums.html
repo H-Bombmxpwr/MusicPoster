@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Top Albums | Album Poster</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/top_albums.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/icon.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+
+<body>
+    <!-- Back Button -->
+    <a href="{{ url_for('home') }}" class="back-btn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+        Back
+    </a>
+
+    <!-- Header -->
+    <div class="header-container">
+        <a href="{{ url_for('home') }}">
+            <h1 class="main-title">Album Poster</h1>
+        </a>
+        <p class="top-albums-subtitle">
+            Hey <strong>{{ display_name }}</strong> — here are your top albums, turned into posters.
+        </p>
+        <p class="top-albums-hint" id="hint-text">Click any poster to customize it.</p>
+    </div>
+
+    {% if albums %}
+
+    <!-- Loading overlay (shown while generating) -->
+    <div class="gen-loading-overlay" id="gen-loading">
+        <div class="gen-spinner"></div>
+        <p class="gen-loading-title">Generating your posters...</p>
+        <p class="gen-loading-counter" id="gen-counter">0 / {{ albums|length }}</p>
+        <div class="gen-loading-albums">
+            {% for album in albums %}
+            <span class="gen-loading-chip" id="chip-{{ loop.index0 }}">{{ album.name }}</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Poster Grid (hidden until all posters are ready) -->
+    <div class="poster-gallery" id="poster-gallery" style="display:none;">
+        {% for album in albums %}
+        <div class="gallery-card" id="card-{{ loop.index0 }}" data-index="{{ loop.index0 }}">
+
+            <!-- Poster (filled by JS) -->
+            <div class="card-poster" id="poster-{{ loop.index0 }}">
+                <img src="" alt="{{ album.name }}" class="card-img" id="img-{{ loop.index0 }}">
+                <div class="card-overlay">
+                    <div class="card-info">
+                        <span class="card-album" id="label-album-{{ loop.index0 }}"></span>
+                        <span class="card-artist" id="label-artist-{{ loop.index0 }}"></span>
+                    </div>
+                    <div class="card-cta">Click to edit</div>
+                </div>
+            </div>
+
+            <!-- Error state -->
+            <div class="card-error" id="error-{{ loop.index0 }}" style="display:none;">
+                <p>Couldn't generate poster</p>
+            </div>
+
+            <!-- Hidden form for result navigation -->
+            <form method="POST" action="{{ url_for('result') }}" class="card-form" id="form-{{ loop.index0 }}">
+                <input type="hidden" name="artist"     id="f-artist-{{ loop.index0 }}"   value="">
+                <input type="hidden" name="album"      id="f-album-{{ loop.index0 }}"    value="">
+                <input type="hidden" name="album_id"   id="f-album-id-{{ loop.index0 }}" value="{{ album.id }}">
+                <input type="hidden" name="background" id="f-bg-{{ loop.index0 }}"       value="">
+                <input type="hidden" name="text"       id="f-text-{{ loop.index0 }}"     value="">
+            </form>
+
+            <!-- Album data for JS -->
+            <script type="application/json" id="data-{{ loop.index0 }}">
+                {{ {"album_id": album.id, "album_name": album.name, "artist": album.artist} | tojson }}
+            </script>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const total = {{ albums|length }};
+            let completed = 0;
+
+            function onPosterDone() {
+                completed++;
+                document.getElementById('gen-counter').textContent = `${completed} / ${total}`;
+
+                if (completed >= total) {
+                    // All done — swap loading overlay for gallery
+                    document.getElementById('gen-loading').style.display = 'none';
+                    const gallery = document.getElementById('poster-gallery');
+                    gallery.style.display = 'grid';
+                    document.getElementById('hint-text').classList.add('visible');
+                }
+            }
+
+            const cards = document.querySelectorAll('.gallery-card');
+            cards.forEach(card => {
+                const index = card.dataset.index;
+                const dataEl = document.getElementById(`data-${index}`);
+                if (!dataEl) return;
+
+                const albumData = JSON.parse(dataEl.textContent);
+
+                fetch('/generate-album-poster', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(albumData)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) throw new Error(data.error);
+
+                    // Fill image
+                    document.getElementById(`img-${index}`).src = data.img_data;
+                    document.getElementById(`label-album-${index}`).textContent = data.album_name;
+                    document.getElementById(`label-artist-${index}`).textContent = data.artist;
+
+                    // Fill hidden form
+                    document.getElementById(`f-artist-${index}`).value   = data.artist;
+                    document.getElementById(`f-album-${index}`).value     = data.album_name;
+                    document.getElementById(`f-album-id-${index}`).value  = data.album_id;
+                    document.getElementById(`f-bg-${index}`).value        = data.background;
+                    document.getElementById(`f-text-${index}`).value      = data.text;
+
+                    // Mark chip as done
+                    document.getElementById(`chip-${index}`)?.classList.add('done');
+
+                    // Click handler
+                    card.addEventListener('click', () => {
+                        document.getElementById(`form-${index}`).submit();
+                    });
+                    card.style.cursor = 'pointer';
+
+                    onPosterDone();
+                })
+                .catch(err => {
+                    console.error('Poster error:', err);
+                    document.getElementById(`error-${index}`).style.display = 'flex';
+                    document.getElementById(`chip-${index}`)?.remove();
+                    onPosterDone();
+                });
+            });
+        });
+    </script>
+
+    {% else %}
+    <div class="no-albums">
+        <p>We couldn't find any top albums yet — Spotify needs more listening history.</p>
+        <a href="{{ url_for('home') }}" class="surprise-button">Try generating one manually</a>
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <footer>
+        <a href="{{ url_for('spotify_logout') }}">Disconnect Spotify</a>
+        &nbsp;·&nbsp;
+        <a href="{{ url_for('about') }}">About This Project</a>
+    </footer>
+
+</body>
+
+</html>

@@ -2,10 +2,10 @@ from src.album import Album
 from src.helper import Utility, RESOLUTION_PRESETS
 from src.auto import AutoFill
 from src.surprise import SurpriseMe
-from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request, jsonify
+from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request, jsonify, session
 import os
 from spotipy import Spotify
-from spotipy.oauth2 import SpotifyClientCredentials
+from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 import random
 import base64
 import json
@@ -22,8 +22,17 @@ DRIVE_FOLDER_ID = os.getenv('DRIVE_FOLDER_ID')
 
 
 app = Flask(__name__)
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-in-prod')
 
 autofill = AutoFill()
+
+
+def get_spotify_oauth():
+    return SpotifyOAuth(
+        scope='user-top-read',
+        redirect_uri=os.getenv('SPOTIPY_REDIRECT_URI', 'http://localhost:5000/callback'),
+        show_dialog=True
+    )
 
 # Decorator for homepage 
 @app.route("/")
@@ -98,6 +107,128 @@ def result():
                            musichoarders_url=musichoarders_url if album_found else '')
 
     
+@app.route("/spotify-login")
+def spotify_login():
+    sp_oauth = get_spotify_oauth()
+    auth_url = sp_oauth.get_authorize_url()
+    return redirect(auth_url)
+
+
+@app.route("/callback")
+def spotify_callback():
+    sp_oauth = get_spotify_oauth()
+    code = request.args.get('code')
+    error = request.args.get('error')
+
+    if error or not code:
+        return redirect(url_for('home'))
+
+    token_info = sp_oauth.get_access_token(code)
+    session['spotify_token'] = token_info
+    return redirect(url_for('top_albums'))
+
+
+@app.route("/logout")
+def spotify_logout():
+    session.pop('spotify_token', None)
+    return redirect(url_for('home'))
+
+
+@app.route("/my-top-albums")
+def top_albums():
+    token_info = session.get('spotify_token')
+    if not token_info:
+        return redirect(url_for('spotify_login'))
+
+    # Refresh token if expired
+    sp_oauth = get_spotify_oauth()
+    if sp_oauth.is_token_expired(token_info):
+        token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
+        session['spotify_token'] = token_info
+
+    sp = Spotify(auth=token_info['access_token'])
+
+    try:
+        user_info = sp.current_user()
+        display_name = user_info.get('display_name') or 'You'
+
+        top_tracks = sp.current_user_top_tracks(limit=50, time_range='medium_term')
+        albums = []
+        seen = set()
+        for item in top_tracks['items']:
+            album_id = item['album']['id']
+            if album_id not in seen:
+                seen.add(album_id)
+                albums.append({
+                    'id': album_id,
+                    'name': item['album']['name'],
+                    'artist': item['album']['artists'][0]['name'],
+                })
+            if len(albums) >= 8:
+                break
+
+        # Fall back to long_term if not enough from medium_term
+        if len(albums) < 8:
+            top_albums_data = sp.current_user_top_tracks(limit=50, time_range='long_term')
+            for item in top_albums_data['items']:
+                album_id = item['album']['id']
+                if album_id not in seen:
+                    seen.add(album_id)
+                    albums.append({
+                        'id': album_id,
+                        'name': item['album']['name'],
+                        'artist': item['album']['artists'][0]['name'],
+                    })
+                if len(albums) >= 8:
+                    break
+
+    except Exception as e:
+        print(f"Spotify API error: {e}")
+        return redirect(url_for('spotify_login'))
+
+    return render_template('home/top_albums.html', albums=albums, display_name=display_name)
+
+
+@app.route("/generate-album-poster", methods=["POST"])
+def generate_album_poster():
+    data = request.json
+    artist = data.get('artist', '')
+    album_name = data.get('album_name', '')
+    album_id = data.get('album_id', '')
+
+    album = Album(artist, album_name, album_id=album_id if album_id else None)
+    if not album.album_found:
+        return jsonify({'error': 'Album not found'}), 404
+
+    try:
+        surprise = SurpriseMe()
+        utility = Utility(album, resolution='medium')
+        album_img = utility.fetch_album_cover(album.getCoverArt()[0]['url'])
+        colors = utility.get_colors(album_img, 6)
+
+        background_color = colors[0]
+        text_color = surprise.find_contrasting_color(colors[1:], background_color)
+
+        background_hex = f"#{background_color[0]:02x}{background_color[1]:02x}{background_color[2]:02x}"
+        text_hex = f"#{text_color[0]:02x}{text_color[1]:02x}{text_color[2]:02x}"
+
+        album.setColors(background_hex, text_hex)
+        poster = utility.buildPoster()
+        img_data = utility.encodeImage(poster)
+
+        return jsonify({
+            'img_data': img_data,
+            'artist': album.artist_name,
+            'album_name': album.album_name,
+            'album_id': album.album_id,
+            'background': background_hex,
+            'text': text_hex,
+        })
+    except Exception as e:
+        print(f"Poster generation error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route("/about")
 def about():
     return render_template("about/about.html")
