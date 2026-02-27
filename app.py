@@ -6,6 +6,7 @@ from flask import Flask, render_template, send_file, make_response, url_for, Res
 import os
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
+from spotipy.cache_handler import FlaskSessionCacheHandler
 import random
 import base64
 import json
@@ -30,8 +31,9 @@ autofill = AutoFill()
 def get_spotify_oauth():
     return SpotifyOAuth(
         scope='user-top-read',
-        redirect_uri=os.getenv('SPOTIPY_REDIRECT_URI', 'http://localhost:5000/callback'),
-        show_dialog=True
+        redirect_uri=os.getenv('SPOTIPY_REDIRECT_URI', 'http://127.0.0.1:5000/callback'),
+        show_dialog=True,
+        cache_handler=FlaskSessionCacheHandler(session)
     )
 
 # Decorator for homepage 
@@ -123,28 +125,23 @@ def spotify_callback():
     if error or not code:
         return redirect(url_for('home'))
 
-    token_info = sp_oauth.get_access_token(code)
-    session['spotify_token'] = token_info
+    # get_access_token exchanges the code AND saves to FlaskSessionCacheHandler
+    sp_oauth.get_access_token(code)
     return redirect(url_for('top_albums'))
 
 
 @app.route("/logout")
 def spotify_logout():
-    session.pop('spotify_token', None)
+    session.pop('token_info', None)  # FlaskSessionCacheHandler uses 'token_info' key
     return redirect(url_for('home'))
 
 
 @app.route("/my-top-albums")
 def top_albums():
-    token_info = session.get('spotify_token')
+    sp_oauth = get_spotify_oauth()
+    token_info = sp_oauth.validate_token(sp_oauth.cache_handler.get_cached_token())
     if not token_info:
         return redirect(url_for('spotify_login'))
-
-    # Refresh token if expired
-    sp_oauth = get_spotify_oauth()
-    if sp_oauth.is_token_expired(token_info):
-        token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
-        session['spotify_token'] = token_info
 
     sp = Spotify(auth=token_info['access_token'])
 
