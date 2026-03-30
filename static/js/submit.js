@@ -36,7 +36,8 @@ function submitPoster() {
         body: JSON.stringify({
             img_data: imgDataInput.value,
             artist_name: artistInput.value,
-            album_name: albumInput.value
+            album_name: albumInput.value,
+            style: document.getElementById('poster-style')?.value || 'classic'
         })
     })
     .then(response => response.json())

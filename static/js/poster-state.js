@@ -15,6 +15,9 @@ const PosterState = {
     tabulated: true,
     dotted: false,
 
+    // Poster style
+    style: 'classic',
+
     // Custom text overrides
     customArtist: null,
     customAlbum: null,
@@ -36,6 +39,7 @@ const PosterState = {
         this.artist = document.getElementById('current-artist')?.value || '';
         this.album = document.getElementById('current-album')?.value || '';
         this.albumId = document.getElementById('album-id')?.value || '';
+        this.style = document.getElementById('poster-style')?.value || 'classic';
         this.backgroundColor = document.getElementById('current-background-color')?.value || '#FFFFFF';
         this.textColor = document.getElementById('current-text-color')?.value || '#000000';
         this.tabulated = document.getElementById('tabulated')?.checked || false;
@@ -92,6 +96,7 @@ const PosterState = {
             artist: this.artist,
             album: this.album,
             album_id: this.albumId,
+            style: this.style,
             background: this.backgroundColor,
             text: this.textColor,
             tabulated: this.tabulated,

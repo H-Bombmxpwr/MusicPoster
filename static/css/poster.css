@@ -574,6 +574,38 @@ input[type="checkbox"]:hover {
     box-shadow: 0 4px 20px var(--accent-glow);
 }
 
+/* Change Style Button */
+.change-style-form {
+    width: 100%;
+    max-width: 450px;
+    margin: 0 0 8px;
+    text-align: center;
+}
+
+.change-style-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "Outfit", sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 50px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.change-style-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
 /* Submission Section */
 .submission-section {
     width: 100%;

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Style | Album Poster</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/choose_style.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/icon.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+
+<body>
+    <!-- Back Button -->
+    <a href="{{ url_for('home') }}" class="back-btn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+        Back
+    </a>
+
+    <!-- Header -->
+    <div class="header-container">
+        <a href="{{ url_for('home') }}">
+            <h1 class="main-title">Album Poster</h1>
+        </a>
+        <p class="style-subtitle">
+            <strong>{{ album_name }}</strong> by <strong>{{ artist_name }}</strong>
+        </p>
+        <p class="style-hint" id="hint-text">Choose a poster style to customize.</p>
+    </div>
+
+    <!-- Loading overlay -->
+    <div class="gen-loading-overlay" id="gen-loading">
+        <div class="gen-spinner"></div>
+        <p class="gen-loading-title">Generating style previews...</p>
+        <p class="gen-loading-counter" id="gen-counter">0 / {{ styles|length }}</p>
+        <div class="gen-loading-albums">
+            {% for style in styles %}
+            <span class="gen-loading-chip" id="chip-{{ style }}">{{ style|capitalize }}</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Style Gallery (hidden until all loaded) -->
+    <div class="style-gallery" id="style-gallery" style="display:none;">
+        {% set style_info = {
+            'classic': {'label': 'Classic', 'desc': 'Original layout with cover art, tracklist, and album info'},
+            'standard': {'label': 'Standard', 'desc': 'Full-width cover with gradient fade and two-column tracklist'},
+            'frame': {'label': 'Frame', 'desc': 'Clean bordered design with separator line and structured layout'},
+            'basic': {'label': 'Basic', 'desc': 'Minimal poster with just the cover, title, and key details'},
+            'fullcover': {'label': 'Full Cover', 'desc': 'Album art fills the poster with text overlaid on a dark gradient'}
+        } %}
+        {% for style in styles %}
+        <div class="style-card" id="card-{{ style }}" data-style="{{ style }}">
+            <div class="card-poster" id="poster-{{ style }}">
+                <img src="" alt="{{ style }} style" class="card-img" id="img-{{ style }}">
+                <div class="card-overlay">
+                    <div class="card-cta">Select this style</div>
+                </div>
+            </div>
+
+            <!-- Style label + description below the poster -->
+            <div class="card-details">
+                <div class="card-style-label">{{ style_info[style].label }}</div>
+                <div class="card-style-desc">{{ style_info[style].desc }}</div>
+            </div>
+
+            <!-- Error state -->
+            <div class="card-error" id="error-{{ style }}" style="display:none;">
+                <p>Couldn't generate preview</p>
+            </div>
+
+            <!-- Hidden form to navigate to result with this style -->
+            <form method="POST" action="{{ url_for('result') }}" class="card-form" id="form-{{ style }}">
+                <input type="hidden" name="artist"     id="f-artist-{{ style }}"   value="{{ artist_name }}">
+                <input type="hidden" name="album"      id="f-album-{{ style }}"    value="{{ album_name }}">
+                <input type="hidden" name="album_id"   id="f-album-id-{{ style }}" value="{{ album_id }}">
+                <input type="hidden" name="background" id="f-bg-{{ style }}"       value="">
+                <input type="hidden" name="text"       id="f-text-{{ style }}"     value="">
+                <input type="hidden" name="style"      value="{{ style }}">
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const styles = {{ styles|tojson }};
+            const albumData = {
+                artist: {{ artist_name|tojson }},
+                album_name: {{ album_name|tojson }},
+                album_id: {{ album_id|tojson }}
+            };
+            let completed = 0;
+            const total = styles.length;
+
+            function onDone() {
+                completed++;
+                document.getElementById('gen-counter').textContent = `${completed} / ${total}`;
+                if (completed >= total) {
+                    document.getElementById('gen-loading').style.display = 'none';
+                    const gallery = document.getElementById('style-gallery');
+                    gallery.style.display = 'grid';
+                    document.getElementById('hint-text').classList.add('visible');
+                }
+            }
+
+            styles.forEach(style => {
+                fetch('/generate-style-preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...albumData, style })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) throw new Error(data.error);
+
+                    document.getElementById(`img-${style}`).src = data.img_data;
+
+                    // Fill hidden form
+                    document.getElementById(`f-bg-${style}`).value = data.background;
+                    document.getElementById(`f-text-${style}`).value = data.text;
+
+                    // Mark chip done
+                    const chip = document.getElementById(`chip-${style}`);
+                    if (chip) chip.classList.add('done');
+
+                    // Click handler
+                    const card = document.getElementById(`card-${style}`);
+                    card.addEventListener('click', () => {
+                        document.getElementById(`form-${style}`).submit();
+                    });
+                    card.style.cursor = 'pointer';
+
+                    onDone();
+                })
+                .catch(err => {
+                    console.error(`Style preview error (${style}):`, err);
+                    document.getElementById(`error-${style}`).style.display = 'flex';
+                    const chip = document.getElementById(`chip-${style}`);
+                    if (chip) chip.remove();
+                    onDone();
+                });
+            });
+        });
+    </script>
+
+    <!-- Footer -->
+    <footer>
+        <a href="{{ url_for('home') }}">Start Over</a>
+        &nbsp;&middot;&nbsp;
+        <a href="{{ url_for('about') }}">About</a>
+    </footer>
+</body>
+
+</html>

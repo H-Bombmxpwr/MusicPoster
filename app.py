@@ -1,5 +1,5 @@
 from src.album import Album
-from src.helper import Utility, RESOLUTION_PRESETS
+from src.helper import Utility, RESOLUTION_PRESETS, POSTER_STYLES
 from src.auto import AutoFill
 from src.surprise import SurpriseMe
 from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request, jsonify, session
@@ -25,6 +25,9 @@ DRIVE_FOLDER_ID = os.getenv('DRIVE_FOLDER_ID')
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-in-prod')
 
+# ── Feature flag: set to True to enable Posterfy-style poster variants ──
+POSTERFY_ENABLED = True
+
 autofill = AutoFill()
 
 
@@ -36,11 +39,11 @@ def get_spotify_oauth():
         cache_handler=FlaskSessionCacheHandler(session)
     )
 
-# Decorator for homepage 
+# Decorator for homepage
 @app.route("/")
 @app.route("/home")
 def home():
-    return render_template("home/index.html")
+    return render_template("home/index.html", posterfy_enabled=POSTERFY_ENABLED)
 
 
 @app.route("/result", methods=['POST', 'GET'])
@@ -51,6 +54,7 @@ def result():
     artist = output.get("artist", "")
     album_name = output.get("album", "")
     selected_album_id = output.get("album_id", "")
+    poster_style = output.get("style", "classic")
 
     # Fix for title saving as a spotify url
     artist_query = output.get("artist", "")
@@ -77,7 +81,7 @@ def result():
     if album_found:
         album.setColors(bcolor or '#FFFFFF', tcolor or '#000000')
         # Use medium resolution for preview
-        utility = Utility(album, resolution='medium')
+        utility = Utility(album, resolution='medium', style=poster_style)
         poster = utility.buildPoster()
         img_data = utility.encodeImage(poster)
         album_img = utility.fetch_album_cover(album.getCoverArt()[0]['url'])
@@ -106,9 +110,85 @@ def result():
                            tracks=tracks_dict,
                            release_date=release_date,
                            label=label,
-                           musichoarders_url=musichoarders_url if album_found else '')
+                           musichoarders_url=musichoarders_url if album_found else '',
+                           poster_style=poster_style)
 
-    
+
+
+# ── Posterfy style picker ──
+
+@app.route("/choose-style", methods=['POST'])
+def choose_style():
+    """Show all poster style variants for user to pick from"""
+    if not POSTERFY_ENABLED:
+        return redirect(url_for('result'), code=307)  # forward POST
+
+    output = request.form.to_dict()
+    artist = output.get("artist", "")
+    album_name = output.get("album", "")
+    album_id = output.get("album_id", "")
+
+    album = Album(artist, album_name, album_id=album_id if album_id else None)
+    if not album.album_found:
+        # Fall back to result page which shows the error
+        return render_template("poster/result.html", found=False, img_data=None,
+                               artist_name=artist, album_name=album_name, album_id='',
+                               background_color='#FFFFFF', text_color='#000000',
+                               background_colors=['#FFFFFF'], text_colors=['#000000'],
+                               resolution_presets=RESOLUTION_PRESETS, num_tracks=0,
+                               tracks=[], release_date='', label='', musichoarders_url='',
+                               poster_style='classic')
+
+    return render_template("poster/choose_style.html",
+                           artist_name=album.artist_name,
+                           album_name=album.album_name,
+                           album_id=album.album_id,
+                           styles=POSTER_STYLES)
+
+
+@app.route("/generate-style-preview", methods=['POST'])
+def generate_style_preview():
+    """AJAX: generate a single poster style preview at low resolution"""
+    data = request.json
+    artist = data.get('artist', '')
+    album_name = data.get('album_name', '')
+    album_id = data.get('album_id', '')
+    style = data.get('style', 'classic')
+
+    album = Album(artist, album_name, album_id=album_id if album_id else None)
+    if not album.album_found:
+        return jsonify({'error': 'Album not found'}), 404
+
+    try:
+        surprise = SurpriseMe()
+        utility = Utility(album, resolution='low', style=style)
+        album_img = utility.fetch_album_cover(album.getCoverArt()[0]['url'])
+        colors = utility.get_colors(album_img, 6)
+
+        bg_color = colors[0]
+        txt_color = surprise.find_contrasting_color(colors[1:], bg_color)
+
+        bg_hex = f"#{bg_color[0]:02x}{bg_color[1]:02x}{bg_color[2]:02x}"
+        txt_hex = f"#{txt_color[0]:02x}{txt_color[1]:02x}{txt_color[2]:02x}"
+
+        album.setColors(bg_hex, txt_hex)
+        poster = utility.buildPoster()
+        img_data = utility.encodeImage(poster)
+
+        return jsonify({
+            'img_data': img_data,
+            'background': bg_hex,
+            'text': txt_hex,
+            'style': style,
+            'artist': album.artist_name,
+            'album_name': album.album_name,
+            'album_id': album.album_id,
+        })
+    except Exception as e:
+        print(f"Style preview error ({style}): {e}")
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route("/spotify-login")
 def spotify_login():
     sp_oauth = get_spotify_oauth()
@@ -252,9 +332,26 @@ def album_suggestions():
 
 @app.route("/mosaic")
 def mosaic():
-    posters = os.listdir('static/posters_resized')
-    random.shuffle(posters)
-    return render_template('poster/mosaic.html', posters=posters)
+    # Legacy posters
+    legacy_posters = os.listdir('static/posters_resized')
+    random.shuffle(legacy_posters)
+
+    # Generated posters organized by style
+    generated_dir = 'static/posters_generated'
+    style_posters = {}
+    for style in POSTER_STYLES:
+        style_dir = os.path.join(generated_dir, style)
+        if os.path.isdir(style_dir):
+            files = [f for f in os.listdir(style_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+            random.shuffle(files)
+            style_posters[style] = files
+        else:
+            style_posters[style] = []
+
+    return render_template('poster/mosaic.html',
+                           legacy_posters=legacy_posters,
+                           style_posters=style_posters,
+                           styles=POSTER_STYLES)
 
 
 @app.route("/update-poster", methods=['POST'])
@@ -267,14 +364,16 @@ def update_poster():
     tabulated = data.get('tabulated', False)
     dotted = data.get('dotted', False)
 
+    poster_style = data.get('style', 'classic')
+
     album = Album(artist, album_data)
     album.setColors(background_color, text_color)
     album.setTracklistFormat(tabulated, dotted)
-    
+
     # Use medium resolution for preview
-    utility = Utility(album, resolution='medium')
+    utility = Utility(album, resolution='medium', style=poster_style)
     poster = utility.buildPoster()
-    
+
     img_data = utility.encodeImage(poster)
     return jsonify({'img_data': img_data})
 
@@ -318,7 +417,8 @@ def update_poster_custom():
         album.setCustomCover(custom_cover_url.strip())
 
     # Build poster with custom utility that supports text overrides
-    utility = Utility(album)
+    poster_style = data.get('style', 'classic')
+    utility = Utility(album, style=poster_style)
     utility.custom_artist = custom_artist
     utility.custom_album = custom_album
     utility.custom_tracks = custom_tracks
@@ -371,6 +471,7 @@ def download_poster():
     custom_cover_url = data.get('custom_cover_url', None)
     removed_tracks = set(data.get('removed_tracks', []))
     album_id = data.get('album_id', None)
+    poster_style = data.get('style', 'classic')
 
     album = Album(artist, album_data, album_id=album_id)
 
@@ -384,7 +485,7 @@ def download_poster():
     album.setColors(background_color, text_color)
     album.setTracklistFormat(tabulated, dotted)
 
-    utility = Utility(album, resolution=resolution)
+    utility = Utility(album, resolution=resolution, style=poster_style)
     utility.removed_tracks = removed_tracks
     
     if format_type.lower() == 'svg':
@@ -392,7 +493,7 @@ def download_poster():
         return jsonify({
             'type': 'svg',
             'data': svg_content,
-            'filename': f"{album.album_name.replace(' ', '_')}_{resolution}.svg"
+            'filename': f"{album.album_name.replace(' ', '_')}_{poster_style}_{resolution}.svg"
         })
     else:
         poster = utility.buildPoster()
@@ -403,7 +504,7 @@ def download_poster():
         return jsonify({
             'type': 'png',
             'data': f"data:image/png;base64,{encoded}",
-            'filename': f"{album.album_name.replace(' ', '_')}_{resolution}_{dpi}dpi.png",
+            'filename': f"{album.album_name.replace(' ', '_')}_{poster_style}_{resolution}_{dpi}dpi.png",
             'width': RESOLUTION_PRESETS[resolution]['width'],
             'height': RESOLUTION_PRESETS[resolution]['height']
         })
@@ -412,24 +513,27 @@ def download_poster():
 @app.route("/surprise", methods=["GET"])
 def surprise():
     surprise_me = SurpriseMe()
-    # Now returns 5 values including the actual colors used
+
+    # When Posterfy styles enabled, go through style picker
+    if POSTERFY_ENABLED:
+        artist_name, album_name = surprise_me.get_random_album()
+        album = Album(artist_name, album_name)
+        if album.album_found:
+            return render_template("poster/choose_style.html",
+                                   artist_name=album.artist_name,
+                                   album_name=album.album_name,
+                                   album_id=album.album_id,
+                                   styles=POSTER_STYLES)
+
+    # Fallback / POSTERFY_ENABLED=False: generate classic poster directly
     img_data, album_name, artist_name, background_color, text_color = surprise_me.generate_random_poster()
 
     if img_data:
-        # Recalculate dominant colors for the color picker options
         album = Album(artist_name, album_name)
         utility = Utility(album)
         album_img = utility.fetch_album_cover(album.getCoverArt()[0]['url'])
         colors = utility.get_colors(album_img, 5)
         text_colors = ['#' + ''.join(['{:02x}'.format(int(c)) for c in color]) for color in reversed(colors)]
-        background_colors = text_colors
-        
-        # Get additional data for pre-filling edit fields
-        num_tracks = album.getNumTracks()
-        tracks_dict = album.getTracks()
-        release_date = album.getReleaseDate()
-        label = album.getLabel()
-        musichoarders_url = album.getMusicHoardersUrl()
 
         return render_template(
             "poster/result.html",
@@ -438,35 +542,27 @@ def surprise():
             artist_name=artist_name,
             album_name=album_name,
             album_id=album.album_id,
-            background_colors=background_colors,
+            background_colors=text_colors,
             text_colors=text_colors,
-            # Use the ACTUAL colors from the generated poster, not defaults
             background_color=background_color,
             text_color=text_color,
-            num_tracks=num_tracks,
-            tracks=tracks_dict,
-            release_date=release_date,
-            label=label,
-            musichoarders_url=musichoarders_url,
+            num_tracks=album.getNumTracks(),
+            tracks=album.getTracks(),
+            release_date=album.getReleaseDate(),
+            label=album.getLabel(),
+            musichoarders_url=album.getMusicHoardersUrl(),
+            poster_style='classic',
         )
     else:
         return render_template(
             "poster/result.html",
-            found=False,
-            img_data=None,
-            artist_name='',
-            album_name='',
-            album_id='',
-            background_color='#FFFFFF',
-            text_color='#000000',
-            background_colors=['#FFFFFF'],
-            text_colors=['#000000'],
+            found=False, img_data=None,
+            artist_name='', album_name='', album_id='',
+            background_color='#FFFFFF', text_color='#000000',
+            background_colors=['#FFFFFF'], text_colors=['#000000'],
             resolution_presets=RESOLUTION_PRESETS,
-            num_tracks=0,
-            tracks=[],
-            release_date='',
-            label='',
-            musichoarders_url='',
+            num_tracks=0, tracks=[], release_date='', label='',
+            musichoarders_url='', poster_style='classic',
         )
     
 
@@ -487,13 +583,13 @@ else:
 drive_service = build("drive", "v3", credentials=credentials)
 
 
-def upload_poster_to_drive(img_data, artist_name, album_name):
+def upload_poster_to_drive(img_data, artist_name, album_name, style='classic'):
     """Uploads a poster image to Google Drive and returns the file link"""
     try:
         img_bytes = base64.b64decode(img_data.split(",")[1])
         img_stream = io.BytesIO(img_bytes)
 
-        file_name = f"{artist_name}_{album_name}.png".replace(" ", "_")
+        file_name = f"{artist_name}_{album_name}_{style}.png".replace(" ", "_")
         file_metadata = {
             "name": file_name,
             "parents": [DRIVE_FOLDER_ID]
@@ -523,6 +619,7 @@ def submit_poster():
         img_data = data.get("img_data")
         artist_name = data.get("artist_name")
         album_name = data.get("album_name")
+        poster_style = data.get("style", "classic")
 
         print(f"Received Data in /submit-poster:")
         print(f"   - img_data: {'Yes' if img_data else 'No'}")
@@ -533,7 +630,7 @@ def submit_poster():
             print("Missing data in request")
             return jsonify({"success": False, "message": "Missing data"}), 400
 
-        file_link = upload_poster_to_drive(img_data, artist_name, album_name)
+        file_link = upload_poster_to_drive(img_data, artist_name, album_name, style=poster_style)
 
         if file_link:
             return jsonify({

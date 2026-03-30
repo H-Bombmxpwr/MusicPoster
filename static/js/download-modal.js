@@ -248,6 +248,7 @@ function downloadWithOptions() {
         postData = {
             artist: document.getElementById('current-artist')?.value,
             album: document.getElementById('current-album')?.value,
+            style: document.getElementById('poster-style')?.value || 'classic',
             background: document.getElementById('current-background-color')?.value,
             text: document.getElementById('current-text-color')?.value,
             tabulated: document.getElementById('tabulated')?.checked || false,

@@ -31,7 +31,7 @@
     </div>
 
     <!-- Main Form -->
-    <form class="grid" action="/result" method="POST" autocomplete="off">
+    <form class="grid" action="{{ '/choose-style' if posterfy_enabled else '/result' }}" method="POST" autocomplete="off">
         <center>
             <img src="{{ img_data }}" alt="">
         </center>

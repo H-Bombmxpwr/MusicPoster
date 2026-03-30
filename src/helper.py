@@ -5,9 +5,7 @@ from io import BytesIO
 import textwrap
 from src.codec import return_banner
 
-import scipy
-import scipy.misc
-import scipy.cluster
+import numpy as np
 
 import base64
 import io
@@ -156,15 +154,19 @@ RESOLUTION_PRESETS = {
 BASE_WIDTH = 740
 BASE_HEIGHT = 1200
 
+# Available poster styles
+POSTER_STYLES = ['classic', 'standard', 'frame', 'basic', 'fullcover']
+
 
 class Utility:
-    def __init__(self, album, resolution='medium'):
+    def __init__(self, album, resolution='medium', style='classic'):
         self.album = album
         self.resolution = resolution
+        self.style = style if style in POSTER_STYLES else 'classic'
         self.custom_tracks = {}
         self.custom_date = None
         self.custom_label = None
-        
+
         # Get scale factor from preset
         preset = RESOLUTION_PRESETS.get(resolution, RESOLUTION_PRESETS['medium'])
         self.scale = preset['scale']
@@ -209,23 +211,156 @@ class Utility:
         """Scale font size - returns integer"""
         return max(int(base_size * self.scale), 8)  # Minimum 8px font
 
+    # ─── Shared helpers for all styles ───
+
+    def _hex_to_rgba(self, hex_color):
+        """Convert hex color string to RGBA tuple"""
+        h = hex_color.lstrip('#')
+        if len(h) >= 6:
+            return tuple(int(h[i:i+2], 16) for i in (0, 2, 4)) + (255,)
+        return (255, 255, 255, 255)
+
+    def _create_vertical_gradient(self, width, height, start_alpha=0, end_alpha=255):
+        """Create a vertical gradient mask (top=start_alpha, bottom=end_alpha)"""
+        gradient = np.linspace(start_alpha, end_alpha, height, dtype=np.uint8)
+        gradient = np.tile(gradient.reshape(-1, 1), (1, width))
+        return Image.fromarray(gradient, mode='L')
+
+    def _get_album_name(self):
+        if hasattr(self, 'custom_album') and self.custom_album is not None:
+            return self.custom_album
+        return self.album.album_name
+
+    def _get_artist_name(self):
+        if hasattr(self, 'custom_artist') and self.custom_artist is not None:
+            return self.custom_artist
+        return self.album.artist_name
+
+    def _get_date_string(self):
+        if hasattr(self, 'custom_date') and self.custom_date is not None:
+            return self.custom_date
+        return self.album.getReleaseDate()
+
+    def _get_label_string(self):
+        if hasattr(self, 'custom_label') and self.custom_label is not None:
+            return self.custom_label
+        return "Released by " + self.album.getLabel().split(',')[0]
+
+    def _fit_text_to_width(self, text, font_path, max_size, max_width):
+        """Return a font sized so text fits within max_width"""
+        size = max_size
+        min_size = self._scale_font(12)
+        while size > min_size:
+            font = load_font(font_path, size)
+            bbox = font.getbbox(text)
+            if (bbox[2] - bbox[0]) <= max_width:
+                return font
+            size -= 1
+        return load_font(font_path, min_size)
+
+    def _clean_track_name(self, value):
+        """Clean up track name — remove remastered, feat., etc."""
+        value = re.sub(r'\s*[-–—]\s*remaster(ed)?\s*\d*\s*', '', value, flags=re.IGNORECASE)
+        value = re.sub(r'\s*[-–—]\s*\d+\s*remaster(ed)?\s*', '', value, flags=re.IGNORECASE)
+        value = re.sub(r'\(.*?remaster(ed)?.*?\)', '', value, flags=re.IGNORECASE)
+        value = re.sub(r'\[.*?remaster(ed)?.*?\]', '', value, flags=re.IGNORECASE)
+        value = re.sub(r'\s*[-–—]\s*(mono|stereo|deluxe|bonus|extended|anniversary|edition).*$', '', value, flags=re.IGNORECASE)
+        value = re.sub(r'\(.*?(mono|stereo|deluxe|bonus|extended|anniversary|edition).*?\)', '', value, flags=re.IGNORECASE)
+        value = re.split(r'\s+feat\.', value, flags=re.IGNORECASE)[0]
+        value = re.split(r'\s+featuring\s+', value, flags=re.IGNORECASE)[0]
+        value = re.split(r'\s+ft\.', value, flags=re.IGNORECASE)[0]
+        value = re.sub(r'\(.*?\)', '', value)
+        value = re.sub(r'\[.*?\]', '', value)
+        value = re.sub(r'\s*[-–—]\s*$', '', value)
+        return value.strip()
+
+    def _get_processed_tracks(self):
+        """Return list of (original_tracknum, display_text) with removals and customs applied"""
+        tracks = self.album.getTracks()
+        removed = getattr(self, 'removed_tracks', set())
+        items = []
+        for i, track in enumerate(tracks, 1):
+            if str(i) in removed:
+                continue
+            if hasattr(self, 'custom_tracks') and str(i) in self.custom_tracks:
+                val = self.custom_tracks[str(i)]
+                val = val if val is not None else ''
+            else:
+                val = self._clean_track_name(track)
+            if val and not any(is_non_latin_glyph(ch) for ch in val):
+                val = val.upper()
+            items.append((i, val))
+        return items
+
+    def _fetch_cover(self):
+        """Fetch the album cover image"""
+        cover_url = self.album.getCoverArt()[0]['url']
+        fallback_url = self.album.getSpotifyCoverUrl()
+        return self.fetch_album_cover(cover_url, fallback_url=fallback_url)
+
+    def _draw_tracks_columns(self, draw, start_y, x_start, available_width, available_height, num_cols=2):
+        """Draw tracklist in multiple columns"""
+        items = self._get_processed_tracks()
+        if not items:
+            return
+
+        tracks_per_col = max((len(items) + num_cols - 1) // num_cols, 1)
+        max_line_h = available_height / max(tracks_per_col, 1)
+        base_fs = int(max_line_h / self.scale) - 3 if self.scale > 0 else int(max_line_h) - 3
+        base_fs = min(base_fs, self._base_track_font_max)
+        base_fs = max(base_fs, self._base_track_font_min)
+        font_size = self._scale_font(base_fs)
+        font = load_font(OSWALD_PATH, font_size)
+        col_width = available_width // num_cols
+
+        for idx, (tnum, val) in enumerate(items):
+            col = idx // tracks_per_col
+            row = idx % tracks_per_col
+            x = x_start + col * col_width
+            y = start_y + int(row * max_line_h)
+
+            prefix = f"{tnum}." if self.dotted else f"{tnum}"
+            sep = "  "
+            display = f"{prefix}{sep}{val}"
+            w = mixed_text_width(draw, display, font, font_size)
+            while w > col_width - self._scale(10) and len(val) > 1:
+                val = val[:-1].rstrip()
+                display = f"{prefix}{sep}{val}..."
+                w = mixed_text_width(draw, display, font, font_size)
+
+            draw_mixed_text(draw, (x, y), display, font, font_size, self.album.text_color)
+
+    # ─── Style dispatcher ───
+
     def buildPoster(self):
-        """Build poster at the configured resolution"""
+        """Build poster with the configured style"""
+        if self.style == 'standard':
+            return self._build_standard()
+        elif self.style == 'frame':
+            return self._build_frame()
+        elif self.style == 'basic':
+            return self._build_basic()
+        elif self.style == 'fullcover':
+            return self._build_fullcover()
+        return self._build_classic()
+
+    # ─── Classic (original layout) ───
+
+    def _build_classic(self):
+        """Original poster layout"""
         poster = self.create_poster(self.width, self.height, self.album.background)
 
-        # Get the cover URL (may be custom or Spotify)
         cover_url = self.album.getCoverArt()[0]['url']
-        # Get original Spotify cover as fallback if custom cover fails
         fallback_url = self.album.getSpotifyCoverUrl()
         album_img = self.fetch_album_cover(cover_url, fallback_url=fallback_url)
 
-        # Resize album cover to fit the scaled poster
-        cover_size = self._scale(640)  # Base album cover is 640x640
+        cover_size = self._scale(640)
         album_img_resized = album_img.resize((cover_size, cover_size), Image.LANCZOS)
 
         self.overlay_album_cover(poster, album_img_resized)
         self.overlay_code_banner(poster)
         draw = ImageDraw.Draw(poster)
+        self._precompute_label_extent(draw)
         self.draw_artist_name(draw)
         self.draw_album_name(draw)
         self.draw_tracks(draw)
@@ -233,6 +368,305 @@ class Utility:
         self.draw_runtime(draw)
         self.draw_label(draw)
         self.draw_color_squares(draw, album_img)
+        return poster
+
+    # ─── Standard (Posterfy-style: full-width cover + gradient fade) ───
+
+    def _build_standard(self):
+        poster = self.create_poster(self.width, self.height, self.album.background)
+        album_img = self._fetch_cover()
+
+        sm = self._scale(30)  # small margin
+        cover_w = self.width - 2 * sm
+        cover_h = cover_w
+        cover_resized = album_img.resize((cover_w, cover_h), Image.LANCZOS)
+        poster.paste(cover_resized, (sm, sm), cover_resized)
+
+        # Gradient fade bottom of cover into background
+        fade_h = self._scale(180)
+        bg_rgba = self._hex_to_rgba(self.album.background)
+        bg_strip = Image.new('RGBA', (cover_w, fade_h), bg_rgba)
+        fade_mask = self._create_vertical_gradient(cover_w, fade_h, 0, 255)
+        poster.paste(bg_strip, (sm, sm + cover_h - fade_h), fade_mask)
+
+        draw = ImageDraw.Draw(poster)
+        tc = self.album.text_color
+        y = sm + cover_h + self._scale(20)
+
+        # Album name — large, left-aligned
+        album_name = (self._get_album_name() or '').upper()
+        if album_name:
+            font = self._fit_text_to_width(album_name, OSWALD_PATH, self._scale_font(42), cover_w)
+            draw_mixed_text(draw, (sm, y), album_name, font, font.size, tc)
+            bb = draw.textbbox((0, 0), album_name, font=font)
+            y += (bb[3] - bb[1]) + self._scale(12)
+
+        # Artist name
+        artist_name = (self._get_artist_name() or '').upper()
+        if artist_name:
+            afont = load_font(OSWALD_PATH, self._scale_font(24))
+            draw_mixed_text(draw, (sm, y), artist_name, afont, afont.size, tc)
+            bb = draw.textbbox((0, 0), artist_name, font=afont)
+            y += (bb[3] - bb[1]) + self._scale(22)
+
+        # Tracklist — 2 columns
+        track_area_h = self.height - y - self._scale(130)
+        self._draw_tracks_columns(draw, y, sm, cover_w, track_area_h, num_cols=2)
+
+        # Bottom bar — date, runtime, barcode, color squares
+        bot_y = self.height - self._scale(110)
+        info_font = load_font(OSWALD_PATH, self._scale_font(22))
+        lbl_font = load_font(OSWALD_PATH, self._scale_font(14))
+
+        # Date label + value (left)
+        date_str = self._get_date_string()
+        if date_str:
+            draw.text((sm, bot_y), "RELEASE DATE", font=lbl_font, fill=tc)
+            draw.text((sm, bot_y + self._scale(18)), date_str, font=info_font, fill=tc)
+
+        # Runtime label + value (center-left)
+        runtime_str = self.album.getRuntime()
+        rt_x = sm + self._scale(200)
+        if runtime_str:
+            draw.text((rt_x, bot_y), "RUNTIME", font=lbl_font, fill=tc)
+            draw.text((rt_x, bot_y + self._scale(18)), runtime_str, font=info_font, fill=tc)
+
+        # Color squares (bottom right, aligned with bottom bar)
+        self.draw_color_squares(draw, album_img, y_override=bot_y, margin_override=sm)
+
+        # Spotify barcode (bottom right, below color squares)
+        banner_w = self._scale(self._base_banner_width)
+        self.overlay_code_banner(poster,
+                                x_override=self.width - sm - banner_w,
+                                y_override=self.height - self._scale(65))
+
+        return poster
+
+    # ─── Frame (bordered poster, clean separation) ───
+
+    def _build_frame(self):
+        poster = self.create_poster(self.width, self.height, self.album.background)
+        album_img = self._fetch_cover()
+        tc = self.album.text_color
+        draw = ImageDraw.Draw(poster)
+
+        border = self._scale(5)
+        pad = self._scale(30)
+        inner_x = border + pad
+        inner_w = self.width - 2 * inner_x
+
+        # Draw frame border
+        draw.rectangle(
+            [(border, border), (self.width - border - 1, self.height - border - 1)],
+            outline=tc, width=max(border, 1)
+        )
+
+        # Cover — inside frame
+        cover_size = inner_w
+        cover_resized = album_img.resize((cover_size, cover_size), Image.LANCZOS)
+        poster.paste(cover_resized, (inner_x, inner_x), cover_resized)
+
+        # Thin separator line below cover
+        sep_y = inner_x + cover_size + self._scale(15)
+        draw.line([(inner_x, sep_y), (inner_x + inner_w, sep_y)], fill=tc, width=max(self._scale(2), 1))
+
+        y = sep_y + self._scale(20)
+
+        # Album name
+        album_name = (self._get_album_name() or '').upper()
+        if album_name:
+            font = self._fit_text_to_width(album_name, OSWALD_PATH, self._scale_font(38), inner_w)
+            draw_mixed_text(draw, (inner_x, y), album_name, font, font.size, tc)
+            bb = draw.textbbox((0, 0), album_name, font=font)
+            y += (bb[3] - bb[1]) + self._scale(12)
+
+        # Artist name
+        artist_name = (self._get_artist_name() or '').upper()
+        if artist_name:
+            afont = load_font(OSWALD_PATH, self._scale_font(22))
+            draw_mixed_text(draw, (inner_x, y), artist_name, afont, afont.size, tc)
+            bb = draw.textbbox((0, 0), artist_name, font=afont)
+            y += (bb[3] - bb[1]) + self._scale(20)
+
+        # Tracklist — 2 columns
+        track_area_h = self.height - y - self._scale(130) - border
+        self._draw_tracks_columns(draw, y, inner_x, inner_w, track_area_h, num_cols=2)
+
+        # Bottom — date, runtime
+        bot_y = self.height - self._scale(100) - border
+        info_font = load_font(OSWALD_PATH, self._scale_font(22))
+        lbl_font = load_font(OSWALD_PATH, self._scale_font(14))
+
+        date_str = self._get_date_string()
+        if date_str:
+            draw.text((inner_x, bot_y), "RELEASE DATE", font=lbl_font, fill=tc)
+            draw.text((inner_x, bot_y + self._scale(18)), date_str, font=info_font, fill=tc)
+
+        runtime_str = self.album.getRuntime()
+        rt_x = inner_x + self._scale(200)
+        if runtime_str:
+            draw.text((rt_x, bot_y), "RUNTIME", font=lbl_font, fill=tc)
+            draw.text((rt_x, bot_y + self._scale(18)), runtime_str, font=info_font, fill=tc)
+
+        # Color squares and barcode
+        self.draw_color_squares(draw, album_img, y_override=bot_y, margin_override=inner_x)
+        banner_w = self._scale(self._base_banner_width)
+        self.overlay_code_banner(poster,
+                                x_override=self.width - inner_x - banner_w,
+                                y_override=self.height - self._scale(60) - border)
+
+        return poster
+
+    # ─── Basic (minimal — no tracklist) ───
+
+    def _build_basic(self):
+        poster = self.create_poster(self.width, self.height, self.album.background)
+        album_img = self._fetch_cover()
+        tc = self.album.text_color
+
+        sm = self._scale(30)
+        cover_w = self.width - 2 * sm
+        cover_h = cover_w
+        cover_resized = album_img.resize((cover_w, cover_h), Image.LANCZOS)
+        poster.paste(cover_resized, (sm, sm), cover_resized)
+
+        # Gradient fade
+        fade_h = self._scale(200)
+        bg_rgba = self._hex_to_rgba(self.album.background)
+        bg_strip = Image.new('RGBA', (cover_w, fade_h), bg_rgba)
+        fade_mask = self._create_vertical_gradient(cover_w, fade_h, 0, 255)
+        poster.paste(bg_strip, (sm, sm + cover_h - fade_h), fade_mask)
+
+        draw = ImageDraw.Draw(poster)
+        center_x = self.width // 2
+        # Push text down — use the space between cover bottom and poster bottom
+        text_zone_top = sm + cover_h + self._scale(30)
+        text_zone_bot = self.height - self._scale(130)
+        zone_h = text_zone_bot - text_zone_top
+        # Center the text block vertically in the available zone
+        # Estimate block height: ~50+14+28+14+24+10+24 = ~164 base px
+        block_est = self._scale(170)
+        y = text_zone_top + max((zone_h - block_est) // 2, 0)
+
+        # Album name — centered, large
+        album_name = (self._get_album_name() or '').upper()
+        if album_name:
+            font = self._fit_text_to_width(album_name, OSWALD_PATH, self._scale_font(46), cover_w)
+            bb = draw.textbbox((0, 0), album_name, font=font)
+            tw = bb[2] - bb[0]
+            draw_mixed_text(draw, (center_x - tw // 2, y), album_name, font, font.size, tc)
+            y += (bb[3] - bb[1]) + self._scale(14)
+
+        # Artist name — centered
+        artist_name = (self._get_artist_name() or '').upper()
+        if artist_name:
+            afont = load_font(OSWALD_PATH, self._scale_font(26))
+            bb = draw.textbbox((0, 0), artist_name, font=afont)
+            tw = bb[2] - bb[0]
+            draw_mixed_text(draw, (center_x - tw // 2, y), artist_name, afont, afont.size, tc)
+            y += (bb[3] - bb[1]) + self._scale(35)
+
+        # Date — centered
+        date_str = self._get_date_string()
+        if date_str:
+            dfont = load_font(OSWALD_PATH, self._scale_font(22))
+            bb = draw.textbbox((0, 0), date_str, font=dfont)
+            tw = bb[2] - bb[0]
+            draw.text((center_x - tw // 2, y), date_str, font=dfont, fill=tc)
+            y += (bb[3] - bb[1]) + self._scale(12)
+
+        # Runtime — centered
+        runtime_str = self.album.getRuntime()
+        if runtime_str:
+            rfont = load_font(OSWALD_PATH, self._scale_font(22))
+            bb = draw.textbbox((0, 0), runtime_str, font=rfont)
+            tw = bb[2] - bb[0]
+            draw.text((center_x - tw // 2, y), runtime_str, font=rfont, fill=tc)
+
+        # Color squares & barcode — centered-ish near bottom
+        sq_y = self.height - self._scale(120)
+        self.draw_color_squares(draw, album_img, y_override=sq_y, margin_override=sm)
+        banner_w = self._scale(self._base_banner_width)
+        banner_x = center_x - banner_w // 2
+        self.overlay_code_banner(poster, x_override=banner_x,
+                                y_override=self.height - self._scale(75))
+
+        return poster
+
+    # ─── Full Cover (album art fills poster, text overlaid) ───
+
+    def _build_fullcover(self):
+        poster = self.create_poster(self.width, self.height, self.album.background)
+        album_img = self._fetch_cover()
+
+        # Scale cover to fill entire poster (crop to fit)
+        img_ratio = album_img.width / album_img.height
+        poster_ratio = self.width / self.height
+        if img_ratio > poster_ratio:
+            new_h = self.height
+            new_w = int(album_img.width * self.height / album_img.height)
+        else:
+            new_w = self.width
+            new_h = int(album_img.height * self.width / album_img.width)
+        cover_scaled = album_img.resize((new_w, new_h), Image.LANCZOS)
+        left = (new_w - self.width) // 2
+        top = (new_h - self.height) // 2
+        cover_cropped = cover_scaled.crop((left, top, left + self.width, top + self.height))
+        poster.paste(cover_cropped, (0, 0))
+
+        # Dark gradient overlay on bottom 55%
+        overlay_h = int(self.height * 0.55)
+        dark_strip = Image.new('RGBA', (self.width, overlay_h), (0, 0, 0, 255))
+        grad_mask = self._create_vertical_gradient(self.width, overlay_h, 0, 190)
+        poster.paste(dark_strip, (0, self.height - overlay_h), grad_mask)
+
+        draw = ImageDraw.Draw(poster)
+        tc = self.album.text_color
+        sm = self._scale(40)
+        y = self.height - overlay_h + self._scale(60)
+
+        # Album name — large, left-aligned on overlay
+        album_name = (self._get_album_name() or '').upper()
+        avail_w = self.width - 2 * sm
+        if album_name:
+            font = self._fit_text_to_width(album_name, OSWALD_PATH, self._scale_font(44), avail_w)
+            draw_mixed_text(draw, (sm, y), album_name, font, font.size, tc)
+            bb = draw.textbbox((0, 0), album_name, font=font)
+            y += (bb[3] - bb[1]) + self._scale(12)
+
+        # Artist name
+        artist_name = (self._get_artist_name() or '').upper()
+        if artist_name:
+            afont = load_font(OSWALD_PATH, self._scale_font(24))
+            draw_mixed_text(draw, (sm, y), artist_name, afont, afont.size, tc)
+            bb = draw.textbbox((0, 0), artist_name, font=afont)
+            y += (bb[3] - bb[1]) + self._scale(22)
+
+        # Tracklist — 2 columns
+        track_area_h = self.height - y - self._scale(120)
+        self._draw_tracks_columns(draw, y, sm, avail_w, track_area_h, num_cols=2)
+
+        # Bottom: date + runtime
+        bot_y = self.height - self._scale(90)
+        info_font = load_font(OSWALD_PATH, self._scale_font(20))
+        date_str = self._get_date_string()
+        if date_str:
+            draw.text((sm, bot_y), date_str, font=info_font, fill=tc)
+        runtime_str = self.album.getRuntime()
+        if runtime_str:
+            bb = draw.textbbox((0, 0), runtime_str, font=info_font)
+            rw = bb[2] - bb[0]
+            draw.text((self.width - sm - rw, bot_y), runtime_str, font=info_font, fill=tc)
+
+        # Color squares (bottom left, above date)
+        self.draw_color_squares(draw, album_img, y_override=bot_y - self._scale(40), margin_override=sm)
+        # Barcode (bottom right) — transparent bg so album art shows through
+        banner_w = self._scale(self._base_banner_width)
+        self.overlay_code_banner(poster,
+                                x_override=self.width - sm - banner_w,
+                                y_override=self.height - self._scale(65),
+                                transparent_bg=True)
+
         return poster
 
     def create_poster(self, width, height, background):
@@ -268,34 +702,80 @@ class Utility:
         """Paste the album cover onto the image"""
         poster.paste(album_img, (self.margin, self.margin), album_img)
 
-    def overlay_code_banner(self, poster):
+    def overlay_code_banner(self, poster, x_override=None, y_override=None, transparent_bg=False):
         """Overlay the Spotify code banner, scaled appropriately"""
         banner_width = self._scale(self._base_banner_width)
         banner_height = self._scale(self._base_banner_height)
-        
+
         code_banner = return_banner(
-            self.album.album_id, 
-            self.album.background, 
+            self.album.album_id,
+            self.album.background,
             self.album.text_color,
-            size=(banner_width, banner_height)
+            size=(banner_width, banner_height),
+            transparent_bg=transparent_bg,
         )
-        
-        # Calculate banner position (bottom right area)
-        banner_x = self._scale(440 - 50 + 15)  # 440 - margin + 15 at base
-        banner_y = self._scale(1125)
-        
+
+        banner_x = x_override if x_override is not None else self._scale(440 - 50 + 15)
+        banner_y = y_override if y_override is not None else self._scale(1125)
+
         poster.paste(code_banner, (banner_x, banner_y), code_banner)
 
-    def _fit_right_text(self, draw, text, base_font_size, wrap_width):
-        """Wrap and measure right-aligned text, auto-scaling font if it extends past center.
+    def _precompute_label_extent(self, draw):
+        """Pre-compute the label text's leftmost x so draw_tracks can avoid overlapping."""
+        if hasattr(self, 'custom_label') and self.custom_label is not None:
+            label_string = self.custom_label
+        else:
+            label_string = "Released by " + self.album.getLabel().split(',')[0]
+
+        if not label_string:
+            self.label_left_x = self.width
+            return
+
+        font_size = self._scale_font(self._base_label_font_size)
+        label_font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
+        max_text_w = int(self.width * 0.55)
+        lines = self._pixel_wrap(draw, label_string, label_font, max_text_w)
+
+        min_x = self.width
+        for line in lines:
+            bbox = draw.textbbox((0, 0), line, font=label_font)
+            w = bbox[2] - bbox[0]
+            x = self.width - w - self.margin
+            min_x = min(min_x, x)
+
+        self.label_left_x = min_x
+
+    def _pixel_wrap(self, draw, text, font, max_width):
+        """Wrap text by pixel width. Returns list of lines that each fit within max_width."""
+        words = text.split()
+        if not words:
+            return []
+        lines = []
+        current = words[0]
+        for word in words[1:]:
+            test = current + ' ' + word
+            bbox = draw.textbbox((0, 0), test, font=font)
+            if (bbox[2] - bbox[0]) <= max_width:
+                current = test
+            else:
+                lines.append(current)
+                current = word
+        lines.append(current)
+        return lines
+
+    def _fit_right_text(self, draw, text, base_font_size):
+        """Wrap and measure right-aligned text using pixel-based wrapping, auto-scaling
+        font if it extends past center.
         Returns (lines, font, font_size, min_x) where min_x is the leftmost x position."""
         font_size = self._scale_font(base_font_size)
         # The right-side text should not extend past 45% from the left edge
         min_allowed_x = int(self.width * 0.45)
+        # Max pixel width: from the min_allowed_x to the right edge minus margin
+        max_pixel_w = self.width - self.margin - min_allowed_x
 
         for attempt in range(5):  # Try up to 5 reductions
             font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
-            lines = textwrap.wrap(text, width=wrap_width)
+            lines = self._pixel_wrap(draw, text, font, max_pixel_w)
             min_x = self.width - self.margin
 
             for line in lines:
@@ -306,9 +786,8 @@ class Utility:
 
             if min_x >= min_allowed_x or font_size <= self._scale_font(16):
                 break
-            # Reduce font and widen wrap to fit
+            # Reduce font size to fit
             font_size = max(font_size - self._scale(2), self._scale_font(16))
-            wrap_width = wrap_width + 4
 
         return lines, font, font_size, min_x
 
@@ -323,9 +802,8 @@ class Utility:
         x_coordinate = self.width - self.margin  # Default if no text
 
         if artist_name:
-            wrap_width = max(int(20 / self.scale), 10) if self.scale < 1 else 20
             lines, artist_font, font_size, x_coordinate = self._fit_right_text(
-                draw, artist_name, self._base_artist_font_size, wrap_width)
+                draw, artist_name, self._base_artist_font_size)
 
             for line in lines:
                 bbox = draw.textbbox((0, 0), line, font=artist_font)
@@ -350,9 +828,8 @@ class Utility:
         x_coordinate = self.width - self.margin  # Default if no text
 
         if album_name:
-            wrap_width = max(int(16 / self.scale), 8) if self.scale < 1 else 16
             lines, album_font, font_size, x_coordinate = self._fit_right_text(
-                draw, album_name, self._base_album_font_size, wrap_width)
+                draw, album_name, self._base_album_font_size)
 
             for line in lines:
                 bbox = draw.textbbox((0, 0), line, font=album_font)
@@ -397,8 +874,14 @@ class Utility:
 
         latin_font = load_font(OSWALD_PATH, font_size)
 
-        # Calculate available text width using scaled values
-        available_text_width = min(self.x_artist, self.x_album) - (2 * self.margin)
+        # Calculate available text width — tracks must not extend into right-side text
+        # Account for artist name, album name, AND label text extents
+        label_left = getattr(self, 'label_left_x', self.width)
+        right_boundary = min(self.x_artist, self.x_album, label_left)
+        available_text_width = max(
+            right_boundary - (2 * self.margin),
+            self._scale(120)
+        )
 
         # Start offset at the scaled position (710 is the base value at 740x1200)
         offset = self.below_pic_h  # Use already-scaled below_pic_h
@@ -437,17 +920,22 @@ class Utility:
             # Measure mixed width
             w = mixed_text_width(draw, value, latin_font, font_size)
 
-            # Truncate
-            ellipsis = "..."
-            while w > available_text_width and len(value) > 1:
-                # Prefer truncating at spaces, else trim by character
-                space_index = value.rfind(" ", 0, len(value) - 1)
-                if space_index != -1:
-                    value = value[:space_index].rstrip()
-                else:
-                    value = value[:-1].rstrip()
-
-                value = value + ellipsis
+            # Truncate — strip the actual text (not the ellipsis) then re-append
+            if w > available_text_width and len(value) > 1:
+                # Remove characters from the core text, then measure with ellipsis
+                core = value
+                ellipsis = "..."
+                while len(core) > 1:
+                    space_index = core.rfind(" ", 0, len(core) - 1)
+                    if space_index > 0:
+                        core = core[:space_index].rstrip()
+                    else:
+                        core = core[:-1].rstrip()
+                    candidate = core + ellipsis
+                    w = mixed_text_width(draw, candidate, latin_font, font_size)
+                    if w <= available_text_width:
+                        break
+                value = core + ellipsis if len(core) > 0 else ellipsis
                 w = mixed_text_width(draw, value, latin_font, font_size)
 
             # formatting
@@ -486,6 +974,9 @@ class Utility:
                 )
 
             offset += max_track_height
+
+        # Record where the track list ends so label can avoid overlapping
+        self.tracks_end_y = offset
 
 
     def draw_release_date(self, draw):
@@ -561,10 +1052,9 @@ class Utility:
         label_font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
         ascent, descent = label_font.getmetrics()
 
-        # Adjust wrap width based on scale to maintain similar appearance
-        base_wrap_width = 20
-        wrap_width = max(int(base_wrap_width / self.scale), 10) if self.scale < 1 else base_wrap_width
-        label_list = textwrap.wrap(label_string, width=wrap_width)
+        # Wrap so text never exceeds ~55% of poster width (pixel-based)
+        max_text_w = int(self.width * 0.55)
+        label_list = self._pixel_wrap(draw, label_string, label_font, max_text_w)
 
         # Dynamic y: use runtime_end_y if available, otherwise fall back to fixed offset
         current_y = max(
@@ -585,17 +1075,19 @@ class Utility:
             else:
                 break
 
-    def draw_color_squares(self, draw, album_img):
+    def draw_color_squares(self, draw, album_img, y_override=None, margin_override=None):
         colors = self.get_colors(album_img, 5, 250)
-        
+
         square_size = self._scale(self._base_color_square_size)
         spacing = self._scale(self._base_color_square_spacing)
+        y = y_override if y_override is not None else self.below_pic_h
+        m = margin_override if margin_override is not None else self.margin
 
         offset = 0
         for color in colors:
             draw.rectangle([
-                (self.width - self.margin - offset - square_size, self.below_pic_h), 
-                (self.width - self.margin - offset, self.below_pic_h + square_size)
+                (self.width - m - offset - square_size, y),
+                (self.width - m - offset, y + square_size)
             ], fill=color, outline=color)
             offset += spacing
 
