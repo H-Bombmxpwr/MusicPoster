@@ -50,9 +50,6 @@ Create your own posters at [album.hxr.life](https://album.hxr.life/). Type an ar
 
 Not sure where to start? The **Surprise Me** button on the homepage generates a poster from a random album.
 
-### Spotify Top Albums
-
-Log in with your Spotify account to see posters generated from your most-listened-to albums.
 
 ### Community Gallery
 
