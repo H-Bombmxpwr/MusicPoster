@@ -75,7 +75,7 @@ Browse hundreds of community-submitted and generated posters on the [Mosaic](htt
    ```
    SPOTIPY_CLIENT_ID='your_id'
    SPOTIPY_CLIENT_SECRET='your_secret'
-   SPOTIPY_REDIRECT_URI='http://localhost:5000/callback'
+   SPOTIPY_REDIRECT_URI='http://localhost:5000/callback' #Not needed unless you want login with spotify
    FLASK_SECRET_KEY='any-random-secret'
    ```
 
