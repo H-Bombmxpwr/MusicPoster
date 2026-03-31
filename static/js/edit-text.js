@@ -93,6 +93,12 @@ function populateTrackEditor() {
         // Check if track is removed (from PosterState if available)
         const isRemoved = window.PosterState ? PosterState.isTrackRemoved(i) : false;
 
+        // Check truncation state (only for classic style)
+        const isClassic = window.PosterState ? PosterState.style === 'classic' : false;
+        const isTruncated = isClassic && window.PosterState ? PosterState.isTrackTruncated(i) : false;
+        const isNoTruncate = window.PosterState ? PosterState.isTrackNoTruncate(i) : false;
+        const truncateChecked = isTruncated && !isNoTruncate;
+
         const trackField = document.createElement('div');
         trackField.className = 'track-field' + (isRemoved ? ' removed' : '');
         trackField.id = `track-field-${i}`;
@@ -104,6 +110,14 @@ function populateTrackEditor() {
                    placeholder="Track ${i} name..."
                    data-track-num="${i}"
                    ${isRemoved ? 'disabled' : ''}>
+            <label class="truncate-toggle ${isTruncated ? '' : 'hidden'}" title="Toggle truncation" data-track-truncate="${i}">
+                <input type="checkbox"
+                       id="truncate-${i}"
+                       ${truncateChecked ? 'checked' : ''}
+                       onchange="toggleTrackTruncation(${i}, this.checked)">
+                <span class="truncate-slider"></span>
+                <span class="truncate-label">Truncate</span>
+            </label>
             <button type="button"
                     class="track-remove-btn ${isRemoved ? 'restore' : ''}"
                     onclick="toggleTrackRemoval(${i})"
@@ -155,6 +169,42 @@ function toggleTrackRemoval(trackNum) {
             removeBtn.classList.add('restore');
             removeBtn.title = 'Restore track';
             removeBtn.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>';
+        }
+    }
+}
+
+/**
+ * Toggle truncation for a track
+ */
+function toggleTrackTruncation(trackNum, enabled) {
+    if (window.PosterState) {
+        PosterState.setTrackTruncate(trackNum, enabled);
+    }
+}
+
+/**
+ * Update truncate toggles after backend response
+ */
+function updateTruncateToggles(truncatedList) {
+    if (!window.PosterState) return;
+    if (PosterState.style !== 'classic') return;
+    PosterState.updateTruncatedTracks(truncatedList);
+
+    const trackCount = parseInt(document.getElementById('track-count')?.value || 0);
+    for (let i = 1; i <= trackCount; i++) {
+        const toggleLabel = document.querySelector(`[data-track-truncate="${i}"]`);
+        if (!toggleLabel) continue;
+
+        const isTruncated = PosterState.isTrackTruncated(i);
+        const isNoTruncate = PosterState.isTrackNoTruncate(i);
+        const checkbox = document.getElementById(`truncate-${i}`);
+
+        if (isTruncated) {
+            toggleLabel.classList.remove('hidden');
+            if (checkbox) checkbox.checked = !isNoTruncate;
+        } else {
+            toggleLabel.classList.add('hidden');
+            if (checkbox) checkbox.checked = false;
         }
     }
 }
@@ -250,6 +300,11 @@ function applyCustomChanges() {
             // Update color palette if new colors were returned
             if (data.colors && typeof updateColorPalette === 'function') {
                 updateColorPalette(data.colors);
+            }
+
+            // Update truncation toggles from backend response
+            if (data.truncated_tracks) {
+                updateTruncateToggles(data.truncated_tracks);
             }
 
             // Show success feedback

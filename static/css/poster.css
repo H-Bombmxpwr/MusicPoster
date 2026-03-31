@@ -948,7 +948,7 @@ footer a:hover {
 
 .track-field {
     display: grid;
-    grid-template-columns: 30px 1fr 36px;
+    grid-template-columns: 30px 1fr auto 36px;
     gap: 12px;
     align-items: center;
     transition: opacity 0.3s ease;
@@ -1391,7 +1391,7 @@ footer a:hover {
     }
     
     .track-field {
-        grid-template-columns: 25px 1fr;
+        grid-template-columns: 25px 1fr auto 32px;
         gap: 10px;
     }
     
@@ -1640,7 +1640,7 @@ footer a:hover {
 
 .track-field {
     display: grid;
-    grid-template-columns: 30px 1fr 36px;
+    grid-template-columns: 30px 1fr auto 36px;
     gap: 12px;
     align-items: center;
     transition: opacity 0.3s ease;
@@ -2083,7 +2083,7 @@ footer a:hover {
     }
     
     .track-field {
-        grid-template-columns: 25px 1fr;
+        grid-template-columns: 25px 1fr auto 32px;
         gap: 10px;
     }
     
@@ -2105,3 +2105,59 @@ footer a:hover {
 
 
 
+
+/* Truncate Toggle */
+.truncate-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.truncate-toggle.hidden {
+    visibility: hidden;
+}
+
+.truncate-toggle input[type="checkbox"] {
+    display: none;
+}
+
+.truncate-slider {
+    width: 28px;
+    height: 16px;
+    background: var(--bg-tertiary, #1a1a25);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    position: relative;
+    transition: all 0.25s ease;
+}
+
+.truncate-slider::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    top: 1px;
+    left: 1px;
+    transition: all 0.25s ease;
+}
+
+.truncate-toggle input[type="checkbox"]:checked + .truncate-slider {
+    background: var(--accent-primary, #ff6b35);
+    border-color: var(--accent-primary, #ff6b35);
+}
+
+.truncate-toggle input[type="checkbox"]:checked + .truncate-slider::after {
+    transform: translateX(12px);
+    background: #fff;
+}
+
+.truncate-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}

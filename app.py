@@ -78,6 +78,8 @@ def result():
     release_date = ""
     label = ""
 
+    truncated_tracks = []
+
     if album_found:
         album.setColors(bcolor or '#FFFFFF', tcolor or '#000000')
         # Use medium resolution for preview
@@ -87,13 +89,14 @@ def result():
         album_img = utility.fetch_album_cover(album.getCoverArt()[0]['url'])
         colors = utility.get_colors(album_img, 5)
         text_colors = ['#' + ''.join(['{:02x}'.format(int(c)) for c in color]) for color in reversed(colors)]
-        
+
         # Get additional data for pre-filling edit fields
         num_tracks = album.getNumTracks()
         tracks_dict = album.getTracks()
         release_date = album.getReleaseDate()
         label = album.getLabel()
         musichoarders_url = album.getMusicHoardersUrl()
+        truncated_tracks = list(getattr(utility, 'truncated_tracks', set()))
 
     return render_template("poster/result.html",
                            img_data=img_data,
@@ -111,7 +114,8 @@ def result():
                            release_date=release_date,
                            label=label,
                            musichoarders_url=musichoarders_url if album_found else '',
-                           poster_style=poster_style)
+                           poster_style=poster_style,
+                           truncated_tracks=truncated_tracks)
 
 
 
@@ -396,6 +400,7 @@ def update_poster_custom():
     custom_date = data.get('custom_date', None)
     custom_label = data.get('custom_label', None)
     removed_tracks = set(data.get('removed_tracks', []))
+    no_truncate_tracks = set(data.get('no_truncate_tracks', []))
     custom_cover_url = data.get('custom_cover_url', None)
     album_id = data.get('album_id', None)
 
@@ -425,7 +430,8 @@ def update_poster_custom():
     utility.custom_date = custom_date
     utility.custom_label = custom_label
     utility.removed_tracks = removed_tracks
-    
+    utility.no_truncate_tracks = no_truncate_tracks
+
     poster = utility.buildPoster()
     img_data = utility.encodeImage(poster)
 
@@ -438,7 +444,8 @@ def update_poster_custom():
 
     return jsonify({
         'img_data': img_data,
-        'colors': hex_colors
+        'colors': hex_colors,
+        'truncated_tracks': list(getattr(utility, 'truncated_tracks', set()))
     })
 
 
@@ -467,9 +474,10 @@ def download_poster():
     except:
         dpi = 300
 
-    # Get custom cover and removed tracks
+    # Get custom cover, removed tracks, and truncation overrides
     custom_cover_url = data.get('custom_cover_url', None)
     removed_tracks = set(data.get('removed_tracks', []))
+    no_truncate_tracks = set(data.get('no_truncate_tracks', []))
     album_id = data.get('album_id', None)
     poster_style = data.get('style', 'classic')
 
@@ -487,7 +495,8 @@ def download_poster():
 
     utility = Utility(album, resolution=resolution, style=poster_style)
     utility.removed_tracks = removed_tracks
-    
+    utility.no_truncate_tracks = no_truncate_tracks
+
     if format_type.lower() == 'svg':
         svg_content = utility.generateSVG()
         return jsonify({

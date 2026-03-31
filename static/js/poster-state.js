@@ -27,6 +27,8 @@ const PosterState = {
     // Track customizations
     customTracks: {},
     removedTracks: new Set(),
+    noTruncateTracks: new Set(),
+    truncatedTracks: new Set(),
 
     // Custom cover
     customCoverUrl: null,
@@ -57,6 +59,17 @@ const PosterState = {
         if (editDate) this.customDate = editDate.value.trim() || null;
         if (editLabel) this.customLabel = editLabel.value.trim() || null;
         if (editCoverUrl) this.customCoverUrl = editCoverUrl.value.trim() || null;
+
+        // Load truncated tracks data
+        const truncatedDataEl = document.getElementById('truncated-tracks-data');
+        if (truncatedDataEl) {
+            try {
+                const truncatedList = JSON.parse(truncatedDataEl.textContent);
+                this.truncatedTracks = new Set(truncatedList.map(String));
+            } catch (e) {
+                this.truncatedTracks = new Set();
+            }
+        }
 
         console.log('PosterState initialized:', this.getState());
     },
@@ -107,6 +120,7 @@ const PosterState = {
             custom_label: this.customLabel,
             custom_tracks: this.customTracks,
             removed_tracks: Array.from(this.removedTracks),
+            no_truncate_tracks: Array.from(this.noTruncateTracks),
             custom_cover_url: this.customCoverUrl
         };
     },
@@ -163,6 +177,39 @@ const PosterState = {
      */
     isTrackRemoved(trackNum) {
         return this.removedTracks.has(String(trackNum));
+    },
+
+    /**
+     * Check if a track is truncated (needs truncation)
+     */
+    isTrackTruncated(trackNum) {
+        return this.truncatedTracks.has(String(trackNum));
+    },
+
+    /**
+     * Check if truncation is disabled for a track
+     */
+    isTrackNoTruncate(trackNum) {
+        return this.noTruncateTracks.has(String(trackNum));
+    },
+
+    /**
+     * Toggle truncation for a track
+     */
+    setTrackTruncate(trackNum, enabled) {
+        const key = String(trackNum);
+        if (enabled) {
+            this.noTruncateTracks.delete(key);
+        } else {
+            this.noTruncateTracks.add(key);
+        }
+    },
+
+    /**
+     * Update truncated tracks from backend response
+     */
+    updateTruncatedTracks(truncatedList) {
+        this.truncatedTracks = new Set(truncatedList.map(String));
     }
 };
 

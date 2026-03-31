@@ -846,6 +846,9 @@ class Utility:
     def draw_tracks(self, draw):
         tracks = self.album.getTracks()
 
+        # Track which tracks were truncated (for UI toggle state)
+        self.truncated_tracks = set()
+
         # Filter out removed tracks if any
         removed_tracks = getattr(self, 'removed_tracks', set())
         if removed_tracks:
@@ -885,6 +888,7 @@ class Utility:
 
         # Start offset at the scaled position (710 is the base value at 740x1200)
         offset = self.below_pic_h  # Use already-scaled below_pic_h
+        no_truncate = getattr(self, 'no_truncate_tracks', set())
 
         for original_tracknum, value in tracks_with_nums:
             # Check if there's a custom track text override (including empty string)
@@ -921,7 +925,8 @@ class Utility:
             w = mixed_text_width(draw, value, latin_font, font_size)
 
             # Truncate — strip the actual text (not the ellipsis) then re-append
-            if w > available_text_width and len(value) > 1:
+            should_truncate = str(original_tracknum) not in no_truncate
+            if w > available_text_width and len(value) > 1 and should_truncate:
                 # Remove characters from the core text, then measure with ellipsis
                 core = value
                 ellipsis = "..."
@@ -937,6 +942,10 @@ class Utility:
                         break
                 value = core + ellipsis if len(core) > 0 else ellipsis
                 w = mixed_text_width(draw, value, latin_font, font_size)
+                self.truncated_tracks.add(str(original_tracknum))
+            elif w > available_text_width and len(value) > 1:
+                # Track would have been truncated but user disabled it
+                self.truncated_tracks.add(str(original_tracknum))
 
             # formatting
             space = "     "
