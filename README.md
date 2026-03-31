@@ -3,7 +3,7 @@
 [![Website](https://img.shields.io/badge/Website-album.hxr.life-brightgreen)](https://album.hxr.life/)
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-blue)](https://github.com/H-Bombmxpwr/MusicPoster)
 
-An open-source tool that transforms any album on Spotify into a print-ready poster. Search by artist, album name, or paste a Spotify URL, and Album Poster fetches the artwork, tracklist, and metadata to generate a professional-quality poster in seconds.
+An open-source tool that transforms any album on Spotify into a print-ready poster. Search by album name, or paste a Spotify URL, and Album Poster fetches the artwork, tracklist, and metadata to generate a professional-quality poster in seconds.
 
 Each poster includes:
 
