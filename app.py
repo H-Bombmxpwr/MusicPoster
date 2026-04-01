@@ -2,8 +2,9 @@ from src.album import Album
 from src.helper import Utility, RESOLUTION_PRESETS, POSTER_STYLES
 from src.auto import AutoFill
 from src.surprise import SurpriseMe
-from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request, jsonify, session
+from flask import Flask, render_template, send_file, make_response, url_for, Response, redirect, request, jsonify, session, abort
 import os
+import hashlib
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 from spotipy.cache_handler import FlaskSessionCacheHandler
@@ -29,6 +30,43 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-in-prod')
 POSTERFY_ENABLED = True
 
 autofill = AutoFill()
+
+# ── Thumbnail cache: resizes images to small WebP on first request, then serves cached ──
+THUMB_CACHE_DIR = os.path.join('static', 'thumbs')
+os.makedirs(THUMB_CACHE_DIR, exist_ok=True)
+
+@app.route("/thumb/<path:img_path>")
+def serve_thumbnail(img_path):
+    """Serve a small WebP thumbnail of any static image. Cached to disk."""
+    width = request.args.get('w', 200, type=int)
+    width = min(max(width, 50), 400)  # clamp between 50-400
+
+    source = os.path.join('static', img_path)
+    if not os.path.isfile(source):
+        abort(404)
+
+    # Cache key: hash of path + width
+    cache_key = hashlib.md5(f"{img_path}:{width}".encode()).hexdigest()
+    cached_path = os.path.join(THUMB_CACHE_DIR, f"{cache_key}.webp")
+
+    if not os.path.isfile(cached_path):
+        from PIL import Image
+        try:
+            img = Image.open(source)
+            # Calculate proportional height (posters are 740:1200 ratio)
+            ratio = img.height / img.width
+            height = int(width * ratio)
+            img = img.resize((width, height), Image.LANCZOS)
+            if img.mode == 'RGBA':
+                img = img.convert('RGB')
+            img.save(cached_path, 'WEBP', quality=75)
+        except Exception:
+            abort(500)
+
+    response = send_file(cached_path, mimetype='image/webp')
+    response.cache_control.max_age = 86400 * 30  # cache 30 days
+    response.cache_control.public = True
+    return response
 
 
 def get_spotify_oauth():

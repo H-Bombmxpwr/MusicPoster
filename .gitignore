@@ -135,3 +135,6 @@ dmypy.json
 #google stuff
 album-poster-ee299da3386a.json
 static/posters/album-poster-ee299da3386a.json
+
+# Thumbnail cache (auto-generated)
+static/thumbs/

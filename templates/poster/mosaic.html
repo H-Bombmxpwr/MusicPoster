@@ -44,7 +44,7 @@
         <div class="mosaic-container">
             {% for poster in style_posters[style] %}
             <div class="poster">
-                <img data-src="{{ url_for('static', filename='posters_generated/' ~ style ~ '/' ~ poster) }}"
+                <img data-src="/thumb/posters_generated/{{ style }}/{{ poster }}?w=250"
                      alt="{{ poster }}">
             </div>
             {% endfor %}
@@ -67,7 +67,7 @@
         <div class="mosaic-container">
             {% for poster in legacy_posters %}
             <div class="poster">
-                <img data-src="{{ url_for('static', filename='posters_resized/' ~ poster) }}"
+                <img data-src="/thumb/posters_resized/{{ poster }}?w=250"
                      alt="Legacy Poster">
             </div>
             {% endfor %}
