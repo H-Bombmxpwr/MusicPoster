@@ -89,7 +89,23 @@
     <script src="{{ url_for('static', filename='js/loading.js') }}"></script>
     <script src="{{ url_for('static', filename='js/autocomplete.js') }}"></script>
     <script src="{{ url_for('static', filename='js/scroll.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/random.js') }}"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const posters = {{ scroll_posters|tojson }};
+        const leftContainer = document.querySelector('.poster-scroll-container[style="left: 10px;"]');
+        const rightContainer = document.querySelector('.poster-scroll-container[style="right: 10px;"]');
+        posters.forEach((src, i) => {
+            const item = document.createElement('div');
+            item.className = 'poster-item autoscroll';
+            const img = document.createElement('img');
+            img.src = 'static/' + src;
+            img.alt = 'poster';
+            img.loading = 'lazy';
+            item.appendChild(img);
+            (i % 2 === 0 ? leftContainer : rightContainer).appendChild(item);
+        });
+    });
+    </script>
 </body>
 
 </html>

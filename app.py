@@ -43,7 +43,25 @@ def get_spotify_oauth():
 @app.route("/")
 @app.route("/home")
 def home():
-    return render_template("home/index.html", posterfy_enabled=POSTERFY_ENABLED)
+    # Gather poster paths from all directories for the side-scroll
+    scroll_posters = []
+    # Legacy posters
+    legacy_dir = 'static/posters_resized'
+    if os.path.isdir(legacy_dir):
+        scroll_posters += [f'posters_resized/{f}' for f in os.listdir(legacy_dir)
+                           if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+    # Generated posters from each style
+    gen_dir = 'static/posters_generated'
+    if os.path.isdir(gen_dir):
+        for style in POSTER_STYLES:
+            style_dir = os.path.join(gen_dir, style)
+            if os.path.isdir(style_dir):
+                scroll_posters += [f'posters_generated/{style}/{f}' for f in os.listdir(style_dir)
+                                   if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+    random.shuffle(scroll_posters)
+    # Only need ~30 for the scroll effect
+    scroll_posters = scroll_posters[:30]
+    return render_template("home/index.html", posterfy_enabled=POSTERFY_ENABLED, scroll_posters=scroll_posters)
 
 
 @app.route("/result", methods=['POST', 'GET'])

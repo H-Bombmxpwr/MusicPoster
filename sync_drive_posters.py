@@ -35,7 +35,6 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 LEGACY_DIR = os.path.join(ROOT_DIR, 'static', 'posters_resized')
 GENERATED_DIR = os.path.join(ROOT_DIR, 'static', 'posters_generated')
 TEMP_DIR = os.path.join(ROOT_DIR, 'static', 'posters')  # temp download location
-JS_FILE = os.path.join(ROOT_DIR, 'static', 'js', 'random.js')
 LOG_FILE = os.path.join(ROOT_DIR, 'static', 'posters', 'log.txt')
 
 # Legacy thumbnail dimensions (740/5 x 1200/5)
@@ -129,38 +128,6 @@ def log_action(message):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open(LOG_FILE, 'a', encoding='utf-8') as f:
         f.write(f"[{timestamp}] {message}\n")
-
-
-def update_random_js():
-    """Update the posters array in static/js/random.js with current legacy posters."""
-    if not os.path.isdir(LEGACY_DIR):
-        return
-
-    posters = sorted(f for f in os.listdir(LEGACY_DIR) if f.lower().endswith('.png'))
-    if not posters:
-        return
-
-    with open(JS_FILE, 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    array_match = re.search(r'const posters = (\[.*?\]);', content, re.DOTALL)
-    if not array_match:
-        print("  Warning: Could not find `posters` array in random.js")
-        return
-
-    updated_str = json.dumps(posters, indent=4)
-    updated_content = re.sub(
-        r'const posters = \[.*?\];',
-        f'const posters = {updated_str};',
-        content,
-        flags=re.DOTALL
-    )
-
-    with open(JS_FILE, 'w', encoding='utf-8') as f:
-        f.write(updated_content)
-
-    print(f"  Updated random.js with {len(posters)} legacy posters")
-    log_action(f"Updated random.js with {len(posters)} posters")
 
 
 def main():
@@ -258,11 +225,6 @@ def main():
 
     print(f"\nDownloaded {downloaded} new posters ({styled_count} styled, {legacy_count} legacy)")
     log_action(f"Sync complete: {downloaded} new ({styled_count} styled, {legacy_count} legacy)")
-
-    # Update random.js if we added any legacy posters
-    if legacy_count > 0:
-        print("\nUpdating random.js...")
-        update_random_js()
 
     print("Done!")
     log_action("--- Sync finished ---\n")

@@ -203,9 +203,15 @@ body::before {
 
 .poster img {
     width: 100%;
-    height: auto;
+    aspect-ratio: 740 / 1200;
+    object-fit: cover;
     display: block;
-    transition: transform 0.6s ease;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.6s ease;
+}
+
+.poster img.loaded {
+    opacity: 1;
 }
 
 .poster:hover img {
@@ -282,30 +288,3 @@ body::before {
     }
 }
 
-/* Staggered animation on load */
-@keyframes fadeInScale {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.poster {
-    animation: fadeInScale 0.5s ease-out both;
-}
-
-.poster:nth-child(1) { animation-delay: 0.02s; }
-.poster:nth-child(2) { animation-delay: 0.04s; }
-.poster:nth-child(3) { animation-delay: 0.06s; }
-.poster:nth-child(4) { animation-delay: 0.08s; }
-.poster:nth-child(5) { animation-delay: 0.10s; }
-.poster:nth-child(6) { animation-delay: 0.12s; }
-.poster:nth-child(7) { animation-delay: 0.14s; }
-.poster:nth-child(8) { animation-delay: 0.16s; }
-.poster:nth-child(9) { animation-delay: 0.18s; }
-.poster:nth-child(10) { animation-delay: 0.20s; }
-.poster:nth-child(n+11) { animation-delay: 0.22s; }

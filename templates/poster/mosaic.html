@@ -30,20 +30,22 @@
     <div class="tab-bar">
         {% for style in styles %}
         <button class="tab-btn{% if loop.first %} active{% endif %}"
-                data-tab="{{ style }}">{{ style_labels[style] }}</button>
+                data-tab="{{ style }}"
+                data-count="{{ style_posters[style]|length }}">{{ style_labels[style] }} ({{ style_posters[style]|length }})</button>
         {% endfor %}
-        <button class="tab-btn" data-tab="legacy">Legacy</button>
+        <button class="tab-btn" data-tab="legacy"
+                data-count="{{ legacy_posters|length }}">Legacy ({{ legacy_posters|length }})</button>
     </div>
 
-    <!-- Tab Panels -->
+    <!-- Tab Panels — images use data-src, not src, so nothing loads until activated -->
     {% for style in styles %}
     <div class="tab-panel{% if loop.first %} active{% endif %}" id="panel-{{ style }}">
         {% if style_posters[style] %}
         <div class="mosaic-container">
             {% for poster in style_posters[style] %}
             <div class="poster">
-                <img src="{{ url_for('static', filename='posters_generated/' ~ style ~ '/' ~ poster) }}"
-                     alt="{{ poster }}" loading="lazy">
+                <img data-src="{{ url_for('static', filename='posters_generated/' ~ style ~ '/' ~ poster) }}"
+                     alt="{{ poster }}">
             </div>
             {% endfor %}
         </div>
@@ -65,8 +67,8 @@
         <div class="mosaic-container">
             {% for poster in legacy_posters %}
             <div class="poster">
-                <img src="{{ url_for('static', filename='posters_resized/' ~ poster) }}"
-                     alt="Legacy Poster" loading="lazy">
+                <img data-src="{{ url_for('static', filename='posters_resized/' ~ poster) }}"
+                     alt="Legacy Poster">
             </div>
             {% endfor %}
         </div>
@@ -85,14 +87,46 @@
     </footer>
 
     <script>
+    (function() {
+        // IntersectionObserver: only load images when they scroll into view
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    if (img.dataset.src) {
+                        img.onload = () => img.classList.add('loaded');
+                        img.src = img.dataset.src;
+                        img.removeAttribute('data-src');
+                    }
+                    observer.unobserve(img);
+                }
+            });
+        }, { rootMargin: '300px' }); // start loading 300px before visible
+
+        function activateTab(tabId) {
+            // Observe all unloaded images in this tab so they lazy-load on scroll
+            const panel = document.getElementById('panel-' + tabId);
+            if (!panel) return;
+            panel.querySelectorAll('img[data-src]').forEach(img => observer.observe(img));
+        }
+
+        // Tab switching
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                 document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
                 btn.classList.add('active');
-                document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+                const tabId = btn.dataset.tab;
+                document.getElementById('panel-' + tabId).classList.add('active');
+                activateTab(tabId);
+                window.scrollTo({ top: 0 });
             });
         });
+
+        // Activate the first tab on page load
+        const firstTab = document.querySelector('.tab-btn.active');
+        if (firstTab) activateTab(firstTab.dataset.tab);
+    })();
     </script>
 </body>
 
