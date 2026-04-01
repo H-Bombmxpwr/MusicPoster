@@ -3409,3 +3409,10 @@ JavaScript update performed on 2026-02-24 23:58:40:
 [2026-03-31 21:39:23] Sync complete: 1 new (1 styled, 0 legacy)
 [2026-03-31 21:39:23] --- Sync finished ---
 
+[2026-03-31 22:47:57] --- Sync started ---
+[2026-03-31 22:47:58] Saved styled poster: fullcover/Billy_Joel_An_Innocent_Man.png
+[2026-03-31 22:47:59] Saved styled poster: fullcover/Steely_Dan_Countdown_To_Ecstasy.png
+[2026-03-31 22:47:59] Saved styled poster: frame/Frank_Zappa_Joes_Garage_Acts_I,_II_&_III.png
+[2026-03-31 22:47:59] Sync complete: 3 new (3 styled, 0 legacy)
+[2026-03-31 22:47:59] --- Sync finished ---
+
