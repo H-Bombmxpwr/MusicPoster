@@ -9,6 +9,7 @@ import numpy as np
 
 import base64
 import io
+import os
 import re
 
 
@@ -42,11 +43,12 @@ def contains_cyrillic(text: str) -> bool:
 
 from functools import lru_cache
 
-OSWALD_PATH = "static/Oswald-Medium.ttf"
-NOTO_BASE   = "static/fonts/NotoSans-Regular.ttf"
-NOTO_KR     = "static/fonts/NotoSansKR-Regular.ttf"
-NOTO_JP     = "static/fonts/NotoSansJP-Regular.ttf"
-NOTO_SC     = "static/fonts/NotoSansSC-Regular.ttf"
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OSWALD_PATH = os.path.join(_PROJECT_ROOT, "static", "Oswald-Medium.ttf")
+NOTO_BASE   = os.path.join(_PROJECT_ROOT, "static", "fonts", "NotoSans-Regular.ttf")
+NOTO_KR     = os.path.join(_PROJECT_ROOT, "static", "fonts", "NotoSansKR-Regular.ttf")
+NOTO_JP     = os.path.join(_PROJECT_ROOT, "static", "fonts", "NotoSansJP-Regular.ttf")
+NOTO_SC     = os.path.join(_PROJECT_ROOT, "static", "fonts", "NotoSansSC-Regular.ttf")
 
 def is_non_latin_glyph(ch: str) -> bool:
     code = ord(ch)
@@ -732,7 +734,7 @@ class Utility:
             return
 
         font_size = self._scale_font(self._base_label_font_size)
-        label_font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
+        label_font = ImageFont.truetype(OSWALD_PATH, font_size)
         max_text_w = int(self.width * 0.55)
         lines = self._pixel_wrap(draw, label_string, label_font, max_text_w)
 
@@ -774,7 +776,7 @@ class Utility:
         max_pixel_w = self.width - self.margin - min_allowed_x
 
         for attempt in range(5):  # Try up to 5 reductions
-            font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
+            font = ImageFont.truetype(OSWALD_PATH, font_size)
             lines = self._pixel_wrap(draw, text, font, max_pixel_w)
             min_x = self.width - self.margin
 
@@ -1005,7 +1007,7 @@ class Utility:
 
         # Use scaled font size
         font_size = self._scale_font(self._base_date_font_size)
-        date_font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
+        date_font = ImageFont.truetype(OSWALD_PATH, font_size)
 
         # Use textbbox for accurate width measurement
         bbox = draw.textbbox((0, 0), date_string, font=date_font)
@@ -1026,7 +1028,7 @@ class Utility:
     def draw_runtime(self, draw):
         runtime_string = self.album.getRuntime()
         font_size = self._scale_font(self._base_runtime_font_size)
-        runtime_font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
+        runtime_font = ImageFont.truetype(OSWALD_PATH, font_size)
 
         bbox = draw.textbbox((0, 0), runtime_string, font=runtime_font)
         w = bbox[2] - bbox[0]
@@ -1058,7 +1060,7 @@ class Utility:
 
         # Use scaled font size
         font_size = self._scale_font(self._base_label_font_size)
-        label_font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
+        label_font = ImageFont.truetype(OSWALD_PATH, font_size)
         ascent, descent = label_font.getmetrics()
 
         # Wrap so text never exceeds ~55% of poster width (pixel-based)
@@ -1253,7 +1255,7 @@ class Utility:
         font_size = 40
         size = None
         while (size is None or size[0] > box[2] - box[0] or size[1] > box[3] - box[1]) and font_size > 0:
-            font = ImageFont.truetype('static/Oswald-Medium.ttf', font_size)
+            font = ImageFont.truetype(OSWALD_PATH, font_size)
             size = font.getsize_multiline(text)
             font_size -= 1
         draw.multiline_text((box[0], box[1]), text, "#000", font)

@@ -2,7 +2,7 @@
 Generate example posters from a Spotify playlist.
 
 Usage:
-    python generate_examples.py <playlist_url> [--resolution high] [--output static/posters_generated]
+    python utility_scripts/generate_examples.py <playlist_url> [--resolution high] [--output static/posters_generated]
 
 Extracts unique albums from the playlist's tracks, then prompts you to either
 generate all 5 styles per album or 1 random style per album. Skips any
@@ -14,6 +14,10 @@ import os
 import sys
 import re
 import random
+
+# ── Paths ──
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR)
 
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -152,11 +156,11 @@ def main():
     parser.add_argument('playlist_url', help='Spotify playlist URL or ID')
     parser.add_argument('--resolution', default='high', choices=['low', 'medium', 'high', 'ultra'],
                         help='Poster resolution (default: high)')
-    parser.add_argument('--output', default='static/posters_generated',
+    parser.add_argument('--output', default=os.path.join(ROOT_DIR, 'static', 'posters_generated'),
                         help='Output directory (default: static/posters_generated)')
     args = parser.parse_args()
 
-    load_dotenv(dotenv_path='keys.env')
+    load_dotenv(dotenv_path=os.path.join(ROOT_DIR, 'keys.env'))
 
     playlist_id = extract_playlist_id(args.playlist_url)
     if not playlist_id:
