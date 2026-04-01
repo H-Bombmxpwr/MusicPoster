@@ -3394,3 +3394,13 @@ JavaScript update performed on 2026-02-24 23:58:40:
 [2026-03-31 21:23:45] Saved legacy poster: Gracie_Abrams_The_Secret_of_Us.png
 [2026-03-31 21:23:46] Saved legacy poster: The_Beatles_1.png
 [2026-03-31 21:23:46] Sync complete: 7 new (1 styled, 6 legacy)
+[2026-03-31 21:29:17] --- Sync started ---
+[2026-03-31 21:29:18] Saved styled poster: frame/Frank_Zappa_Joes_Garage_Acts_I,_II_&_III.png
+[2026-03-31 21:29:18] Sync complete: 1 new (1 styled, 0 legacy)
+[2026-03-31 21:29:18] --- Sync finished ---
+
+[2026-03-31 21:31:01] --- Sync started ---
+[2026-03-31 21:31:01] Saved styled poster: frame/Frank_Zappa_Joes_Garage_Acts_I,_II_&_III.png
+[2026-03-31 21:31:01] Sync complete: 1 new (1 styled, 0 legacy)
+[2026-03-31 21:31:01] --- Sync finished ---
+
