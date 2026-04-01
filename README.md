@@ -61,16 +61,29 @@ Browse hundreds of community-submitted and generated posters on the [Mosaic](htt
 
 ### Requirements
 
-- **Python 3.11.5** (other versions, especially 3.12+, may cause dependency issues)
+- **[uv](https://docs.astral.sh/uv/getting-started/installation/)** — Python toolchain and package manager
 - A Spotify Developer application with a Client ID and Client Secret
 
 ### Setup
 
 1. Clone the repository.
 
-2. Create a Spotify app at [developer.spotify.com](https://developer.spotify.com/) and note your Client ID and Client Secret.
+2. Install uv if you don't have it:
 
-3. Copy `keys.env.example` to `keys.env` and fill in your credentials:
+   ```bash
+   # macOS / Linux
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+
+   # Windows
+   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+   # or via Homebrew
+   brew install uv
+   ```
+
+3. Create a Spotify app at [developer.spotify.com](https://developer.spotify.com/) and note your Client ID and Client Secret.
+
+4. Copy `keys.env.example` to `keys.env` and fill in your credentials:
 
    ```
    SPOTIPY_CLIENT_ID='your_id'
@@ -79,29 +92,25 @@ Browse hundreds of community-submitted and generated posters on the [Mosaic](htt
    FLASK_SECRET_KEY='any-random-secret'
    ```
 
-4. Create and activate a virtual environment:
+5. Install dependencies (uv creates the virtual environment automatically):
 
    ```bash
-   python -m venv .venv
-
-   # Windows
-   .venv\Scripts\activate
-
-   # macOS / Linux
-   source .venv/bin/activate
-   ```
-
-5. Install dependencies:
-
-   ```bash
-   pip install -r requirements.txt
+   uv sync
    ```
 
 ### Running
 
-**Web app** -- run `app.py` to start a local Flask server.
+**Web app:**
 
-**CLI** -- run `local.py` to generate a poster without hosting a site. Edit the artist and album variables in the script to change the target album.
+```bash
+uv run python app.py
+```
+
+**CLI** -- generate a poster without a server. Edit the artist and album variables in `local.py` then run:
+
+```bash
+uv run python local.py
+```
 
 ---
 
