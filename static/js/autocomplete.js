@@ -33,11 +33,23 @@ class Autocomplete {
     }
 
     init() {
+        // Preserve focus across re-parenting (some browsers blur the input)
+        const wasFocused = document.activeElement === this.input;
+        const selStart = wasFocused ? this.input.selectionStart : null;
+        const selEnd = wasFocused ? this.input.selectionEnd : null;
+
         // Wrap input in autocomplete container
         this.wrapper = document.createElement('div');
         this.wrapper.className = 'autocomplete-wrapper';
         this.input.parentNode.insertBefore(this.wrapper, this.input);
         this.wrapper.appendChild(this.input);
+
+        if (wasFocused && document.activeElement !== this.input) {
+            this.input.focus();
+            if (selStart !== null) {
+                try { this.input.setSelectionRange(selStart, selEnd); } catch (_) {}
+            }
+        }
 
         // Remove native datalist
         this.input.removeAttribute('list');
@@ -442,13 +454,31 @@ class Autocomplete {
     }
 }
 
-// Initialize autocomplete when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    if (document.getElementById('album')) {
-        // Album autocomplete (standalone search)
-        new Autocomplete('album', '/album-suggestions', {
-            type: 'album',
-            placeholder: 'Album name, artist, or Spotify link...'
-        });
+// Initialize autocomplete as soon as the input exists.
+// This script lives at the end of <body>, so on a normal load the input is
+// already parsed and we don't need to wait for DOMContentLoaded. Waiting
+// caused a race on slow first loads where users could start typing before
+// init ran, and subsequent keystrokes after they stopped never fired.
+function initAlbumAutocomplete() {
+    const input = document.getElementById('album');
+    if (!input || input.dataset.autocompleteInitialized) return;
+    input.dataset.autocompleteInitialized = '1';
+
+    const ac = new Autocomplete('album', '/album-suggestions', {
+        type: 'album',
+        placeholder: 'Album name, artist, or Spotify link...'
+    });
+
+    // If the user typed before we initialized, kick off a search now so the
+    // dropdown still appears without requiring another keystroke.
+    const existing = input.value.trim();
+    if (existing.length >= ac.options.minChars) {
+        ac.search(existing);
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAlbumAutocomplete);
+} else {
+    initAlbumAutocomplete();
+}
