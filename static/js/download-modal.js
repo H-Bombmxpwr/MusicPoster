@@ -15,22 +15,60 @@ let selectedDpi = 300;
 function openDownloadModal() {
     // Check if modal already exists
     let modal = document.getElementById('download-modal-overlay');
-    
+
     if (!modal) {
         // Create modal if it doesn't exist
         modal = createDownloadModal();
         document.body.appendChild(modal);
     }
-    
+
+    // Reflect the current poster shape/style in the options
+    syncModalToPosterState();
+
     // Show modal with animation
     requestAnimationFrame(() => {
         modal.classList.add('active');
     });
-    
+
     downloadModalOpen = true;
-    
+
     // Prevent body scroll
     document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Update resolution card dimensions for the selected aspect ratio, and only
+ * offer SVG for the classic style (the only layout the SVG export mirrors).
+ */
+function syncModalToPosterState() {
+    const ASPECT_BASE = {
+        poster: [740, 1200],
+        square: [740, 740],
+        phone: [740, 1316]
+    };
+    const SCALES = { low: 0.5, medium: 1, high: 2 };
+
+    const aspect = (window.PosterState && PosterState.aspect) || 'poster';
+    const style = (window.PosterState && PosterState.style) || 'classic';
+    const [bw, bh] = ASPECT_BASE[aspect] || ASPECT_BASE.poster;
+
+    document.querySelectorAll('.resolution-card').forEach(card => {
+        const res = card.dataset.resolution;
+        const scale = SCALES[res];
+        const sizeEl = card.querySelector('.resolution-card-size');
+        if (scale && sizeEl) {
+            sizeEl.textContent = `${Math.round(bw * scale)}×${Math.round(bh * scale)}`;
+        }
+    });
+
+    const svgCard = document.querySelector('.format-card[data-format="svg"]');
+    if (svgCard) {
+        const svgAvailable = style === 'classic';
+        svgCard.style.display = svgAvailable ? '' : 'none';
+        if (!svgAvailable && selectedFormat === 'svg') {
+            selectFormat('png');
+        }
+    }
 }
 
 /**
@@ -163,7 +201,7 @@ function createDownloadModal() {
             </button>
             
             <div class="svg-note" id="svg-note">
-                Note: SVG may not include all visual effects from the original.
+                Note: SVG is a simplified vector version — textures, custom fonts, and moved elements are not included. Use PNG for an exact copy.
             </div>
         </div>
     `;

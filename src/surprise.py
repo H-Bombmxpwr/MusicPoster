@@ -1,14 +1,12 @@
 import random
 from src.album import Album
 from src.helper import Utility
-from spotipy import Spotify
-from spotipy.oauth2 import SpotifyClientCredentials
+from src.spotify_client import get_spotify
 
 class SurpriseMe:
     def __init__(self):
-        # Spotify API setup
-        client_credentials_manager = SpotifyClientCredentials()
-        self.sp = Spotify(client_credentials_manager=client_credentials_manager)
+        # Shared Spotify client (reuses cached token instead of re-authenticating)
+        self.sp = get_spotify()
         
         # Random search terms for variety
         self.search_terms = [

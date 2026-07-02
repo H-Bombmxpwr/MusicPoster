@@ -80,6 +80,21 @@ function updatePosterColor(color, isBackground = false, isText = false) {
             if (data.colors) {
                 updateColorPalette(data.colors);
             }
+
+            // Refresh drag-layout element boxes for the new render
+            if (data.boxes && window.DragLayout) {
+                DragLayout.setBoxes(data.boxes);
+            }
+
+            // Keep truncation indicators in sync
+            if (data.truncated_tracks && window.PosterState) {
+                PosterState.updateTruncatedTracks(data.truncated_tracks);
+            }
+
+            // Record this state in the edit history
+            if (window.PosterHistory) {
+                PosterHistory.push();
+            }
         } else {
             console.error('No img_data in response');
         }
@@ -108,13 +123,14 @@ function updatePosterDisplay(imgData) {
         posterImg.src = imgData;
     }
 
-    // Update download link
+    // Update download link (previews are WebP now — keep the extension honest)
     const downloadLink = document.getElementById('download-link');
     if (downloadLink) {
         downloadLink.href = imgData;
         const albumName = PosterState.customAlbum || PosterState.album || 'poster';
         const formattedAlbumName = albumName.replace(/\s+/g, '_');
-        downloadLink.setAttribute('download', `${formattedAlbumName}.png`);
+        const ext = imgData.startsWith('data:image/webp') ? 'webp' : 'png';
+        downloadLink.setAttribute('download', `${formattedAlbumName}.${ext}`);
     }
 
     // Update hidden form data for submission

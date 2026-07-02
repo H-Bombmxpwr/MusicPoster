@@ -615,3 +615,47 @@ footer a:hover {
         height: 20px;
     }
 }
+/* ── 3D tilt on scroll posters ── */
+.poster-item {
+    transition: transform 0.18s ease-out;
+    transform-style: preserve-3d;
+    will-change: transform;
+    position: relative;
+}
+
+/* ── Home secondary links ── */
+.home-links {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.home-links a {
+    padding: 9px 18px;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    background: var(--bg-secondary);
+    transition: all 0.25s ease;
+}
+
+.home-links a:hover {
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
+    transform: translateY(-1px);
+}
+
+.home-links-hint {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+/* Keep long placeholders from clipping mid-word */
+.box input[type="text"] {
+    text-overflow: ellipsis;
+}

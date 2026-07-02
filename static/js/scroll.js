@@ -75,4 +75,33 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initialize both containers with opposite scroll directions
     initScrollContainer(leftContainer, 1);  // Scroll down
     initScrollContainer(rightContainer, -1); // Scroll up
+
+    /**
+     * 3D tilt-on-hover for scroll posters.
+     * Delegated so it also works on the cloned loop content.
+     */
+    function initTilt(container) {
+        const MAX_TILT = 14; // degrees
+
+        container.addEventListener('mousemove', (e) => {
+            const item = e.target.closest('.poster-item');
+            if (!item) return;
+            const rect = item.getBoundingClientRect();
+            const px = (e.clientX - rect.left) / rect.width - 0.5;   // -0.5 .. 0.5
+            const py = (e.clientY - rect.top) / rect.height - 0.5;
+            item.style.transform =
+                `perspective(600px) rotateY(${px * MAX_TILT * 2}deg) rotateX(${-py * MAX_TILT * 2}deg) scale(1.06)`;
+            item.style.zIndex = '3';
+        });
+
+        container.addEventListener('mouseout', (e) => {
+            const item = e.target.closest('.poster-item');
+            if (!item || item.contains(e.relatedTarget)) return;
+            item.style.transform = '';
+            item.style.zIndex = '';
+        });
+    }
+
+    initTilt(leftContainer);
+    initTilt(rightContainer);
 });

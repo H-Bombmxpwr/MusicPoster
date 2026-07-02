@@ -82,6 +82,7 @@
                 <input type="hidden" name="background" id="f-bg-{{ style }}"       value="">
                 <input type="hidden" name="text"       id="f-text-{{ style }}"     value="">
                 <input type="hidden" name="style"      value="{{ style }}">
+                <input type="hidden" name="spotify_type" value="{{ spotify_type|default('album') }}">
             </form>
         </div>
         {% endfor %}
@@ -93,7 +94,8 @@
             const albumData = {
                 artist: {{ artist_name|tojson }},
                 album_name: {{ album_name|tojson }},
-                album_id: {{ album_id|tojson }}
+                album_id: {{ album_id|tojson }},
+                type: {{ spotify_type|default('album')|tojson }}
             };
             let completed = 0;
             const total = styles.length;

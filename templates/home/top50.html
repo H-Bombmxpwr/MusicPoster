@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Today's Top Albums | Album Poster</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/top_albums.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/icon.png') }}">
+</head>
+
+<body>
+    <!-- Back Button -->
+    <a href="{{ url_for('home') }}" class="back-btn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+        Back
+    </a>
+
+    <!-- Header -->
+    <div class="header-container">
+        <a href="{{ url_for('home') }}">
+            <h1 class="main-title">Today's Top Albums</h1>
+        </a>
+        {% if manifest %}
+        <p class="top-albums-subtitle">
+            {{ manifest.source }} &nbsp;·&nbsp; generated {{ manifest.generated_iso }}
+        </p>
+        <p class="top-albums-hint visible">Click any poster to customize it.
+            {% if status.running %}<em>(a fresh batch is generating in the background)</em>{% endif %}
+        </p>
+        {% endif %}
+    </div>
+
+    {% if manifest and manifest['items'] %}
+    <!-- Cached poster wall -->
+    <div class="poster-gallery" style="display:grid;">
+        {% for item in manifest['items'] %}
+        <div class="gallery-card" style="cursor:pointer;"
+             onclick="document.getElementById('form-{{ loop.index0 }}').submit();">
+            <div class="card-poster">
+                <img src="{{ url_for('static', filename='top50/' + item.file) }}"
+                     alt="{{ item.name }} by {{ item.artist }}"
+                     class="card-img" loading="lazy">
+                <div class="card-overlay">
+                    <div class="card-info">
+                        <span class="card-album">{{ item.name }}</span>
+                        <span class="card-artist">{{ item.artist }}</span>
+                    </div>
+                    <div class="card-cta">Click to edit</div>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('result') }}" class="card-form" id="form-{{ loop.index0 }}">
+                <input type="hidden" name="artist"       value="{{ item.artist }}">
+                <input type="hidden" name="album"        value="{{ item.name }}">
+                <input type="hidden" name="album_id"     value="{{ item.id }}">
+                <input type="hidden" name="background"   value="{{ item.background }}">
+                <input type="hidden" name="text"         value="{{ item.text }}">
+                <input type="hidden" name="style"        value="{{ item.style }}">
+                <input type="hidden" name="spotify_type" value="album">
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- First generation in progress -->
+    <div class="gen-loading-overlay" id="gen-loading" style="position:relative; min-height:300px;">
+        <div class="gen-spinner"></div>
+        <p class="gen-loading-title">Building today's poster wall...</p>
+        <p class="gen-loading-counter" id="gen-counter">warming up</p>
+        <p class="top-albums-hint visible">This happens once, then the wall is cached for 5 days.</p>
+    </div>
+
+    <script>
+        (function poll() {
+            fetch('/top50-status')
+                .then(res => res.json())
+                .then(st => {
+                    const counter = document.getElementById('gen-counter');
+                    if (st.ready) {
+                        window.location.reload();
+                        return;
+                    }
+                    if (st.error) {
+                        counter.textContent = 'Generation failed — please try again later.';
+                        return;
+                    }
+                    if (st.total > 0) {
+                        counter.textContent = `${st.done} / ${st.total}`;
+                    }
+                    setTimeout(poll, 2500);
+                })
+                .catch(() => setTimeout(poll, 5000));
+        })();
+    </script>
+    {% endif %}
+
+    <!-- Footer -->
+    <footer>
+        <a href="{{ url_for('home') }}">Create Your Own</a>
+        &nbsp;·&nbsp;
+        <a href="{{ url_for('about') }}">About This Project</a>
+    </footer>
+
+</body>
+
+</html>

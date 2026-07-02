@@ -31,6 +31,22 @@
             Hey <strong>{{ display_name }}</strong> — here are your top albums, turned into posters.
         </p>
         <p class="top-albums-hint" id="hint-text">Click any poster to customize it.</p>
+        <button type="button" id="collage-btn" class="collage-btn" style="display:none;" onclick="generateCollage()">
+            Create Collage Poster
+        </button>
+    </div>
+
+    <!-- Collage result overlay -->
+    <div class="collage-overlay" id="collage-overlay" onclick="if (event.target === this) closeCollage()">
+        <div class="collage-modal">
+            <button class="collage-close" onclick="closeCollage()">&times;</button>
+            <div class="collage-loading" id="collage-loading">
+                <div class="gen-spinner"></div>
+                <p>Building your collage...</p>
+            </div>
+            <img id="collage-img" src="" alt="Top albums collage" style="display:none;">
+            <a id="collage-download" class="collage-download" download style="display:none;">Download Collage</a>
+        </div>
     </div>
 
     {% if albums %}
@@ -80,7 +96,7 @@
 
             <!-- Album data for JS -->
             <script type="application/json" id="data-{{ loop.index0 }}">
-                {{ {"album_id": album.id, "album_name": album.name, "artist": album.artist} | tojson }}
+                {{ {"album_id": album.id, "album_name": album.name, "artist": album.artist, "image": album.image} | tojson }}
             </script>
         </div>
         {% endfor %}
@@ -101,6 +117,7 @@
                     const gallery = document.getElementById('poster-gallery');
                     gallery.style.display = 'grid';
                     document.getElementById('hint-text').classList.add('visible');
+                    document.getElementById('collage-btn').style.display = 'inline-flex';
                 }
             }
 
@@ -152,6 +169,56 @@
                 });
             });
         });
+    </script>
+
+    <script>
+        // ── Collage poster ──
+        const collageAlbums = [
+            {% for album in albums %}
+            {{ {"name": album.name, "artist": album.artist, "image": album.image} | tojson }}{{ "," if not loop.last }}
+            {% endfor %}
+        ];
+
+        function generateCollage() {
+            const overlay = document.getElementById('collage-overlay');
+            const img = document.getElementById('collage-img');
+            const dl = document.getElementById('collage-download');
+            const loading = document.getElementById('collage-loading');
+
+            overlay.classList.add('active');
+            img.style.display = 'none';
+            dl.style.display = 'none';
+            loading.style.display = 'flex';
+
+            fetch('/collage-poster', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    albums: collageAlbums,
+                    display_name: {{ display_name | tojson }}
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                loading.style.display = 'none';
+                img.src = data.img_data;
+                img.style.display = 'block';
+                dl.href = data.img_data;
+                dl.download = data.filename;
+                dl.style.display = 'inline-flex';
+            })
+            .catch(err => {
+                console.error('Collage error:', err);
+                loading.style.display = 'none';
+                closeCollage();
+                alert('Sorry, the collage failed to generate. Please try again.');
+            });
+        }
+
+        function closeCollage() {
+            document.getElementById('collage-overlay').classList.remove('active');
+        }
     </script>
 
     {% else %}

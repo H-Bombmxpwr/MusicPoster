@@ -1,18 +1,9 @@
-import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
-import os
-from dotenv import load_dotenv
+from src.spotify_client import get_spotify
 
 class AutoFill:
     def __init__(self):
-        # Load your credentials from the .env file
-        load_dotenv(dotenv_path='keys.env')
-        SPOTIPY_CLIENT_ID = os.getenv('SPOTIPY_CLIENT_ID')
-        SPOTIPY_CLIENT_SECRET = os.getenv('SPOTIPY_CLIENT_SECRET')
-
-        # Set up the Spotify client
-        client_credentials_manager = SpotifyClientCredentials(SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET)
-        self.sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+        # Shared Spotify client (reuses cached token instead of re-authenticating)
+        self.sp = get_spotify()
 
     def search_artists(self, search_string):
         """Search for artists and return the top 10 matches with images."""
@@ -67,6 +58,41 @@ class AutoFill:
 
         return album_data
     
+    def search_mixed(self, search_string):
+        """Search albums AND playlists — returns items tagged with a 'type' field."""
+        try:
+            results = self.sp.search(q=search_string, type='album,playlist', limit=6)
+        except Exception as e:
+            print(f"Mixed search error: {e}")
+            return []
+
+        out = []
+        for album in (results.get('albums', {}) or {}).get('items', [])[:6]:
+            if not album:
+                continue
+            images = album.get('images') or []
+            out.append({
+                'name': album['name'],
+                'artist': album['artists'][0]['name'] if album.get('artists') else '',
+                'image': images[-1]['url'] if images else None,
+                'album_id': album['id'],
+                'type': 'album',
+            })
+        # Spotify's search can return null playlist entries — skip them
+        for pl in (results.get('playlists', {}) or {}).get('items', [])[:4]:
+            if not pl:
+                continue
+            images = pl.get('images') or []
+            owner = (pl.get('owner') or {}).get('display_name') or ''
+            out.append({
+                'name': pl['name'],
+                'artist': f"Playlist · {owner}" if owner else 'Playlist',
+                'image': images[-1]['url'] if images else None,
+                'album_id': pl['id'],
+                'type': 'playlist',
+            })
+        return out
+
     # Keep backward compatible methods that return just names
     def search_artists_simple(self, search_string):
         """Search for artists and return just names (backward compatible)."""

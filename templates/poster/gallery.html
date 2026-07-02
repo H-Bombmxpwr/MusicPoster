@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Gallery | Album Poster</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/gallery.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/icon.png') }}">
+</head>
+
+<body>
+    <!-- Back Button -->
+    <a href="{{ url_for('home') }}" class="back-btn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+        Back
+    </a>
+
+    <!-- Header -->
+    <div class="header-container">
+        <a href="{{ url_for('home') }}">
+            <h1 class="main-title">Community Gallery</h1>
+        </a>
+        <p class="gallery-subtitle">Posters submitted by visitors like you. Make one and hit "Submit for Review" to join them!</p>
+    </div>
+
+    {% if files %}
+    <div class="community-grid">
+        {% for file in files %}
+        <a class="community-card"
+           href="{{ url_for('gallery_image', file_id=file.id) }}"
+           target="_blank" rel="noopener"
+           title="{{ file.name }}">
+            <img src="{{ url_for('gallery_image', file_id=file.id, w=300) }}"
+                 alt="{{ file.name }}"
+                 loading="lazy">
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="gallery-empty">
+        <p>No submissions yet — be the first!</p>
+        <a href="{{ url_for('home') }}" class="surprise-button">Create a Poster</a>
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <footer>
+        <a href="{{ url_for('mosaic') }}">View Examples</a>
+        &nbsp;·&nbsp;
+        <a href="{{ url_for('about') }}">About This Project</a>
+    </footer>
+
+</body>
+
+</html>

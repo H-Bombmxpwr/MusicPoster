@@ -39,6 +39,7 @@
         <!-- Hidden fields for form submission -->
         <input type="hidden" name="artist" id="artist" value="">
         <input type="hidden" name="album_id" id="selected-album-id" value="">
+        <input type="hidden" name="spotify_type" id="spotify-type" value="album">
 
         <!-- Album Input -->
         <div class="two">
@@ -49,7 +50,7 @@
                 <input type="text"
                        name="album"
                        id="album"
-                       placeholder="Album name, artist, or Spotify link..."
+                       placeholder="Album, artist, or Spotify link..."
                        autocomplete="off">
             </div>
         </div>
@@ -68,8 +69,12 @@
             </center>
         </div>
 
-        <!-- Examples Link -->
-        <a href="{{ url_for('mosaic') }}">View Examples</a>
+        <!-- Secondary navigation links -->
+        <div class="home-links">
+            <a href="{{ url_for('mosaic') }}">View Examples</a>
+            <a href="{{ url_for('top50_page') }}">Today's Top Albums</a>
+        </div>
+        <p class="home-links-hint">Today's Top Albums is a freshly generated poster wall of the current top records — click any poster to customize it.</p>
     </form>
 
     <!-- Right Poster Scroll -->

@@ -18,6 +18,18 @@ const PosterState = {
     // Poster style
     style: 'classic',
 
+    // 'album' or 'playlist' — drives the right Spotify lookup + scan code
+    spotifyType: 'album',
+
+    // Typography, finish, and canvas shape
+    font: 'oswald',
+    texture: 'none',
+    aspect: 'poster',
+
+    // Drag-layout offsets per element, in base (740-wide) canvas units:
+    // { tracks: [dx, dy], banner: [dx, dy], ... }
+    offsets: {},
+
     // Custom text overrides
     customArtist: null,
     customAlbum: null,
@@ -42,6 +54,10 @@ const PosterState = {
         this.album = document.getElementById('current-album')?.value || '';
         this.albumId = document.getElementById('album-id')?.value || '';
         this.style = document.getElementById('poster-style')?.value || 'classic';
+        this.spotifyType = document.getElementById('spotify-type')?.value || 'album';
+        this.font = document.getElementById('poster-font')?.value || 'oswald';
+        this.texture = document.getElementById('poster-texture')?.value || 'none';
+        this.aspect = document.getElementById('poster-aspect')?.value || 'poster';
         this.backgroundColor = document.getElementById('current-background-color')?.value || '#FFFFFF';
         this.textColor = document.getElementById('current-text-color')?.value || '#000000';
         this.tabulated = document.getElementById('tabulated')?.checked || false;
@@ -110,6 +126,11 @@ const PosterState = {
             album: this.album,
             album_id: this.albumId,
             style: this.style,
+            spotify_type: this.spotifyType,
+            font: this.font,
+            texture: this.texture,
+            aspect: this.aspect,
+            offsets: this.offsets,
             background: this.backgroundColor,
             text: this.textColor,
             tabulated: this.tabulated,
@@ -148,6 +169,11 @@ const PosterState = {
         // Sync checkbox states
         this.tabulated = document.getElementById('tabulated')?.checked || false;
         this.dotted = document.getElementById('dotted')?.checked || false;
+
+        // Sync typography/finish/shape selectors
+        this.font = document.getElementById('poster-font')?.value || this.font;
+        this.texture = document.getElementById('poster-texture')?.value || this.texture;
+        this.aspect = document.getElementById('poster-aspect')?.value || this.aspect;
 
         // Sync custom tracks from track inputs (empty string = hide track text)
         const trackInputs = document.querySelectorAll('[data-track-num]');
@@ -210,6 +236,84 @@ const PosterState = {
      */
     updateTruncatedTracks(truncatedList) {
         this.truncatedTracks = new Set(truncatedList.map(String));
+    },
+
+    /**
+     * Deep-copy the editable state for the history stack
+     */
+    snapshot() {
+        return JSON.parse(JSON.stringify({
+            backgroundColor: this.backgroundColor,
+            textColor: this.textColor,
+            tabulated: this.tabulated,
+            dotted: this.dotted,
+            font: this.font,
+            texture: this.texture,
+            aspect: this.aspect,
+            offsets: this.offsets,
+            customArtist: this.customArtist,
+            customAlbum: this.customAlbum,
+            customDate: this.customDate,
+            customLabel: this.customLabel,
+            customTracks: this.customTracks,
+            customCoverUrl: this.customCoverUrl,
+            removedTracks: Array.from(this.removedTracks),
+            noTruncateTracks: Array.from(this.noTruncateTracks)
+        }));
+    },
+
+    /**
+     * Restore a history snapshot: set state AND write it back into the form
+     * fields, because syncFromForm() re-reads the DOM before every render.
+     */
+    applySnapshot(s) {
+        this.backgroundColor = s.backgroundColor;
+        this.textColor = s.textColor;
+        this.tabulated = s.tabulated;
+        this.dotted = s.dotted;
+        this.font = s.font;
+        this.texture = s.texture;
+        this.aspect = s.aspect;
+        this.offsets = JSON.parse(JSON.stringify(s.offsets || {}));
+        this.customArtist = s.customArtist;
+        this.customAlbum = s.customAlbum;
+        this.customDate = s.customDate;
+        this.customLabel = s.customLabel;
+        this.customTracks = JSON.parse(JSON.stringify(s.customTracks || {}));
+        this.customCoverUrl = s.customCoverUrl;
+        this.removedTracks = new Set(s.removedTracks || []);
+        this.noTruncateTracks = new Set(s.noTruncateTracks || []);
+
+        const setVal = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.value = val == null ? '' : val;
+        };
+        const setChecked = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.checked = !!val;
+        };
+
+        setVal('edit-artist', this.customArtist);
+        setVal('edit-album', this.customAlbum);
+        setVal('edit-date', this.customDate);
+        setVal('edit-label', this.customLabel);
+        setVal('edit-cover-url', this.customCoverUrl);
+        setVal('current-background-color', this.backgroundColor);
+        setVal('current-text-color', this.textColor);
+        setVal('poster-font', this.font);
+        setVal('poster-texture', this.texture);
+        setVal('poster-aspect', this.aspect);
+        setChecked('tabulated', this.tabulated);
+        setChecked('dotted', this.dotted);
+
+        // Rebuild the track editor (removal state), then apply custom names
+        if (typeof populateTrackEditor === 'function') {
+            populateTrackEditor();
+        }
+        for (const [num, val] of Object.entries(this.customTracks)) {
+            const input = document.querySelector(`[data-track-num="${num}"]`);
+            if (input) input.value = val;
+        }
     }
 };
 

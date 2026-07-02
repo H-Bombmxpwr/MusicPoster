@@ -330,3 +330,27 @@
         font-size: 16px !important; /* Prevents iOS zoom */
     }
 }
+/* ── Album vs playlist type badge ── */
+.autocomplete-type-badge {
+    flex-shrink: 0;
+    margin-left: auto;
+    padding: 3px 9px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 999px;
+    align-self: center;
+}
+
+.autocomplete-type-badge.album {
+    color: #7ec8ff;
+    background: rgba(80, 160, 255, 0.12);
+    border: 1px solid rgba(80, 160, 255, 0.35);
+}
+
+.autocomplete-type-badge.playlist {
+    color: #7dffa8;
+    background: rgba(60, 220, 120, 0.12);
+    border: 1px solid rgba(60, 220, 120, 0.35);
+}

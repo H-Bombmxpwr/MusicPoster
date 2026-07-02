@@ -1,0 +1,255 @@
+/* ── Drag-to-reposition overlay ── */
+
+.drag-layout-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.drag-handle {
+    position: absolute;
+    pointer-events: auto;
+    cursor: grab;
+    border: 1.5px dashed rgba(255, 107, 53, 0.85);
+    border-radius: 4px;
+    background: rgba(255, 107, 53, 0.08);
+    transition: background 0.15s ease;
+    touch-action: none;
+    box-sizing: border-box;
+}
+
+.drag-handle:hover {
+    background: rgba(255, 107, 53, 0.18);
+}
+
+.drag-handle.dragging {
+    cursor: grabbing;
+    background: rgba(255, 107, 53, 0.25);
+    border-style: solid;
+    z-index: 10;
+}
+
+.drag-handle-tag {
+    position: absolute;
+    top: -20px;
+    left: 0;
+    font-size: 11px;
+    font-family: inherit;
+    color: #fff;
+    background: rgba(255, 107, 53, 0.95);
+    padding: 1px 7px;
+    border-radius: 3px;
+    white-space: nowrap;
+    user-select: none;
+    pointer-events: none;
+}
+
+/* ── Layout tool buttons ── */
+
+.layout-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.layout-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 14px;
+    font-size: 0.85rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #e8e8e8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.layout-btn svg {
+    width: 15px;
+    height: 15px;
+    fill: currentColor;
+}
+
+.layout-btn:hover {
+    border-color: rgba(255, 107, 53, 0.6);
+    color: #ff6b35;
+}
+
+.layout-btn.active {
+    background: rgba(255, 107, 53, 0.15);
+    border-color: #ff6b35;
+    color: #ff6b35;
+}
+
+/* ── Font / texture / aspect selectors ── */
+
+.style-select-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.style-select-row label {
+    font-size: 0.8rem;
+    color: #9a9aa5;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.style-select-row select {
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
+    color: #e8e8e8;
+    font-size: 0.9rem;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.style-select-row select:hover,
+.style-select-row select:focus {
+    border-color: rgba(255, 107, 53, 0.6);
+}
+
+.style-select-row select option {
+    background: #16161d;
+    color: #e8e8e8;
+}
+
+/* ── Share link button ── */
+
+.share-link-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #e8e8e8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.share-link-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+.share-link-btn:hover {
+    border-color: rgba(255, 107, 53, 0.6);
+    color: #ff6b35;
+}
+
+.share-link-btn.copied {
+    border-color: #4caf50;
+    color: #4caf50;
+}
+
+/* ── Two-column controls panel on wide screens ── */
+@media (min-width: 1150px) {
+    .controls {
+        display: grid;
+        grid-template-columns: minmax(300px, 1fr) minmax(280px, 1fr);
+        grid-template-areas:
+            "text colors"
+            "text format"
+            "text download"
+            "text history";
+        gap: 26px 30px;
+        align-items: start;
+        max-width: 780px;
+    }
+
+    .controls .text-edit-section { grid-area: text; }
+    .controls .color-controls { grid-area: colors; }
+    .controls .tracklist-controls { grid-area: format; }
+    .controls .download-section { grid-area: download; }
+    .controls .history-controls { grid-area: history; }
+}
+
+/* ── Edit history panel ── */
+
+.history-controls .layout-btn {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.history-controls .layout-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.history-controls .layout-btn:disabled:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #e8e8e8;
+}
+
+.history-controls kbd {
+    font-size: 0.7rem;
+    padding: 1px 5px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.history-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 11px;
+    font-size: 0.8rem;
+    text-align: left;
+    color: #c8c8d0;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid transparent;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.history-entry:hover {
+    border-color: rgba(255, 107, 53, 0.5);
+    color: #fff;
+}
+
+.history-entry.active {
+    border-color: #ff6b35;
+    background: rgba(255, 107, 53, 0.12);
+    color: #ff6b35;
+}
+
+.history-entry-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.history-entry-time {
+    flex-shrink: 0;
+    font-size: 0.68rem;
+    color: #7a7a85;
+}

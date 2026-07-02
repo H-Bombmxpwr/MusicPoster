@@ -141,3 +141,5 @@ static/posters/album-poster-ee299da3386a.json
 
 # Thumbnail cache (auto-generated)
 static/thumbs/
+# Today's Top Albums cache (auto-generated)
+static/top50/

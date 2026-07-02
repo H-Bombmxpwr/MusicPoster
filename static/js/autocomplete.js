@@ -101,9 +101,11 @@ class Autocomplete {
             return;
         }
 
-        // Clear stored album_id when user types (they may be changing their selection)
+        // Clear stored album_id/type when user types (they may be changing their selection)
         const albumIdField = document.getElementById('selected-album-id');
         if (albumIdField) albumIdField.value = '';
+        const typeField = document.getElementById('spotify-type');
+        if (typeField) typeField.value = 'album';
 
         const value = e.target.value.trim();
 
@@ -115,6 +117,13 @@ class Autocomplete {
         // Cancel previous request
         if (this.abortController) {
             this.abortController.abort();
+        }
+
+        // Pasted Spotify album/playlist link → resolve it into a preview card
+        if (this.isSpotifyLink(value)) {
+            this.showLoading();
+            this.searchLink(value);
+            return;
         }
 
         if (value.length < this.options.minChars) {
@@ -194,7 +203,52 @@ class Autocomplete {
         }
     }
 
+    isSpotifyLink(value) {
+        return /open\.spotify\.com\/(album|playlist)\//.test(value);
+    }
+
+    async searchLink(url) {
+        this.abortController = new AbortController();
+        this.lastQuery = url;
+        try {
+            const response = await fetch(`/link-preview?q=${encodeURIComponent(url)}`, {
+                signal: this.abortController.signal
+            });
+            const data = await response.json();
+
+            if (data.error) {
+                this.items = [];
+                this.showMessage(data.error);
+                return;
+            }
+
+            this.items = [data];
+            if (this.input.value.trim() === url) {
+                this.render('');
+            }
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                console.warn('Link preview failed:', error);
+                this.showNoResults();
+            }
+        }
+    }
+
+    showMessage(text) {
+        this.dropdown.innerHTML = `
+            <div class="autocomplete-no-results">
+                <div class="autocomplete-no-results-icon">⚠️</div>
+                <div>${this.escapeHtml(text)}</div>
+            </div>
+        `;
+        this.open();
+    }
+
     async search(query) {
+        // Links go through the resolver, not the text search
+        if (this.isSpotifyLink(query)) {
+            return this.searchLink(query);
+        }
         this.abortController = new AbortController();
         this.lastQuery = query;
 
@@ -269,10 +323,15 @@ class Autocomplete {
             
             // Create subtitle for albums (show artist name)
             const subtitleHtml = artist ? `<span class="autocomplete-item-subtitle">${this.escapeHtml(artist)}</span>` : '';
-            
+
+            // Type badge (album vs playlist) when the result set is mixed
+            const badgeHtml = item.type
+                ? `<span class="autocomplete-type-badge ${item.type}">${item.type}</span>`
+                : '';
+
             return `
-                <div class="autocomplete-item" 
-                     role="option" 
+                <div class="autocomplete-item"
+                     role="option"
                      data-index="${index}"
                      aria-selected="${index === this.highlightedIndex}">
                     <div class="autocomplete-item-icon ${image ? 'has-image' : ''}">
@@ -284,6 +343,7 @@ class Autocomplete {
                         </span>
                         ${subtitleHtml}
                     </div>
+                    ${badgeHtml}
                 </div>
             `;
         }).join('');
@@ -393,15 +453,19 @@ class Autocomplete {
         const value = typeof item === 'object' ? item.name : item;
         this.input.value = value;
 
-        // If this is an album selection, store the album_id and artist
+        // Store the selected item's id, type, and artist for the form submit
         if (typeof item === 'object') {
             if (item.album_id) {
                 const albumIdField = document.getElementById('selected-album-id');
                 if (albumIdField) albumIdField.value = item.album_id;
             }
-            if (item.artist) {
+            const typeField = document.getElementById('spotify-type');
+            if (typeField) typeField.value = item.type || 'album';
+            const artistValue = item.raw_artist !== undefined ? item.raw_artist
+                : (item.type === 'playlist' ? '' : item.artist);
+            if (artistValue !== undefined) {
                 const artistField = document.getElementById('artist');
-                if (artistField) artistField.value = item.artist;
+                if (artistField) artistField.value = artistValue || '';
             }
         }
 
@@ -464,9 +528,9 @@ function initAlbumAutocomplete() {
     if (!input || input.dataset.autocompleteInitialized) return;
     input.dataset.autocompleteInitialized = '1';
 
-    const ac = new Autocomplete('album', '/album-suggestions', {
+    const ac = new Autocomplete('album', '/search-suggestions', {
         type: 'album',
-        placeholder: 'Album name, artist, or Spotify link...'
+        placeholder: 'Album, artist, or Spotify link...'
     });
 
     // If the user typed before we initialized, kick off a search now so the
